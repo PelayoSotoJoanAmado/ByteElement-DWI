@@ -1,0 +1,401 @@
+{
+  "info": {
+    "name": "StockGuard - APF1 Completo",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Colección completa de pruebas de API para el Avance 1 (APF1): Catálogo de almacenes, gestión de productos, consulta de existencias, registro de movimientos, transferencias atómicas entre almacenes, auditoría de movimientos y validación de reglas críticas (409 Conflict y 400 Bad Request)."
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "skuPrueba",
+      "value": ""
+    },
+    {
+      "key": "productoId",
+      "value": "1"
+    },
+    {
+      "key": "movimientoId",
+      "value": "1"
+    }
+  ],
+  "item": [
+    {
+      "name": "01 Listar almacenes",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/almacenes"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200\", () => pm.response.to.have.status(200));",
+              "const almacenes = pm.response.json();",
+              "pm.test(\"Se listan los 3 almacenes\", () => pm.expect(almacenes.length).to.eql(3));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 Consultar almacén por ID",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/almacenes/1"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200\", () => pm.response.to.have.status(200));",
+              "const a = pm.response.json();",
+              "pm.test(\"Codigo es A01\", () => pm.expect(a.codigo).to.eql(\"A01\"));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 Crear producto",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/productos",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"sku\": \" {{skuPrueba}} \",\n  \"categoria\": \"Memorias RAM\",\n  \"marca\": \"Kingston\",\n  \"modelo\": \"Fury Beast 16GB\",\n  \"especificacion\": \"DDR4, 3200MHz, CL16\",\n  \"critico\": true\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.collectionVariables.set(\"skuPrueba\", \"RAM-\" + pm.variables.replaceIn(\"{{$guid}}\").substring(0, 8).toUpperCase());"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 201\", () => pm.response.to.have.status(201));",
+              "const p = pm.response.json();",
+              "pm.collectionVariables.set(\"productoId\", p.id);",
+              "pm.test(\"SKU normalizado en mayúsculas\", () => pm.expect(p.sku).to.eql(pm.collectionVariables.get(\"skuPrueba\")));",
+              "pm.test(\"Header Location presente\", () => pm.expect(pm.response.headers.get(\"Location\")).to.eql(\"/api/v1/productos/\" + p.id));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "04 Consultar existencia inicial",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/existencias?productoId={{productoId}}&almacenId=1"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200\", () => pm.response.to.have.status(200));",
+              "const res = pm.response.json();",
+              "pm.test(\"Saldo inicial es 0\", () => pm.expect(res.cantidad).to.eql(0));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "05 Registrar movimiento ENTRADA (10 unidades)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/movimientos",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"productoId\": {{productoId}},\n  \"almacenId\": 1,\n  \"tipo\": \"ENTRADA\",\n  \"cantidad\": 10,\n  \"autor\": \"Operador de Almacén\",\n  \"motivo\": \"Ingreso por compra inicial\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 201\", () => pm.response.to.have.status(201));",
+              "const mov = pm.response.json();",
+              "pm.collectionVariables.set(\"movimientoId\", mov.id);",
+              "pm.test(\"Saldo resultante es 10\", () => pm.expect(mov.saldoResultante).to.eql(10));",
+              "pm.test(\"Location presente\", () => pm.expect(pm.response.headers.get(\"Location\")).to.eql(\"/api/v1/movimientos/\" + mov.id));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "06 Registrar movimiento SALIDA válida (4 unidades)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/movimientos",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"productoId\": {{productoId}},\n  \"almacenId\": 1,\n  \"tipo\": \"SALIDA\",\n  \"cantidad\": 4,\n  \"autor\": \"Operador de Almacén\",\n  \"motivo\": \"Despacho a cliente\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 201\", () => pm.response.to.have.status(201));",
+              "const mov = pm.response.json();",
+              "pm.test(\"Saldo resultante tras salida es 6\", () => pm.expect(mov.saldoResultante).to.eql(6));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "07 Regla Crítica: Rechazar SALIDA con stock insuficiente (409 Conflict)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/movimientos",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"productoId\": {{productoId}},\n  \"almacenId\": 1,\n  \"tipo\": \"SALIDA\",\n  \"cantidad\": 20,\n  \"autor\": \"Operador de Almacén\",\n  \"motivo\": \"Venta que excede el stock disponible\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 409 Conflict\", () => pm.response.to.have.status(409));",
+              "const err = pm.response.json();",
+              "pm.test(\"Mensaje de regla violada\", () => pm.expect(err.detail).to.include(\"Stock insuficiente\"));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "08 Comprobar saldo conservado tras rechazo",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/existencias?productoId={{productoId}}&almacenId=1"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200\", () => pm.response.to.have.status(200));",
+              "const res = pm.response.json();",
+              "pm.test(\"Saldo sigue siendo 6 (no se alteró)\", () => pm.expect(res.cantidad).to.eql(6));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "09 Regla Crítica: Transferencia atómica entre almacenes (A01 -> A02, 3 unidades)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/transferencias",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"productoId\": {{productoId}},\n  \"origenAlmacenId\": 1,\n  \"destinoAlmacenId\": 2,\n  \"cantidad\": 3,\n  \"autor\": \"Supervisor APF1\",\n  \"motivo\": \"Reabastecimiento interno\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 201 Created\", () => pm.response.to.have.status(201));",
+              "const t = pm.response.json();",
+              "pm.test(\"Saldo origen quedó en 3\", () => pm.expect(t.saldoOrigenResultante).to.eql(3));",
+              "pm.test(\"Saldo destino quedó en 3\", () => pm.expect(t.saldoDestinoResultante).to.eql(3));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "10 Rechazar transferencia por stock insuficiente (409 Conflict)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/transferencias",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"productoId\": {{productoId}},\n  \"origenAlmacenId\": 1,\n  \"destinoAlmacenId\": 2,\n  \"cantidad\": 50,\n  \"autor\": \"Supervisor APF1\",\n  \"motivo\": \"Intento de transferir mas del disponible\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 409 Conflict\", () => pm.response.to.have.status(409));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "11 Rechazar transferencia al mismo almacén (400 Bad Request)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/transferencias",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"productoId\": {{productoId}},\n  \"origenAlmacenId\": 1,\n  \"destinoAlmacenId\": 1,\n  \"cantidad\": 2,\n  \"autor\": \"Supervisor APF1\",\n  \"motivo\": \"Origen y destino iguales\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 400 Bad Request\", () => pm.response.to.have.status(400));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "12 Listar auditoría e historial de movimientos",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/movimientos?productoId={{productoId}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200\", () => pm.response.to.have.status(200));",
+              "const movs = pm.response.json();",
+              "pm.test(\"Se auditan los movimientos registrados\", () => pm.expect(movs.length).to.be.at.least(4));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "13 Consultar detalle de movimiento por ID",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/movimientos/{{movimientoId}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200\", () => pm.response.to.have.status(200));",
+              "const mov = pm.response.json();",
+              "pm.test(\"ID correcto\", () => pm.expect(mov.id).to.eql(parseInt(pm.collectionVariables.get(\"movimientoId\"))));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "14 Validación de campos requeridos (400 Bad Request)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/movimientos",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"productoId\": -1,\n  \"almacenId\": null,\n  \"tipo\": null,\n  \"cantidad\": 0,\n  \"autor\": \"\",\n  \"motivo\": \"\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 400 Bad Request\", () => pm.response.to.have.status(400));"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

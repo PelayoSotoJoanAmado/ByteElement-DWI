@@ -1,0 +1,18 @@
+# Local configurations & secrets
+/backend/application-local.properties
+
+# Build & compiled artifacts
+**/target/
+**/build/
+
+# IDE & Editor
+.vscode/
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# OS files
+Thumbs.db
+Desktop.ini
+.DS_Store
