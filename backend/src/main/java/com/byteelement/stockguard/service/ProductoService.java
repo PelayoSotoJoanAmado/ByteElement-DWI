@@ -43,6 +43,23 @@ public class ProductoService {
         return repository.saveAndFlush(producto);
     }
 
+    @Transactional
+    public Producto actualizar(Long id, CrearProductoRequest request) {
+        Producto producto = obtener(id);
+        String sku = request.sku().trim().toUpperCase(Locale.ROOT);
+        if (repository.existsBySkuAndIdNot(sku, id)) throw new SkuDuplicadoException(sku);
+        producto.actualizar(sku, request.categoria().trim(), request.marca().trim(),
+                request.modelo().trim(), request.especificacion().trim(), request.critico());
+        return repository.saveAndFlush(producto);
+    }
+
+    @Transactional
+    public Producto desactivar(Long id) {
+        Producto producto = obtener(id);
+        producto.desactivar();
+        return repository.saveAndFlush(producto);
+    }
+
     public Page<Producto> listar(int pagina, int tamanio) {
         return repository.findAll(
                 PageRequest.of(pagina, tamanio, Sort.by("id").ascending())

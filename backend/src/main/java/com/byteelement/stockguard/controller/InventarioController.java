@@ -7,7 +7,6 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -15,7 +14,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1")
-@Validated
 public class InventarioController {
 
     private final InventarioService inventarioService;
@@ -79,4 +77,3 @@ public class InventarioController {
         return inventarioService.consultar(productoId, almacenId);
     }
 }
-

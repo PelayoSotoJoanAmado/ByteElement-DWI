@@ -12,15 +12,73 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class InventarioServiceTest {
+    @Test
+    void productoDesactivadoConservaSaldoEHistorialPeroRechazaNuevosMovimientos() {
+        service.registrar(movimiento(TipoMovimiento.ENTRADA, 5, 1));
+        productos.obtener(1L).desactivar();
+        assertThrows(com.byteelement.stockguard.exception.ConflictoCatalogoException.class,
+                () -> service.registrar(movimiento(TipoMovimiento.SALIDA, 1, 1)));
+        assertEquals(5, service.consultar(1, 1).cantidad());
+        assertEquals(1, service.listarMovimientos(1L, null).size());
+    }
+
+    @Test
+    void almacenDesactivadoConservaSaldoPeroRechazaTransferencias() {
+        service.registrar(movimiento(TipoMovimiento.ENTRADA, 5, 1));
+        var almacen = almacenes.obtener(1L);
+        almacen.desactivar();
+        when(almacenes.obtener(1L)).thenReturn(almacen);
+        assertThrows(com.byteelement.stockguard.exception.ConflictoCatalogoException.class, () ->
+                service.transferir(new com.byteelement.stockguard.dto.RegistrarTransferenciaRequest(
+                        1L, 1L, 2L, 1L, "Operador", "Prueba")));
+        assertEquals(5, service.consultar(1, 1).cantidad());
+        assertEquals(1, service.listarMovimientos(1L, null).size());
+    }
+    @Test
+    void consultaProductoInexistenteNoInventaSaldoCero() {
+        when(productos.obtener(99L)).thenThrow(new NoSuchElementException("Producto no encontrado"));
+        assertThrows(NoSuchElementException.class, () -> service.consultar(99, 1));
+    }
+
+    @Test
+    void entradaQueDesbordaSaldoSeRechazaSinModificarInventario() {
+        service.registrar(movimiento(TipoMovimiento.ENTRADA, Long.MAX_VALUE, 1));
+        assertThrows(IllegalArgumentException.class,
+                () -> service.registrar(movimiento(TipoMovimiento.ENTRADA, 1, 1)));
+        assertEquals(Long.MAX_VALUE, service.consultar(1, 1).cantidad());
+        assertEquals(1, service.listarMovimientos(1L, null).size());
+    }
+
+    @Test
+    void transferenciaQueDesbordaDestinoNoModificaNingunSaldo() {
+        service.registrar(movimiento(TipoMovimiento.ENTRADA, 1, 1));
+        service.registrar(movimiento(TipoMovimiento.ENTRADA, Long.MAX_VALUE, 2));
+        var request = new com.byteelement.stockguard.dto.RegistrarTransferenciaRequest(
+                1L, 1L, 2L, 1L, "Operador", "Prueba de limite numerico");
+        assertThrows(IllegalArgumentException.class, () -> service.transferir(request));
+        assertEquals(1, service.consultar(1, 1).cantidad());
+        assertEquals(Long.MAX_VALUE, service.consultar(1, 2).cantidad());
+        assertEquals(2, service.listarMovimientos(1L, null).size());
+    }
     private InventarioService service;
     private ProductoService productos;
+    private AlmacenService almacenes;
 
     @BeforeEach
     void preparar() {
         productos = mock(ProductoService.class);
         when(productos.obtener(1L)).thenReturn(new Producto(
                 "RAM-01", "RAM", "Kingston", "DDR4", "8 GB", true));
-        service = new InventarioService(productos);
+        almacenes = mock(AlmacenService.class);
+        when(almacenes.obtener(anyLong())).thenAnswer(invocacion -> {
+            long id = invocacion.getArgument(0);
+            if (id < 1 || id > 3) throw new NoSuchElementException("Almacen no encontrado");
+            var almacen = new com.byteelement.stockguard.entity.Almacen("A0" + id,
+                    id == 1 ? "Tienda principal" : "Almacen de prueba");
+            org.springframework.test.util.ReflectionTestUtils.setField(almacen, "id", id);
+            return almacen;
+        });
+        service = new InventarioService(productos, almacenes);
     }
 
     private RegistrarMovimientoRequest movimiento(TipoMovimiento tipo, long cantidad, long almacen) {

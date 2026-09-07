@@ -23,6 +23,13 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 class InventarioControllerTest {
+    @Test
+    void consultaConIdentificadorNegativoDevuelve400SinLlamarServicio() throws Exception {
+        mockMvc.perform(get("/api/v1/existencias")
+                        .param("productoId", "-1").param("almacenId", "1"))
+                .andExpect(status().isBadRequest());
+        verifyNoInteractions(inventarioService);
+    }
 
     private InventarioService inventarioService;
     private MockMvc mockMvc;
@@ -247,4 +254,3 @@ class InventarioControllerTest {
                 .andExpect(jsonPath("$.detail").value("El almacén de origen y destino no pueden ser el mismo."));
     }
 }
-

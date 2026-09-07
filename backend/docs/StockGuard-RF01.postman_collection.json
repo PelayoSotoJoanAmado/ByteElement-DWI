@@ -1,0 +1,510 @@
+{
+  "info": {
+    "name": "StockGuard RF01 - Catalogo y politicas",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Ejecutar en orden. Crea datos QA persistentes y los desactiva al finalizar. Inventario en memoria. No requiere JWT en APF1."
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "sku",
+      "value": ""
+    },
+    {
+      "key": "codigo",
+      "value": ""
+    },
+    {
+      "key": "productoId",
+      "value": ""
+    },
+    {
+      "key": "almacenId",
+      "value": ""
+    },
+    {
+      "key": "politicaId",
+      "value": ""
+    },
+    {
+      "key": "movimientoId",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "01 Crear producto",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/productos",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"sku\": \"{{sku}}\",\n  \"categoria\": \"RAM\",\n  \"marca\": \"Kingston\",\n  \"modelo\": \"DDR4\",\n  \"especificacion\": \"8 GB\",\n  \"critico\": true\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const sufijo = pm.variables.replaceIn(\"{{$guid}}\").replace(/-/g, \"\").slice(0,12).toUpperCase();",
+              "pm.collectionVariables.set(\"sku\", \"RF01-\" + sufijo);",
+              "pm.collectionVariables.set(\"codigo\", \"QA-\" + sufijo);"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+              "pm.collectionVariables.set(\"productoId\", pm.response.json().id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 Editar producto",
+      "request": {
+        "method": "PUT",
+        "url": "{{baseUrl}}/api/v1/productos/{{productoId}}",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"sku\": \"{{sku}}\",\n  \"categoria\": \"RAM\",\n  \"marca\": \"Kingston\",\n  \"modelo\": \"DDR4 actualizado\",\n  \"especificacion\": \"8 GB\",\n  \"critico\": true\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Modelo actualizado\", () => pm.expect(pm.response.json().modelo).to.eql(\"DDR4 actualizado\"));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 SKU duplicado",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/productos",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"sku\": \"{{sku}}\",\n  \"categoria\": \"RAM\",\n  \"marca\": \"Kingston\",\n  \"modelo\": \"DDR4\",\n  \"especificacion\": \"8 GB\",\n  \"critico\": true\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 409\", () => pm.response.to.have.status(409));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "04 Crear almacen",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/almacenes",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"codigo\": \"{{codigo}}\",\n  \"nombre\": \"Almacen RF01\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+              "pm.collectionVariables.set(\"almacenId\", pm.response.json().id);",
+              "pm.test(\"Location\", () => pm.expect(pm.response.headers.get(\"Location\")).to.eql(\"/api/v1/almacenes/\" + pm.response.json().id));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "05 Editar almacen",
+      "request": {
+        "method": "PUT",
+        "url": "{{baseUrl}}/api/v1/almacenes/{{almacenId}}",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"codigo\": \"{{codigo}}\",\n  \"nombre\": \"Almacen actualizado\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "06 Codigo duplicado",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/almacenes",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"codigo\": \"{{codigo}}\",\n  \"nombre\": \"Almacen RF01\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 409\", () => pm.response.to.have.status(409));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "07 Crear politica",
+      "request": {
+        "method": "PUT",
+        "url": "{{baseUrl}}/api/v1/productos/{{productoId}}/almacenes/{{almacenId}}/politica-stock",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"minimo\": 0,\n  \"maximo\": 10\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.collectionVariables.set(\"politicaId\", pm.response.json().id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "08 Actualizar politica",
+      "request": {
+        "method": "PUT",
+        "url": "{{baseUrl}}/api/v1/productos/{{productoId}}/almacenes/{{almacenId}}/politica-stock",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"minimo\": 2,\n  \"maximo\": 20\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Misma politica\", () => pm.expect(String(pm.response.json().id)).to.eql(String(pm.collectionVariables.get(\"politicaId\"))));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "09 Rechazar minimo negativo",
+      "request": {
+        "method": "PUT",
+        "url": "{{baseUrl}}/api/v1/productos/{{productoId}}/almacenes/{{almacenId}}/politica-stock",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"minimo\": -1,\n  \"maximo\": 10\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 400\", () => pm.response.to.have.status(400));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "10 Rechazar limites iguales",
+      "request": {
+        "method": "PUT",
+        "url": "{{baseUrl}}/api/v1/productos/{{productoId}}/almacenes/{{almacenId}}/politica-stock",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"minimo\": 5,\n  \"maximo\": 5\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 400\", () => pm.response.to.have.status(400));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "11 Consultar limites conservados",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/productos/{{productoId}}/almacenes/{{almacenId}}/politica-stock",
+        "header": []
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Limites conservados\", () => { pm.expect(pm.response.json().minimo).to.eql(2); pm.expect(pm.response.json().maximo).to.eql(20); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "12 Crear historial en almacen nuevo",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/movimientos",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"productoId\": {{productoId}},\n  \"almacenId\": {{almacenId}},\n  \"tipo\": \"ENTRADA\",\n  \"cantidad\": 5,\n  \"autor\": \"Demostracion RF01\",\n  \"motivo\": \"Antes de desactivar\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+              "pm.collectionVariables.set(\"movimientoId\", pm.response.json().id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "13 Desactivar producto",
+      "request": {
+        "method": "PATCH",
+        "url": "{{baseUrl}}/api/v1/productos/{{productoId}}/desactivar",
+        "header": []
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Inactivo\", () => pm.expect(pm.response.json().activo).to.eql(false));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "14 Desactivar almacen",
+      "request": {
+        "method": "PATCH",
+        "url": "{{baseUrl}}/api/v1/almacenes/{{almacenId}}/desactivar",
+        "header": []
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "15 Consultar producto conservado",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/productos/{{productoId}}",
+        "header": []
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "16 Consultar historial conservado",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/movimientos/{{movimientoId}}",
+        "header": []
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "17 Consultar saldo conservado",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/existencias?productoId={{productoId}}&almacenId={{almacenId}}",
+        "header": []
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Saldo conservado\", () => pm.expect(pm.response.json().cantidad).to.eql(5));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "18 Rechazar politica para inactivos",
+      "request": {
+        "method": "PUT",
+        "url": "{{baseUrl}}/api/v1/productos/{{productoId}}/almacenes/{{almacenId}}/politica-stock",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"minimo\": 1,\n  \"maximo\": 10\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 409\", () => pm.response.to.have.status(409));"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

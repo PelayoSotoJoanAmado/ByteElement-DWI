@@ -49,6 +49,17 @@ public class Producto {
         this.critico = critico;
     }
 
+    public void actualizar(String sku, String categoria, String marca, String modelo, String especificacion, boolean critico) {
+        this.sku = sku;
+        this.categoria = categoria;
+        this.marca = marca;
+        this.modelo = modelo;
+        this.especificacion = especificacion;
+        this.critico = critico;
+    }
+
+    public void desactivar() { activo = false; }
+
     public Long getId() { return id; }
     public String getSku() { return sku; }
     public String getCategoria() { return categoria; }

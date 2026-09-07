@@ -34,6 +34,16 @@ public class ProductoController {
                 .body(respuesta);
     }
 
+    @PutMapping("/{id}")
+    public ProductoResponse actualizar(@PathVariable Long id, @Valid @RequestBody CrearProductoRequest request) {
+        return ProductoResponse.desde(service.actualizar(id, request));
+    }
+
+    @PatchMapping("/{id}/desactivar")
+    public ProductoResponse desactivar(@PathVariable Long id) {
+        return ProductoResponse.desde(service.desactivar(id));
+    }
+
     @GetMapping
     public List<ProductoResponse> listar(
             @RequestParam(defaultValue = "0") @Min(0) int pagina,

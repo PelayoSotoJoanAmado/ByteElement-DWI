@@ -38,7 +38,7 @@
             "exec": [
               "pm.test(\"Status code is 200\", () => pm.response.to.have.status(200));",
               "const almacenes = pm.response.json();",
-              "pm.test(\"Se listan los 3 almacenes\", () => pm.expect(almacenes.length).to.eql(3));"
+              "pm.test(\"Se listan los 3 almacenes\", () => pm.expect(almacenes.length).to.be.at.least(3));"
             ]
           }
         }

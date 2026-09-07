@@ -13,6 +13,38 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 class ProductoServiceTest {
+    @Test
+    void editaElMismoSkuSinConfundirloConOtroProducto() {
+        var producto = new Producto("ANTERIOR", "RAM", "Marca", "Modelo", "Detalle", true);
+        when(repository.findById(1L)).thenReturn(java.util.Optional.of(producto));
+        when(repository.saveAndFlush(any())).thenAnswer(i -> i.getArgument(0));
+        var resultado = service.actualizar(1L, solicitud());
+        assertEquals("RAM-DDR4-8GB", resultado.getSku());
+        verify(repository).existsBySkuAndIdNot("RAM-DDR4-8GB", 1L);
+    }
+
+    @Test
+    void edicionRechazaSkuDeOtroProductoSinModificarElOriginal() {
+        var producto = new Producto("ORIGINAL", "RAM", "Marca", "Modelo", "Detalle", true);
+        when(repository.findById(1L)).thenReturn(java.util.Optional.of(producto));
+        when(repository.existsBySkuAndIdNot("RAM-DDR4-8GB", 1L)).thenReturn(true);
+        assertThrows(SkuDuplicadoException.class, () -> service.actualizar(1L, solicitud()));
+        assertEquals("ORIGINAL", producto.getSku());
+        verify(repository, never()).saveAndFlush(any());
+    }
+
+    @Test
+    void desactivarConservaElProductoYEsRepetible() {
+        var producto = new Producto("P01", "RAM", "Marca", "Modelo", "Detalle", true);
+        when(repository.findById(1L)).thenReturn(java.util.Optional.of(producto));
+        when(repository.saveAndFlush(any())).thenAnswer(i -> i.getArgument(0));
+        service.desactivar(1L);
+        service.desactivar(1L);
+        assertFalse(producto.isActivo());
+        assertEquals("P01", producto.getSku());
+        verify(repository, never()).delete(any());
+        verify(repository, never()).deleteById(any());
+    }
 
     private ProductoRepository repository;
     private ProductoService service;

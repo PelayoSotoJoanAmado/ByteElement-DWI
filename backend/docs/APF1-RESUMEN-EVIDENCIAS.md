@@ -1,121 +1,170 @@
-# StockGuard MYPE - Evidencias y Alcance APF1
+# StockGuard MYPE: API y trazabilidad de APF1
 
-**Proyecto:** StockGuard MYPE por ByteElement: Sistema de Gestión de Inventarios  
-**Curso:** Desarrollo Web Integrado (UTP) - APF1 (Avance de Proyecto Final 1)  
-**Fecha:** 6 de septiembre de 2026  
-**Entorno de ejecución:** Java 21.0.10, Spring Boot 4.1.1, PostgreSQL local 18.1, Maven Wrapper.
+Para la instalación del equipo, el origen de los datos y la explicación de conceptos, consultar la [guía completa de cierre](CIERRE-APF1-GUIA-COMPLETA.md).
 
----
+Estado verificado el 7 de septiembre de 2026. Fuente de requisitos: `docs/AvanceProyectoDWI (3).docx`, sección 2.1; alcance por avance: ruta del documento docente, APF1 y APF2.
 
-## 1. Alcance oficial de APF1 según la ruta del docente
+## Qué se puede demostrar
 
-De acuerdo con el documento docente (*Banco de 10 Casos*, Caso 05: StockGuard MYPE), los entregables de **APF1** comprenden:
-1. **Problema, matrices e indicadores:** Planteamiento, variables, línea base y trazabilidad (documentado en el Word del proyecto).
-2. **Actores, reglas y alcance:** Catálogo base, almacenes y reglas críticas de inventario (cero stock negativo y transferencias atómicas).
-3. **Arquitectura inicial:** Monolito organizado por capas (`controller`, `dto`, `service`, `entity`, `repository`, `exception`, `seguridad`), inyección por constructor y DTOs inmutables (`record`).
-4. **API REST con endpoints base y TDD en reglas críticas:** Endpoints funcionales demostrables con pruebas automatizadas (Fase Roja $\rightarrow$ Fase Verde) y colección de pruebas.
+La API tiene 17 contratos HTTP. RF01 dispone ahora de creación, consulta, edición y desactivación de productos y almacenes, y configuración y consulta de políticas mínimo/máximo por producto y almacén. RF02 tiene un flujo de demostración de entradas, salidas y transferencias en memoria.
 
-> **Nota de alineación pedagógica:** Persistencia relacional avanzada en BD, consultas JPQL complejas, roles/permisos y JWT corresponden a **APF2**; el cliente Angular e integración visual corresponden a **APF3**. Para APF1 se mantuvieron los productos persistidos con PostgreSQL/Flyway y el flujo operativo de inventario con gestión de existencias en memoria para una demostración ágil e inmediata de las reglas de negocio.
+Hay tres entidades JPA: **Producto, Almacen y PoliticaStock**. Sus tablas se crean con Flyway; Hibernate las valida. `Movimiento` sigue siendo un modelo Java sin persistencia y `TipoMovimiento` es un enum. Un DTO representa la entrada o salida HTTP; no necesita `@Entity`.
 
----
+**Alcance pendiente:** no se declara aceptación total de RF01/RF02 ni cumplimiento de RF09. Faltan permisos por actor, persistencia del inventario y su historial, control transaccional en PostgreSQL y versiones históricas de las políticas para cortes e indicadores. El catálogo guarda la política actual; editarla no conserva sus valores anteriores. El historial de movimientos permanece consultable al desactivar durante la misma ejecución, pero se pierde al reiniciar.
 
-## 2. Endpoints Implementados y Verificados (`/api/v1`)
+## Requisito → endpoint → código → prueba
 
-| Método | Ruta | Función / Regla asociada | Códigos HTTP |
-| :--- | :--- | :--- | :--- |
-| **POST** | `/api/v1/productos` | Registrar producto (normaliza SKU en mayúsculas y trim) | 201 (Location), 400, 409 |
-| **GET** | `/api/v1/productos` | Listar catálogo de productos con paginación (`pagina`, `tamanio`) | 200, 400 |
-| **GET** | `/api/v1/productos/{id}` | Consultar detalle de un producto por su identificador | 200, 404 |
-| **GET** | `/api/v1/almacenes` | Listar los 3 almacenes (A01 Tienda, A02 Depósito, A03 Despacho) | 200 |
-| **GET** | `/api/v1/almacenes/{id}` | Consultar detalle de un almacén individual por su ID | 200, 404 |
-| **POST** | `/api/v1/movimientos` | Registrar entrada o salida con autor, fecha, motivo y cálculo de saldo | 201 (Location), 400, 404, **409** |
-| **GET** | `/api/v1/movimientos` | Listar historial y auditoría de movimientos (filtro opcional por producto/almacén) | 200 |
-| **GET** | `/api/v1/movimientos/{id}` | Consultar detalle y trazabilidad de un movimiento registrado | 200, 404 |
-| **POST** | `/api/v1/transferencias` | Transferencia atómica entre almacenes (descuenta origen y aumenta destino) | 201 (Location), 400, 404, **409** |
-| **GET** | `/api/v1/existencias` | Consultar saldo actual del par (`productoId`, `almacenId`) | 200, 404 |
+| Parte del requisito | Endpoint | Dónde está la aplicación de la regla | Prueba |
+|---|---|---|---|
+| RF01: crear producto con SKU único | POST /api/v1/productos | ProductoService.crear; ProductoRepository.existsBySku; V1: uk_producto_sku | ProductoServiceTest.rechazaSkuDuplicadoSinGuardar |
+| RF01: editar datos del producto | PUT /api/v1/productos/{id} | ProductoService.actualizar; Producto.actualizar; consulta de SKU excluyendo el ID propio | ProductoServiceTest.edicionRechazaSkuDeOtroProductoSinModificarElOriginal |
+| RF01: conservar registros al desactivar | PATCH /api/v1/productos/{id}/desactivar | ProductoService.desactivar; Producto.desactivar; no se invoca delete | ProductoServiceTest.desactivarConservaElProductoYEsRepetible |
+| RF01: administrar almacenes | POST /api/v1/almacenes; PUT /api/v1/almacenes/{id} | AlmacenController; AlmacenService; AlmacenRepository; entidad Almacen | AlmacenServiceTest: crear, editar y rechazar código duplicado |
+| RF01: conservar almacenes al desactivar | PATCH /api/v1/almacenes/{id}/desactivar | AlmacenService.desactivar; Almacen.activo | AlmacenServiceTest.desactivarConservaRegistro |
+| RF01: mínimo >= 0 y máximo > mínimo | PUT /api/v1/productos/{productoId}/almacenes/{almacenId}/politica-stock | PoliticaStockService.guardar; PoliticaStock.actualizar; V2: ck_politica_limites | PoliticaStockServiceTest: mínimo cero, negativo, máximo igual/menor y actualización |
+| RF01: consultar la política del par | GET /api/v1/productos/{productoId}/almacenes/{almacenId}/politica-stock | PoliticaStockRepository.findByProductoIdAndAlmacenId; PoliticaStockResponse | Verificar-RF01.ps1: consulta y límites conservados tras un rechazo |
+| RF02: entradas y salidas con autor, fecha y motivo | POST /api/v1/movimientos | InventarioService.registrar; Movimiento | InventarioServiceTest.entradaIncrementaSaldoYConservaDatosDelMovimiento |
+| RF02: impedir stock negativo | POST /api/v1/movimientos, tipo SALIDA | InventarioService.registrar lanza StockInsuficienteException antes de modificar saldos | InventarioServiceTest.salidaExcesivaNoModificaSaldoNiRegistraMovimiento |
+| RF02: ambos efectos de transferencia | POST /api/v1/transferencias | InventarioService.transferir, sincronizado dentro de una instancia Java | InventarioServiceTest.transferenciaConSaldoInsuficienteRechazaSinAlterarSaldos |
+| Consulta inicial relacionada con RF06 | GET /api/v1/movimientos?productoId=...&almacenId=... | InventarioService.listarMovimientos, filtros en memoria | InventarioControllerTest.listarMovimientosRetorna200 |
 
----
+RF06 está solo iniciado: faltan JPQL, filtros por período, paginación de movimientos, rotación y stock crítico.
 
-## 3. Evidencia TDD en Reglas Críticas
+Los tamaños de campos, normalización de códigos, ruta de política y respuesta 409 para registros desactivados son decisiones técnicas de este prototipo. El Word exige conservar registros con historial; aquí se aplica baja lógica a todos los productos y almacenes y no se expone borrado físico. Los registros inactivos conservan sus consultas, pero no admiten nuevos movimientos ni cambios de política. No se implementó reactivación en este bloque.
 
-### Regla 1: Unicidad y normalización de SKU (`ProductoServiceTest`)
-- **Regla:** El SKU se limpia de espacios en los extremos y se convierte a mayúsculas. No se permite duplicidad.
-- **Resultado:** 2 pruebas unitarias aprobadas.
-  - `crearProductoNormalizaSkuYGuarda()` $\rightarrow$ OK
-  - `crearProductoConSkuDuplicadoLanzaExcepcion()` $\rightarrow$ OK
+## Todos los endpoints
 
-### Regla 2: Cero stock negativo y trazabilidad (`InventarioServiceTest`)
-- **Regla:** Una salida jamás puede dejar el saldo por debajo de 0. Si la cantidad solicitada supera la existencia disponible, se rechaza con `StockInsuficienteException` (HTTP 409 Conflict), sin modificar el saldo ni generar movimiento fantasma.
-- **Ciclo TDD:**
-  1. **Fase Roja:** Se definieron las pruebas unitarias con el método arrojando `UnsupportedOperationException`.
-  2. **Fase Verde:** Se codificó la lógica en `InventarioService` calculando existencias atómicamente por par `(productoId, almacenId)`.
-  3. **Resultado:** 12 pruebas unitarias aprobadas al 100%.
+Todas las rutas usan `/api/v1`.
 
-### Regla 3: Transferencias atómicas entre almacenes (`InventarioServiceTest` y `InventarioControllerTest`)
-- **Regla docente:** *"Una transferencia debe descontar y aumentar existencias de forma atómica"*.
-- **Comprobación:**
-  - Si el almacén de origen tiene saldo suficiente, descuenta del origen y añade al destino, registrando dos movimientos vinculados en el mismo instante.
-  - Si el almacén origen no tiene suficiente stock, la operación se cancela por completo (`409 Conflict`) y **ninguno** de los dos almacenes ve afectado su saldo.
-  - Si el origen y destino son el mismo almacén, se rechaza de inmediato con `400 Bad Request`.
+| Método | Ruta relativa | Respuesta satisfactoria |
+|---|---|---|
+| POST | /productos | 201 + Location |
+| GET | /productos?pagina=0&tamanio=20 | 200, lista paginada |
+| GET | /productos/{id} | 200 |
+| PUT | /productos/{id} | 200 |
+| PATCH | /productos/{id}/desactivar | 200 |
+| GET | /almacenes | 200 |
+| GET | /almacenes/{id} | 200 |
+| POST | /almacenes | 201 + Location |
+| PUT | /almacenes/{id} | 200 |
+| PATCH | /almacenes/{id}/desactivar | 200 |
+| GET | /productos/{productoId}/almacenes/{almacenId}/politica-stock | 200 |
+| PUT | /productos/{productoId}/almacenes/{almacenId}/politica-stock | 200, crea o sustituye los límites actuales del mismo par |
+| POST | /movimientos | 201 + Location |
+| GET | /movimientos?productoId=...&almacenId=... | 200 |
+| GET | /movimientos/{id} | 200 |
+| POST | /transferencias | 201 + Location del movimiento de salida |
+| GET | /existencias?productoId=...&almacenId=... | 200 |
 
-### Regla 4: Capa Web y Códigos de Estado REST (`InventarioControllerTest`)
-- 12 pruebas con `MockMvc` verificando los códigos HTTP 200, 201 con cabecera `Location`, 400 ante datos inválidos, 404 ante recursos inexistentes y 409 ante conflicto de negocio.
+Errores demostrados: **400** por campos/límites inválidos, **404** por recurso inexistente, **409** por duplicados, stock insuficiente o uso operativo de registros inactivos. Los listados de productos/almacenes incluyen registros inactivos para permitir su consulta. No existe autenticación todavía.
 
----
+PUT de producto requiere todos los campos del DTO `CrearProductoRequest`, reutilizado como contrato de escritura para evitar duplicar validaciones. PUT de almacén requiere código y nombre. La desactivación no lleva cuerpo y puede repetirse.
 
-## 4. Resumen Total de Pruebas Automatizadas
+## Estructura del código
 
-Ejecución verificada con `.\mvnw.cmd test`:
-- `StockguardApplicationTests`: 1 prueba (arranque de contexto y configuración)
-- `ProductoServiceTest`: 2 pruebas
-- `InventarioServiceTest`: 12 pruebas
-- `InventarioControllerTest`: 12 pruebas
-- **Total:** **27 pruebas ejecutadas, 0 fallos, 0 errores (BUILD SUCCESS)**.
+Dentro de `src/main/java/com/byteelement/stockguard`:
 
----
+- `controller`: ProductoController, AlmacenController, PoliticaStockController, InventarioController y ApiExceptionHandler. Las consultas de almacenes existentes siguen atendidas desde InventarioController, que delega al catálogo persistido.
+- `dto`: contratos Request/Response; validaciones de entrada con Jakarta Validation.
+- `service`: ProductoService, AlmacenService, PoliticaStockService e InventarioService.
+- `entity`: Producto, Almacen y PoliticaStock con JPA; Movimiento sin JPA y TipoMovimiento como enum.
+- `repository`: ProductoRepository, AlmacenRepository y PoliticaStockRepository.
+- `exception`: excepciones de SKU duplicado, stock insuficiente y conflicto de catálogo.
 
-## 5. Preguntas Frecuentes de Arquitectura y Configuración
+Recorrido del catálogo: **HTTP → controller → service → repository → PostgreSQL**.
 
-### ¿Por qué se usa `record` en los DTOs como `AlmacenResponse`?
-- En Java moderno (Java 16 en adelante, y en nuestro Java 21), un `record` es la forma estándar y recomendada para crear **DTOs (Data Transfer Objects)**.
-- Un `record` no tiene relación con si los datos vienen o no de una base de datos: es simplemente una clase inmutable diseñada para transportar datos (genera automáticamente constructor, getters como `.id()`, `.equals()`, `.hashCode()` y `.toString()`).
-- Las entidades de base de datos JPA (`@Entity`) siguen siendo clases normales (`class Producto`) porque Hibernate requiere mutabilidad y proxies; los DTOs que viajan por la red como JSON son `record` por seguridad e inmutabilidad.
+Recorrido del inventario: **HTTP → InventarioController → InventarioService → mapas en memoria**. La validación de productos y almacenes consulta los servicios de catálogo persistido.
 
-### ¿Cómo funciona la conexión a base de datos y la creación de tablas?
-- En `application.properties` está configurado: `spring.jpa.hibernate.ddl-auto=validate`.
-- Esto significa que **Hibernate NO crea tablas automáticamente**. Hibernate solo valida que la tabla exista en PostgreSQL.
-- **¿Quién crea las tablas? Flyway.** Cuando la aplicación arranca, Flyway busca los scripts SQL en `src/main/resources/db/migration/` (como `V1__crear_producto.sql`) y los ejecuta en orden en la base de datos `byteelement`.
+PoliticaStock tiene dos relaciones `@ManyToOne`: una hacia Producto y otra hacia Almacen. La restricción UNIQUE del par evita dos políticas actuales para el mismo producto/almacén. El stock sigue perteneciendo al par y no se añadió como columna a Producto.
 
-### ¿Cómo comparto el proyecto con mis compañeros sin exponer contraseñas?
-- El archivo `.gitignore` del backend tiene la regla:
-  ```gitignore
-  /application-local.properties
-  ```
-- Por tanto, tu archivo real con contraseñas **nunca se subirá a GitHub ni se filtrará**.
-- En el repositorio existe el archivo de plantilla:
-  `backend/application-local.properties.example`
-- Tus compañeros, al clonar el repositorio, solo deben crear su propio archivo `application-local.properties` al lado del `pom.xml` con su contraseña local de PostgreSQL.
+## Demostración en clase
 
----
+Ejecutar siempre desde `backend`. Las dependencias deben estar descargadas antes de la exposición.
 
-## 6. Instrucciones para la Demostración Local
+### 1. Mostrar pruebas sin PostgreSQL
 
-### A. Ejecutar suite de pruebas completa (27 tests):
+```powershell
+.\mvnw.cmd "-Dtest=ProductoServiceTest,AlmacenServiceTest,PoliticaStockServiceTest,InventarioServiceTest,InventarioControllerTest,CatalogoControllerTest" test
+```
+
+Son **50 pruebas** de servicios y contratos HTTP con Mockito/MockMvc, sin servidor HTTP real. Para mostrar solo la regla de límites:
+
+```powershell
+.\mvnw.cmd "-Dtest=PoliticaStockServiceTest" test
+```
+
+### 2. Suite completa con PostgreSQL
+
 ```powershell
 .\mvnw.cmd test
 ```
 
-### B. Iniciar la aplicación backend:
+Son **51 pruebas**, incluida StockguardApplicationTests. La prueba de contexto utiliza PostgreSQL local y aplica las migraciones pendientes.
+
+Si aparece PKIX en este Windows, se verificó el uso del almacén de certificados del sistema sin deshabilitar TLS:
+
+```powershell
+.\mvnw.cmd "-Djavax.net.ssl.trustStoreType=Windows-ROOT" "-Djavax.net.ssl.trustStore=NUL" test
+```
+
+### 3. Demostrar los endpoints reales
+
+Iniciar la API con PostgreSQL disponible:
+
 ```powershell
 .\mvnw.cmd spring-boot:run
 ```
 
-### C. Ejecutar el script automatizado de verificación APF1 (en otra terminal de PowerShell):
+En otra terminal dentro de backend:
+
 ```powershell
+.\docs\Verificar-RF01.ps1
 .\docs\Verificar-APF1.ps1
 ```
 
-### D. Ejecución mediante Postman:
-Importar en Postman el archivo:
-`backend/docs/StockGuard-APF1.postman_collection.json`  
-Ejecutar la colección completa (las 14 peticiones se ejecutan con aserciones automáticas en milisegundos).
+El primero prueba catálogo y políticas, incluida una entrada en un almacén nuevo, desactivación y conservación de consultas. El segundo demuestra entradas, salidas y transferencias. Ambos crean productos QA persistentes; el primero también crea un almacén y una política, y deja producto/almacén desactivados al finalizar.
+
+Para exponer manualmente, importar `StockGuard-RF01.postman_collection.json` en Postman y ejecutar en orden. Contiene 18 solicitudes con aserciones y genera SKU/código únicos por ejecución. La colección previa `StockGuard-APF1.postman_collection.json` conserva la demostración del inventario. La validación HTTP de esta revisión se ejecutó con PowerShell; no se ejecutó el runner de Postman.
+
+Secuencia sugerida de exposición:
+
+1. Mostrar RF01 en el Word y señalar la fila correspondiente de esta matriz.
+2. Crear y editar un producto; intentar duplicar su SKU y explicar el 409.
+3. Crear un almacén y mostrar su fila persistida.
+4. Configurar mínimo 0/máximo 10; probar mínimo -1 y máximo igual al mínimo: 400.
+5. Abrir PoliticaStockService y su test: señalar la condición del requisito.
+6. Registrar una entrada, desactivar el catálogo y comprobar que los registros siguen consultables.
+7. Mostrar las pruebas aprobadas y explicar los límites de esta versión.
+
+## Evidencia observada
+
+- `tdd-rf01-politicas-rojo.log`: 4 pruebas antes de implementar guardar política, con 2 fallos y 2 errores por el método provisional.
+- `tdd-rf01-verde.log`: suite completa, 51 pruebas aprobadas, 0 fallos y 0 errores.
+- `verificacion-rf01-http.log`: 30 peticiones HTTP aprobadas.
+- `verificacion-apf1-tras-rf01.log`: 22 peticiones del flujo anterior aprobadas.
+- Flyway registra V1 y V2 exitosas. V1 no fue modificada.
+- PostgreSQL conservó la política QA ID 1 (producto 3, almacén 4), mínimo 2/máximo 20, junto a producto y almacén inactivos.
+- Tras reiniciar la API se consultaron esos tres recursos por HTTP: mantuvieron los límites y estados. Flyway informó que el esquema estaba actualizado y no volvió a aplicar V2. El reinicio vació los mapas de inventario, como corresponde al alcance actual.
+
+Distribución: ProductoServiceTest 5, AlmacenServiceTest 5, PoliticaStockServiceTest 4, InventarioServiceTest 17, InventarioControllerTest 13, CatalogoControllerTest 6 y StockguardApplicationTests 1.
+
+Los logs anteriores `tdd-apf1-correcciones-*.log` y `tdd-inventario-rojo.log` son evidencia histórica de bloques anteriores; sus conteos no representan la suite actual. No se afirma TDD retroactivo para todo el código.
+
+## Pendientes del informe y próximos avances
+
+| Requisito | Estado de esta versión |
+|---|---|
+| RF01 | Catálogo y límites implementados; permisos y alcance histórico completo pendientes |
+| RF02 | Flujo API en memoria; persistencia, auditoría duradera y transacciones PostgreSQL pendientes |
+| RF03 | Reposición, consumo reciente y pedidos pendientes no implementados |
+| RF04 | Solicitudes, similitudes e idempotencia no implementadas |
+| RF05 | Aprobaciones y órdenes no implementadas |
+| RF06 | Consulta básica de movimientos; JPQL y reportes pendientes |
+| RF07 | Conteos y ajustes no implementados |
+| RF08 | Indicadores I05–I10 no calculados |
+| RF09 | JWT y permisos no implementados; autor recibido como texto de demostración |
+| RF10 | Integración con frontend y reportes de evidencias por versión pendientes |
+
+Alinear la sección 2.2 del Word con estas clases. En 2.3, el ejemplo de TransferenciaController debe indicar InventarioController para describir la implementación actual. En 2.4, distinguir catálogo persistido de inventario en memoria. Completar los diagramas 2.5–2.7 y la sección TDD 2.8 con evidencia real. Los endpoints de indicadores/evidencias del Word son contratos planificados y deben conservar esa etiqueta.
+
+El docente separa API/TDD inicial (APF1) de persistencia, JPQL, transacciones y seguridad (APF2). Esta ampliación añade persistencia del catálogo como soporte de los endpoints solicitados, sin declarar terminado el backend del curso. Los roles del informe siguen siendo requisitos pendientes; un endpoint sin seguridad no acredita su cumplimiento.

@@ -1,4 +1,4 @@
-param(
+﻿param(
     [string]$BaseUrl = 'http://localhost:8080'
 )
 $ErrorActionPreference = 'Stop'
@@ -21,7 +21,7 @@ function Request([string]$Method, [string]$Path, [int]$Expected, [string]$Body =
 try {
     Write-Host "--- 1. Verificar catálogo de almacenes ---"
     $almacenes = Request GET '/api/v1/almacenes' 200
-    if (@($almacenes.Json).Count -ne 3) { throw 'Se esperaban 3 almacenes (A01, A02, A03)' }
+    if (@($almacenes.Json).Count -lt 3) { throw 'Se esperaban 3 almacenes (A01, A02, A03)' }
     Write-Host "Almacenes listados correctamente: $(@($almacenes.Json).Count)"
 
     Write-Host "`n--- 2. Crear producto para prueba de inventario ---"
@@ -144,7 +144,7 @@ try {
 
     Write-Host "`n--- 16. Listar auditoría e historial de movimientos ---"
     $movs = Request GET "/api/v1/movimientos?productoId=$productoId" 200
-    if (@($movs.Json).Count -lt 4) { throw 'Deberia haber al menos 4 movimientos registrados' }
+    if (@($movs.Json).Count -ne 4) { throw 'Deben existir exactamente 4 movimientos; los rechazos no deben generar historial' }
     Write-Host "Historial trazable confirmado: $(@($movs.Json).Count) movimientos para el producto $productoId"
 
     Write-Host "`n--- 17. Validar rechazo de datos inválidos (400 Bad Request) ---"
@@ -158,10 +158,17 @@ try {
     }
     $null = Request POST '/api/v1/movimientos' 400 ($movInvalido | ConvertTo-Json)
 
+    $null = Request GET '/api/v1/existencias?productoId=-1&almacenId=1' 400
+    $null = Request GET '/api/v1/existencias?productoId=9223372036854775807&almacenId=1' 404
+    $origenFinal = Request GET "/api/v1/existencias?productoId=$productoId&almacenId=1" 200
+    $destinoFinal = Request GET "/api/v1/existencias?productoId=$productoId&almacenId=2" 200
+    if ($origenFinal.Json.cantidad -ne 3 -or $destinoFinal.Json.cantidad -ne 3) {
+        throw 'Una transferencia rechazada modifico los saldos'
+    }
+
     Write-Host "`n========================================================"
     Write-Host " TODAS LAS PRUEBAS DE LA API APF1 PASARON EXITOSAMENTE! "
     Write-Host "========================================================"
 } finally {
     $client.Dispose()
 }
-

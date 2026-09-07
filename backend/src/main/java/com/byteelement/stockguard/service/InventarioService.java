@@ -25,28 +25,23 @@ public class InventarioService {
 
     private final ProductoService productos;
 
-    private final Map<Long, AlmacenResponse> almacenesMap = new ConcurrentHashMap<>(Map.of(
-            1L, new AlmacenResponse(1L, "A01", "Tienda principal"),
-            2L, new AlmacenResponse(2L, "A02", "Depósito"),
-            3L, new AlmacenResponse(3L, "A03", "Despacho")
-    ));
+    private final AlmacenService catalogoAlmacenes;
 
     private final Map<String, Long> existencias = new ConcurrentHashMap<>();
     private final Map<Long, Movimiento> movimientos = new ConcurrentHashMap<>();
     private final AtomicLong movimientoIdSecuencia = new AtomicLong(1);
 
-    public InventarioService(ProductoService productos) {
+    public InventarioService(ProductoService productos, AlmacenService catalogoAlmacenes) {
         this.productos = productos;
+        this.catalogoAlmacenes = catalogoAlmacenes;
     }
 
     public synchronized Movimiento registrar(RegistrarMovimientoRequest request) {
         // 1. Validar producto existente
-        productos.obtener(request.productoId());
+        validarProductoActivo(request.productoId());
 
         // 2. Validar almacén existente
-        if (!almacenesMap.containsKey(request.almacenId())) {
-            throw new NoSuchElementException("Almacén no encontrado con ID: " + request.almacenId());
-        }
+        validarAlmacenActivo(request.almacenId());
 
         // 3. Obtener saldo actual
         String clave = claveExistencia(request.productoId(), request.almacenId());
@@ -55,7 +50,7 @@ public class InventarioService {
         // 4. Regla de negocio: impedir saldo negativo
         long nuevoSaldo;
         if (request.tipo() == TipoMovimiento.ENTRADA) {
-            nuevoSaldo = saldoActual + request.cantidad();
+            nuevoSaldo = sumarSaldo(saldoActual, request.cantidad());
         } else if (request.tipo() == TipoMovimiento.SALIDA) {
             if (saldoActual < request.cantidad()) {
                 throw new StockInsuficienteException();
@@ -87,7 +82,7 @@ public class InventarioService {
 
     public synchronized TransferenciaResponse transferir(RegistrarTransferenciaRequest request) {
         // 1. Validar producto existente
-        productos.obtener(request.productoId());
+        validarProductoActivo(request.productoId());
 
         // 2. Validar que almacenes no sean idénticos
         if (request.origenAlmacenId().equals(request.destinoAlmacenId())) {
@@ -95,12 +90,8 @@ public class InventarioService {
         }
 
         // 3. Validar existencia de ambos almacenes
-        if (!almacenesMap.containsKey(request.origenAlmacenId())) {
-            throw new NoSuchElementException("Almacén origen no encontrado con ID: " + request.origenAlmacenId());
-        }
-        if (!almacenesMap.containsKey(request.destinoAlmacenId())) {
-            throw new NoSuchElementException("Almacén destino no encontrado con ID: " + request.destinoAlmacenId());
-        }
+        validarAlmacenActivo(request.origenAlmacenId());
+        validarAlmacenActivo(request.destinoAlmacenId());
 
         // 4. Regla crítica: validar saldo en origen antes de realizar mutaciones
         String claveOrigen = claveExistencia(request.productoId(), request.origenAlmacenId());
@@ -114,7 +105,7 @@ public class InventarioService {
 
         // 5. Ejecución atómica de ambos efectos
         long nuevoSaldoOrigen = saldoOrigen - request.cantidad();
-        long nuevoSaldoDestino = saldoDestino + request.cantidad();
+        long nuevoSaldoDestino = sumarSaldo(saldoDestino, request.cantidad());
 
         Instant fecha = Instant.now();
 
@@ -164,32 +155,19 @@ public class InventarioService {
         );
     }
 
-    public ExistenciaResponse consultar(long productoId, long almacenId) {
-        if (!almacenesMap.containsKey(almacenId)) {
-            throw new NoSuchElementException("Almacén no encontrado con ID: " + almacenId);
-        }
+    public synchronized ExistenciaResponse consultar(long productoId, long almacenId) {
+        productos.obtener(productoId);
+        catalogoAlmacenes.obtener(almacenId);
         String clave = claveExistencia(productoId, almacenId);
         long cantidad = existencias.getOrDefault(clave, 0L);
         return new ExistenciaResponse(productoId, almacenId, cantidad);
     }
 
-    public List<AlmacenResponse> almacenes() {
-        return List.of(
-                almacenesMap.get(1L),
-                almacenesMap.get(2L),
-                almacenesMap.get(3L)
-        );
-    }
+    public List<AlmacenResponse> almacenes() { return catalogoAlmacenes.listar().stream().map(AlmacenResponse::desde).toList(); }
 
-    public AlmacenResponse obtenerAlmacen(long id) {
-        AlmacenResponse almacen = almacenesMap.get(id);
-        if (almacen == null) {
-            throw new NoSuchElementException("Almacén no encontrado con ID: " + id);
-        }
-        return almacen;
-    }
+    public AlmacenResponse obtenerAlmacen(long id) { return AlmacenResponse.desde(catalogoAlmacenes.obtener(id)); }
 
-    public Movimiento obtenerMovimiento(long id) {
+    public synchronized Movimiento obtenerMovimiento(long id) {
         Movimiento movimiento = movimientos.get(id);
         if (movimiento == null) {
             throw new NoSuchElementException("Movimiento no encontrado con ID: " + id);
@@ -197,12 +175,31 @@ public class InventarioService {
         return movimiento;
     }
 
-    public List<Movimiento> listarMovimientos(Long productoId, Long almacenId) {
+    public synchronized List<Movimiento> listarMovimientos(Long productoId, Long almacenId) {
         return movimientos.values().stream()
                 .filter(m -> productoId == null || m.productoId() == productoId)
                 .filter(m -> almacenId == null || m.almacenId() == almacenId)
                 .sorted(Comparator.comparingLong(Movimiento::id))
                 .toList();
+    }
+
+    private void validarProductoActivo(Long id) {
+        if (!productos.obtener(id).isActivo()) {
+            throw new com.byteelement.stockguard.exception.ConflictoCatalogoException("El producto esta desactivado.");
+        }
+    }
+
+    private void validarAlmacenActivo(Long id) {
+        if (!catalogoAlmacenes.obtener(id).isActivo()) {
+            throw new com.byteelement.stockguard.exception.ConflictoCatalogoException("El almacen esta desactivado.");
+        }
+    }
+    private long sumarSaldo(long saldo, long cantidad) {
+        try {
+            return Math.addExact(saldo, cantidad);
+        } catch (ArithmeticException exception) {
+            throw new IllegalArgumentException("La cantidad supera la capacidad numerica del saldo.");
+        }
     }
 
     private String claveExistencia(long productoId, long almacenId) {
