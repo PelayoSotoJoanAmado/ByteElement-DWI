@@ -13,7 +13,7 @@ Requisitos: Java 21, PostgreSQL 16 y Maven Wrapper. No se incluyen credenciales 
 3. Ejecutar `./mvnw spring-boot:run` (Windows: `.\mvnw.cmd spring-boot:run`). La primera ejecución crea un administrador únicamente si no existen usuarios. Su contraseña requiere al menos 12 caracteres y no más de 72 bytes. JWT_SECRET debe ser aleatoria y tener al menos 32 bytes.
 4. Para una base de exposición, ejecutar `./mvnw spring-boot:run -Dspring-boot.run.profiles=demo`. El perfil optativo genera usuarios `demo-almacen`, `demo-compras`, `demo-supervisor`, `demo-consulta_comercial` y `demo-administrador`, usando DEMO_PASSWORD. También genera DEMO-RAM y DEMO-SSD, sus políticas, movimientos, conteos y un corte. Su carga es transaccional y no repite las entradas al reiniciar. Utilizar una base separada para la demostración.
 
-Flyway conserva V1/V2 y añade V3; Hibernate valida el esquema. Los movimientos que existían únicamente en memoria en la versión APF1 no pueden migrarse: no existe registro duradero de ellos. Los saldos empiezan en cero hasta registrar entradas reales o cargar el perfil demo.
+Flyway conserva V1/V2 y añade V3 y V4; Hibernate valida el esquema. Los movimientos que existían únicamente en memoria en la versión APF1 no pueden migrarse: no existe registro duradero de ellos. Los saldos empiezan en cero hasta registrar entradas reales o cargar el perfil demo.
 
 ## Modelo y transacciones
 
@@ -22,7 +22,7 @@ Tablas: `producto`, `almacen`, `politica_stock`, `usuario`, `existencia`, `movim
 - Existencia tiene un único saldo por producto/almacén, CHECK cantidad >= 0 y `@Version`.
 - Cada operación bloquea primero el producto mediante `PESSIMISTIC_WRITE`. Esto también protege el primer saldo de un par aún inexistente y serializa el mismo SKU entre instancias. A continuación bloquea almacenes por ID ascendente. Se prioriza consistencia sobre concurrencia entre almacenes del mismo producto.
 - Entrada, salida y transferencia operan dentro de `@Transactional`. Transferencia guarda dos movimientos con la misma referencia UUID y fecha; un fallo revierte ambos saldos y registros.
-- El actor se obtiene del contexto autenticado. `autor` en los DTO antiguos es opcional y se ignora; no permite suplantar usuarios.
+- El actor se obtiene del contexto autenticado y se resuelve como usuario persistido. Movimiento, conteo y corte_stock guardan `usuario_id`; conteo guarda además `confirmado_por_id` al confirmar. Las entidades usan `@ManyToOne` y la base impide referencias a cuentas inexistentes. `autor` en los DTO antiguos es opcional y se ignora; no permite suplantar usuarios.
 - Las ediciones/desactivaciones y las políticas comparten el bloqueo del catálogo. La baja lógica conserva saldos y movimientos consultables y rechaza nuevas operaciones del recurso inactivo.
 - Conteo conserva saldo, cantidad física, fecha, actor, motivo y último ID de movimiento al corte. Solo supervisor confirma; una segunda confirmación o cualquier movimiento posterior invalida el ajuste. Un ajuste con diferencia genera un movimiento vinculado; una coincidencia se confirma sin inventar movimiento de cantidad cero.
 - CorteStock fotografía todos los pares de productos activos y almacenes habilitados, incluso saldos cero. Conserva SKU, condición crítica y mínimo/máximo vigentes. Cambiar posteriormente una política no altera el corte ya generado.
@@ -85,3 +85,30 @@ Las pruebas incluyen creación concurrente de saldo, salidas concurrentes, trans
 Usar `StockGuard-APF2.postman_collection.json` con baseUrl, adminUsername, adminPassword y demoPassword. Las credenciales se definen en variables locales de Postman. Ejecutar con el perfil demo: obtiene tokens, demuestra lecturas permitidas, 401/403, persistencia de una entrada y consulta de indicadores. Los indicadores comparables dependen del instante del corte; repetir POST /cortes-stock tras cambios antes de evaluar el cierre.
 
 Para evidenciar persistencia entre reinicios: guardar IDs del producto/almacén, registrar una entrada con token de almacén, consultar saldo, detener y volver a iniciar la API sin modificar la BD y volver a consultar el mismo par. Los saldos y movimientos permanecen; el perfil demo no suma otra vez los datos iniciales.
+
+## Actualización de una base existente a V4
+
+Al iniciar la API, Flyway aplica automáticamente `V4__relacionar_usuarios_con_operaciones.sql`. Después de aplicarla, actualizar o regenerar el diagrama físico para ver las cuatro relaciones con `usuario`. No modificar las migraciones V1–V3 ya aplicadas.
+
+V4 conserva saldos, movimientos, conteos, cortes y nombres históricos. Vincula autores existentes mediante el username que ya se guardaba en V3, incluso si la cuenta está desactivada. No crea cuentas ficticias ni atribuye operaciones a un administrador diferente.
+
+Antes de aplicar V4 sobre datos cargados manualmente, comprobar que todos los autores tengan una cuenta correspondiente:
+
+```sql
+SELECT 'movimiento' AS tabla, m.id, m.autor AS nombre
+FROM movimiento m WHERE NOT EXISTS (SELECT 1 FROM usuario u WHERE u.username=m.autor)
+UNION ALL
+SELECT 'conteo', c.id, c.autor
+FROM conteo c WHERE NOT EXISTS (SELECT 1 FROM usuario u WHERE u.username=c.autor)
+UNION ALL
+SELECT 'conteo_confirmacion', c.id, c.confirmado_por
+FROM conteo c WHERE c.confirmado=TRUE
+  AND NOT EXISTS (SELECT 1 FROM usuario u WHERE u.username=c.confirmado_por)
+UNION ALL
+SELECT 'corte_stock', c.id, c.autor
+FROM corte_stock c WHERE NOT EXISTS (SELECT 1 FROM usuario u WHERE u.username=c.autor);
+```
+
+El resultado esperado es cero filas. Si hubiera nombres sin correspondencia, verificar su identidad y corregir esa correspondencia antes de iniciar la actualización; V4 falla ante esos datos en vez de borrar el historial o asignar un autor incorrecto. En PostgreSQL la migración se ejecuta transaccionalmente.
+
+Los contratos REST existentes siguen devolviendo `autor` y `confirmadoPor`; las claves foráneas se asignan en el servidor y no se reciben desde el cliente.

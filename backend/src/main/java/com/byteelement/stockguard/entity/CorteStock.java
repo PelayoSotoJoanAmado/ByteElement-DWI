@@ -15,6 +15,10 @@ public class CorteStock {
 
   private Instant fecha;
 
+  @ManyToOne(fetch = FetchType.LAZY, optional = false)
+  @JoinColumn(name = "usuario_id", nullable = false)
+  private Usuario usuario;
+
   @Column(length = 100)
   private String autor;
 
@@ -39,14 +43,15 @@ public class CorteStock {
   public CorteStock(
       String lote,
       Instant fecha,
-      String autor,
+      Usuario usuario,
       Producto p,
       Almacen a,
       long cantidad,
       PoliticaStock politica) {
     this.lote = lote;
     this.fecha = fecha;
-    this.autor = autor;
+    this.usuario = java.util.Objects.requireNonNull(usuario, "Usuario requerido");
+    this.autor = usuario.getUsername();
     this.producto = p;
     this.almacen = a;
     this.sku = p.getSku();
@@ -56,6 +61,10 @@ public class CorteStock {
       this.minimo = politica.getMinimo();
       this.maximo = politica.getMaximo();
     }
+  }
+
+  public Long getUsuarioId() {
+    return usuario.getId();
   }
 
   public Long getId() {

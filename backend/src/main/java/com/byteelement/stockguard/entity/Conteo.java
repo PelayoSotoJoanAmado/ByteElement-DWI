@@ -23,6 +23,10 @@ public class Conteo {
   private long saldoCorte;
   private Instant fechaCorte;
 
+  @ManyToOne(fetch = FetchType.LAZY, optional = false)
+  @JoinColumn(name = "usuario_id", nullable = false)
+  private Usuario usuario;
+
   @Column(length = 100)
   private String autor;
 
@@ -33,6 +37,10 @@ public class Conteo {
 
   @Column(length = 100)
   private String confirmadoPor;
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "confirmado_por_id")
+  private Usuario confirmadoPorUsuario;
 
   private Instant confirmadoEn;
 
@@ -49,7 +57,7 @@ public class Conteo {
       long saldo,
       long movimientoCorteId,
       Instant fecha,
-      String autor,
+      Usuario usuario,
       String motivo) {
     this.producto = p;
     this.almacen = a;
@@ -57,19 +65,25 @@ public class Conteo {
     this.cantidadFisica = fisica;
     this.saldoCorte = saldo;
     this.fechaCorte = fecha;
-    this.autor = autor;
+    this.usuario = java.util.Objects.requireNonNull(usuario, "Usuario requerido");
+    this.autor = usuario.getUsername();
     this.motivo = motivo;
   }
 
-  public void confirmar(String actor, Instant fecha, MovimientoPersistido movimiento) {
+  public void confirmar(Usuario actor, Instant fecha, MovimientoPersistido movimiento) {
     this.confirmado = true;
-    this.confirmadoPor = actor;
+    this.confirmadoPorUsuario = java.util.Objects.requireNonNull(actor, "Supervisor requerido");
+    this.confirmadoPor = actor.getUsername();
     this.confirmadoEn = fecha;
     this.movimiento = movimiento;
   }
 
   public long getMovimientoCorteId() {
     return movimientoCorteId;
+  }
+
+  public Long getUsuarioId() {
+    return usuario.getId();
   }
 
   public Long getId() {
@@ -106,6 +120,10 @@ public class Conteo {
 
   public boolean isConfirmado() {
     return confirmado;
+  }
+
+  public Long getConfirmadoPorId() {
+    return confirmadoPorUsuario == null ? null : confirmadoPorUsuario.getId();
   }
 
   public String getConfirmadoPor() {

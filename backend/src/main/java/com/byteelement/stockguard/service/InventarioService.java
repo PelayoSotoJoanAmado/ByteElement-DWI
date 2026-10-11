@@ -81,7 +81,7 @@ public class InventarioService {
       Instant fecha) {
     return movimientos.saveAndFlush(
         new MovimientoPersistido(
-            p, a, tipo, cantidad, actor.nombre(), fecha, motivo, saldo, referencia));
+            p, a, tipo, cantidad, actor.usuario(), fecha, motivo, saldo, referencia));
   }
 
   @Transactional
@@ -232,7 +232,7 @@ public class InventarioService {
                 saldo(p, a).getCantidad(),
                 movimientos.ultimoId(p.getId(), a.getId()),
                 Instant.now().truncatedTo(java.time.temporal.ChronoUnit.MICROS),
-                actor.nombre(),
+                actor.usuario(),
                 request.motivo()));
     return ConteoResponse.desde(c);
   }
@@ -267,7 +267,7 @@ public class InventarioService {
               "CONTEO-" + id,
               fecha);
     }
-    c.confirmar(actor.nombre(), fecha, m);
+    c.confirmar(actor.usuario(), fecha, m);
     return ConteoResponse.desde(c);
   }
 

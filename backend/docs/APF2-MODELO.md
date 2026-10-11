@@ -2,6 +2,17 @@
 
 ```mermaid
 erDiagram
+ USUARIO ||--o{ MOVIMIENTO : registra
+ USUARIO ||--o{ CONTEO : registra
+ USUARIO o|--o{ CONTEO : confirma
+ USUARIO ||--o{ CORTE_STOCK : genera
+ USUARIO {
+  bigint id PK
+  string username UK
+  string password_hash
+  string rol
+  boolean activo
+ }
  PRODUCTO ||--o{ POLITICA_STOCK : configura
  ALMACEN ||--o{ POLITICA_STOCK : aplica
  PRODUCTO ||--o{ EXISTENCIA : posee
@@ -40,6 +51,7 @@ erDiagram
  }
  MOVIMIENTO {
   bigint id PK
+  bigint usuario_id FK
   bigint producto_id FK
   bigint almacen_id FK
   string tipo
@@ -52,6 +64,8 @@ erDiagram
  }
  CONTEO {
   bigint id PK
+  bigint usuario_id FK
+  bigint confirmado_por_id FK
   bigint producto_id FK
   bigint almacen_id FK
   bigint movimiento_corte_id
@@ -66,6 +80,7 @@ erDiagram
  }
  CORTE_STOCK {
   bigint id PK
+  bigint usuario_id FK
   string lote
   timestamp fecha
   string autor
@@ -79,10 +94,12 @@ erDiagram
  }
 ```
 
-`usuario` almacena id, username único, password_hash BCrypt, rol y activo. La auditoría operativa conserva el nombre autenticado como texto histórico para que un cambio futuro de cuenta no altere el movimiento. El rol del JWT se contrasta con el usuario actual en cada solicitud.
+`usuario` almacena id, username único, password_hash BCrypt, rol y activo. Las cuatro claves foráneas vinculan las operaciones al usuario autenticado y al supervisor que confirma. La auditoría conserva además los nombres como texto histórico para que un cambio posterior de cuenta no cambie el nombre registrado. El rol del JWT se contrasta con el usuario actual en cada solicitud.
 
 Claves compuestas únicas: politica_stock(producto_id,almacen_id), existencia(producto_id,almacen_id) y corte_stock(lote,producto_id,almacen_id). No hay endpoints de borrado físico de movimientos, conteos ni cortes.
 
 Las transferencias enlazan sus dos movimientos mediante la misma referencia UUID. Los ajustes enlazan el conteo al movimiento generado; movimiento_corte_id es un marcador del último movimiento al registrar el conteo y permite detectar que hubo operaciones posteriores incluso si el saldo final coincide.
 
-Las migraciones SQL V1–V3 constituyen el modelo físico. Los movimientos operativos se representan como entidades `MovimientoPersistido`; el record `Movimiento` conserva el contrato de salida del prototipo APF1.
+Las migraciones SQL V1–V4 constituyen el modelo físico. Los movimientos operativos se representan como entidades `MovimientoPersistido`; el record `Movimiento` conserva el contrato de salida del prototipo APF1.
+
+La migración V4 añade las relaciones sin modificar V1–V3 y vincula los registros previos por coincidencia exacta de `autor` / `confirmado_por` con `usuario.username`. Los autores son obligatorios; `confirmado_por_id` es nulo hasta confirmar y obligatorio al confirmar. Las FK no usan ON DELETE CASCADE: la base impide eliminar usuarios referenciados por el historial.

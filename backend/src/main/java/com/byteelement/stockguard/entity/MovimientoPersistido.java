@@ -24,6 +24,10 @@ public class MovimientoPersistido {
 
   private long cantidad;
 
+  @ManyToOne(fetch = FetchType.LAZY, optional = false)
+  @JoinColumn(name = "usuario_id", nullable = false)
+  private Usuario usuario;
+
   @Column(length = 100, nullable = false)
   private String autor;
 
@@ -46,7 +50,7 @@ public class MovimientoPersistido {
       Almacen a,
       TipoMovimiento tipo,
       long cantidad,
-      String autor,
+      Usuario usuario,
       Instant fecha,
       String motivo,
       long saldo,
@@ -55,7 +59,8 @@ public class MovimientoPersistido {
     this.almacen = a;
     this.tipo = tipo;
     this.cantidad = cantidad;
-    this.autor = autor;
+    this.usuario = java.util.Objects.requireNonNull(usuario, "Usuario requerido");
+    this.autor = usuario.getUsername();
     this.fecha = fecha;
     this.motivo = motivo;
     this.saldoResultante = saldo;
@@ -73,6 +78,10 @@ public class MovimientoPersistido {
         fecha,
         motivo,
         saldoResultante);
+  }
+
+  public Long getUsuarioId() {
+    return usuario.getId();
   }
 
   public Long getId() {

@@ -51,6 +51,7 @@ public class ReporteService {
     var resultado = new ArrayList<CorteStock>();
     String lote = UUID.randomUUID().toString();
     Instant fecha = Instant.now().truncatedTo(java.time.temporal.ChronoUnit.MICROS);
+    Usuario usuario = actor.usuario();
     for (var p : ps)
       for (var a : as) {
         long saldo =
@@ -59,7 +60,7 @@ public class ReporteService {
                 .map(Existencia::getCantidad)
                 .orElse(0L);
         var politica = politicas.findByProductoIdAndAlmacenId(p.getId(), a.getId()).orElse(null);
-        resultado.add(new CorteStock(lote, fecha, actor.nombre(), p, a, saldo, politica));
+        resultado.add(new CorteStock(lote, fecha, usuario, p, a, saldo, politica));
       }
     return cortes.saveAllAndFlush(resultado).stream().map(CorteStockResponse::desde).toList();
   }

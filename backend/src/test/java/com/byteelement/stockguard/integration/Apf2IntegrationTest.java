@@ -484,4 +484,80 @@ class Apf2IntegrationTest {
           .andExpect(status().isForbidden());
     }
   }
+
+  @Test
+  void operacionesSeRelacionanConUsuarioAutenticadoYSupervisor() {
+    long almacenId =
+        jdbc.queryForObject("select id from usuario where username='test-ALMACEN'", Long.class);
+    long supervisorId =
+        jdbc.queryForObject("select id from usuario where username='test-SUPERVISOR'", Long.class);
+    var movimiento = inventario.registrar(mov(TipoMovimiento.ENTRADA, 10, a));
+    assertEquals(
+        almacenId,
+        jdbc.queryForObject(
+            "select usuario_id from movimiento where id=?", Long.class, movimiento.id()));
+    var c = inventario.contar(new RegistrarConteoRequest(p.getId(), a.getId(), 8L, "Diferencia"));
+    assertEquals(
+        almacenId,
+        jdbc.queryForObject("select usuario_id from conteo where id=?", Long.class, c.id()));
+    assertNull(
+        jdbc.queryForObject("select confirmado_por_id from conteo where id=?", Long.class, c.id()));
+    autenticar("test-SUPERVISOR", Rol.SUPERVISOR);
+    var confirmado = inventario.confirmarConteo(c.id());
+    assertEquals(
+        supervisorId,
+        jdbc.queryForObject("select confirmado_por_id from conteo where id=?", Long.class, c.id()));
+    assertEquals(
+        supervisorId,
+        jdbc.queryForObject(
+            "select usuario_id from movimiento where id=?", Long.class, confirmado.movimientoId()));
+    var corte = reportes.crearCorte().getFirst();
+    assertEquals(
+        supervisorId,
+        jdbc.queryForObject(
+            "select usuario_id from corte_stock where id=?", Long.class, corte.id()));
+    assertThrows(
+        org.springframework.dao.DataIntegrityViolationException.class,
+        () -> jdbc.update("delete from usuario where id=?", almacenId));
+    assertThrows(
+        org.springframework.dao.DataIntegrityViolationException.class,
+        () ->
+            jdbc.update("update movimiento set usuario_id=999999999 where id=?", movimiento.id()));
+    assertThrows(
+        org.springframework.dao.DataIntegrityViolationException.class,
+        () -> jdbc.update("update movimiento set usuario_id=null where id=?", movimiento.id()));
+  }
+
+  @Test
+  void identidadReferencialSeConservaAlCambiarNombreDelUsuario() {
+    var movimiento = inventario.registrar(mov(TipoMovimiento.ENTRADA, 3, a));
+    long usuarioId =
+        jdbc.queryForObject(
+            "select usuario_id from movimiento where id=?", Long.class, movimiento.id());
+    try {
+      jdbc.update("update usuario set username='usuario-renombrado' where id=?", usuarioId);
+      assertEquals(
+          usuarioId,
+          jdbc.queryForObject(
+              "select usuario_id from movimiento where id=?", Long.class, movimiento.id()));
+      assertEquals("test-ALMACEN", inventario.obtenerMovimiento(movimiento.id()).autor());
+    } finally {
+      jdbc.update("update usuario set username='test-ALMACEN' where id=?", usuarioId);
+    }
+  }
+
+  @Test
+  void actorSinCuentaPersistidaNoPuedeCrearHistorial() {
+    autenticar("actor-sin-cuenta", Rol.ALMACEN);
+    assertThrows(
+        org.springframework.security.authentication.AuthenticationCredentialsNotFoundException
+            .class,
+        () -> inventario.registrar(mov(TipoMovimiento.ENTRADA, 5, a)));
+    assertEquals(0, inventario.consultar(p.getId(), a.getId()).cantidad());
+    assertEquals(
+        0,
+        inventario
+            .listarMovimientos(p.getId(), null, null, desde, Instant.now().plusSeconds(1), 0, 20)
+            .getTotalElements());
+  }
 }
