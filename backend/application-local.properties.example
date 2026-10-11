@@ -1,3 +1,12 @@
-spring.datasource.url=jdbc:postgresql://localhost:5432/byteelement
-spring.datasource.username=stockguard_app
-spring.datasource.password=CAMBIAR_LOCALMENTE
+# Copiar a application-local.properties (está ignorado por Git).
+# Base PostgreSQL propia o iniciada con compose.yaml.
+spring.datasource.url=jdbc:postgresql://localhost:5432/stockguard
+spring.datasource.username=stockguard
+spring.datasource.password=REEMPLAZAR
+# Generar una clave aleatoria de al menos 32 bytes. Nunca compartir ni subir este archivo.
+stockguard.jwt.secret=REEMPLAZAR_CON_UNA_CLAVE_ALEATORIA_DE_32_BYTES_O_MAS
+# Solo se usan al crear el primer administrador en una base sin usuarios.
+stockguard.bootstrap.username=administrador
+stockguard.bootstrap.password=REEMPLAZAR_CON_UNA_CONTRASENA_DE_12_CARACTERES_O_MAS
+# Solo para el perfil demo. Se crean cinco usuarios demo-<rol>.
+stockguard.demo.password=REEMPLAZAR_CON_OTRA_CONTRASENA_DE_12_CARACTERES_O_MAS
