@@ -6,6 +6,9 @@ erDiagram
  USUARIO ||--o{ CONTEO : registra
  USUARIO o|--o{ CONTEO : confirma
  USUARIO ||--o{ CORTE_STOCK : genera
+ USUARIO ||--o{ SOLICITUD_COMPRA : solicita
+ USUARIO o|--o{ SOLICITUD_COMPRA : revisa
+ USUARIO ||--o{ ORDEN_COMPRA : emite
  USUARIO {
   bigint id PK
   string username UK
@@ -24,6 +27,10 @@ erDiagram
  MOVIMIENTO o|--o| CONTEO : ajuste
  PRODUCTO ||--o{ CORTE_STOCK : fotografia
  ALMACEN ||--o{ CORTE_STOCK : fotografia
+ PRODUCTO ||--o{ SOLICITUD_COMPRA : requiere
+ ALMACEN ||--o{ SOLICITUD_COMPRA : destino
+ SOLICITUD_COMPRA o|--o| SOLICITUD_COMPRA : duplicada_de
+ SOLICITUD_COMPRA ||--o| ORDEN_COMPRA : genera
  PRODUCTO {
   bigint id PK
   string sku UK
@@ -91,6 +98,32 @@ erDiagram
   bigint cantidad
   bigint minimo
   bigint maximo
+ }
+ SOLICITUD_COMPRA {
+  bigint id PK
+  bigint usuario_id FK
+  bigint producto_id FK
+  bigint almacen_id FK
+  bigint cantidad
+  string motivo
+  string estado
+  timestamp enviada_en
+  timestamp aprobada_en
+  bigint revisado_por_id FK
+  string motivo_rechazo
+  bigint duplicada_de_id FK
+  string clave_idempotencia
+ }
+ ORDEN_COMPRA {
+  bigint id PK
+  bigint solicitud_id FK
+  bigint usuario_id FK
+  string numero_orden UK
+  boolean urgente
+  string motivo_urgencia
+  timestamp emitida_en
+  string estado
+  numeric monto_estimado
  }
 ```
 
