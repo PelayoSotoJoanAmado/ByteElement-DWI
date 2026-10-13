@@ -1,74 +1,88 @@
 package com.byteelement.stockguard.service;
 
+import com.byteelement.stockguard.dto.CrearProductoRequest;
 import com.byteelement.stockguard.entity.Producto;
 import com.byteelement.stockguard.exception.SkuDuplicadoException;
-import com.byteelement.stockguard.dto.CrearProductoRequest;
 import com.byteelement.stockguard.repository.ProductoRepository;
+import java.util.Locale;
+import java.util.NoSuchElementException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Locale;
-import java.util.NoSuchElementException;
-
 @Service
 @Transactional(readOnly = true)
 public class ProductoService {
 
-    private final ProductoRepository repository;
+  private final ProductoRepository repository;
 
-    public ProductoService(ProductoRepository repository) {
-        this.repository = repository;
+  public ProductoService(ProductoRepository repository) {
+    this.repository = repository;
+  }
+
+  @Transactional
+  public Producto crear(CrearProductoRequest request) {
+    String sku = request.sku().trim().toUpperCase(Locale.ROOT);
+
+    if (repository.existsBySku(sku)) {
+      throw new SkuDuplicadoException(sku);
     }
 
-    @Transactional
-    public Producto crear(CrearProductoRequest request) {
-        String sku = request.sku().trim().toUpperCase(Locale.ROOT);
+    Producto producto =
+        new Producto(
+            sku,
+            request.categoria().trim(),
+            request.marca().trim(),
+            request.modelo().trim(),
+            request.especificacion().trim(),
+            request.critico());
 
-        if (repository.existsBySku(sku)) {
-            throw new SkuDuplicadoException(sku);
-        }
+    return repository.saveAndFlush(producto);
+  }
 
-        Producto producto = new Producto(
-                sku,
-                request.categoria().trim(),
-                request.marca().trim(),
-                request.modelo().trim(),
-                request.especificacion().trim(),
-                request.critico()
-        );
+  @Transactional
+  public Producto actualizar(Long id, CrearProductoRequest request) {
+    Producto producto =
+        repository
+            .bloquear(id)
+            .orElseThrow(() -> new NoSuchElementException("Producto no encontrado"));
+    String sku = request.sku().trim().toUpperCase(Locale.ROOT);
+    if (repository.existsBySkuAndIdNot(sku, id)) throw new SkuDuplicadoException(sku);
+    producto.actualizar(
+        sku,
+        request.categoria().trim(),
+        request.marca().trim(),
+        request.modelo().trim(),
+        request.especificacion().trim(),
+        request.critico());
+    return repository.saveAndFlush(producto);
+  }
 
-        return repository.saveAndFlush(producto);
-    }
+  @Transactional
+  public Producto desactivar(Long id) {
+    Producto producto =
+        repository
+            .bloquear(id)
+            .orElseThrow(() -> new NoSuchElementException("Producto no encontrado"));
+    producto.desactivar();
+    return repository.saveAndFlush(producto);
+  }
 
-    @Transactional
-    public Producto actualizar(Long id, CrearProductoRequest request) {
-        Producto producto = obtener(id);
-        String sku = request.sku().trim().toUpperCase(Locale.ROOT);
-        if (repository.existsBySkuAndIdNot(sku, id)) throw new SkuDuplicadoException(sku);
-        producto.actualizar(sku, request.categoria().trim(), request.marca().trim(),
-                request.modelo().trim(), request.especificacion().trim(), request.critico());
-        return repository.saveAndFlush(producto);
-    }
+  public Page<Producto> listar(int pagina, int tamanio) {
+    return repository.findAll(PageRequest.of(pagina, tamanio, Sort.by("id").ascending()));
+  }
 
-    @Transactional
-    public Producto desactivar(Long id) {
-        Producto producto = obtener(id);
-        producto.desactivar();
-        return repository.saveAndFlush(producto);
-    }
+  public Producto obtenerBloqueado(Long id) {
+    return repository
+        .bloquear(id)
+        .orElseThrow(() -> new NoSuchElementException("Producto no encontrado"));
+  }
 
-    public Page<Producto> listar(int pagina, int tamanio) {
-        return repository.findAll(
-                PageRequest.of(pagina, tamanio, Sort.by("id").ascending())
-        );
-    }
-
-    public Producto obtener(Long id) {
-        return repository.findById(id)
-                .orElseThrow(() ->
-                        new NoSuchElementException("Producto no encontrado"));
-    }
+  public Producto obtener(Long id) {
+    return repository
+        .findById(id)
+        .orElseThrow(() -> new NoSuchElementException("Producto no encontrado"));
+  }
 }

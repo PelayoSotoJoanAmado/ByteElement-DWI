@@ -1,5 +1,10 @@
 package com.byteelement.stockguard.entity;
 
 public enum TipoMovimiento {
-    ENTRADA, SALIDA, TRANSFERENCIA_ENTRADA, TRANSFERENCIA_SALIDA
+  ENTRADA,
+  SALIDA,
+  TRANSFERENCIA_ENTRADA,
+  TRANSFERENCIA_SALIDA,
+  AJUSTE_ENTRADA,
+  AJUSTE_SALIDA
 }
