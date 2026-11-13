@@ -1,5 +1,6 @@
 # Local configurations & secrets
 **/application-local.properties
+!backend/src/main/resources/application-local.properties
 
 # Build & compiled artifacts
 **/target/
