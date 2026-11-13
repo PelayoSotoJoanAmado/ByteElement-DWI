@@ -306,7 +306,7 @@ class Apf2IntegrationTest {
     assertEquals(0, vacio.denominador());
     assertThrows(
         IllegalArgumentException.class,
-        () -> reportes.indicador("I06", desde, Instant.now().plusSeconds(1), null, null));
+        () -> reportes.indicador("I99", desde, Instant.now().plusSeconds(1), null, null));
   }
 
   @Test
