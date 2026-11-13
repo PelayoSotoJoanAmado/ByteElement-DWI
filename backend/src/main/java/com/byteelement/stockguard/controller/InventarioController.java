@@ -64,6 +64,22 @@ public class InventarioController {
     return ResponseEntity.created(URI.create("/api/v1/conteos/" + c.id())).body(c);
   }
 
+  @GetMapping("/conteos")
+  public org.springframework.data.domain.Page<ConteoResponse> conteos(
+      @RequestParam(required = false) String sku,
+      @RequestParam(required = false) Long almacenId,
+      @RequestParam(required = false) Boolean confirmado,
+      @RequestParam(defaultValue = "1970-01-01T00:00:00Z") java.time.Instant desde,
+      @RequestParam(defaultValue = "9999-01-01T00:00:00Z") java.time.Instant hasta,
+      @RequestParam(defaultValue = "0") @jakarta.validation.constraints.Min(0) int pagina,
+      @RequestParam(defaultValue = "20")
+          @jakarta.validation.constraints.Min(1)
+          @jakarta.validation.constraints.Max(100)
+          int tamanio) {
+    return inventarioService.listarConteos(
+        sku, almacenId, confirmado, desde, hasta, pagina, tamanio);
+  }
+
   @GetMapping("/conteos/{id}")
   public ConteoResponse obtenerConteo(@PathVariable Long id) {
     return inventarioService.obtenerConteo(id);
