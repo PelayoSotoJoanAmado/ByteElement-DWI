@@ -52,6 +52,11 @@ public class ApiExceptionHandler {
     return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, exception.getMessage());
   }
 
+  @ExceptionHandler(org.springframework.security.access.AccessDeniedException.class)
+  public ProblemDetail accesoDenegado() {
+    return ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, "Rol no autorizado");
+  }
+
   @ExceptionHandler(IllegalArgumentException.class)
   public ProblemDetail argumentoInvalido(IllegalArgumentException exception) {
     return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, exception.getMessage());
