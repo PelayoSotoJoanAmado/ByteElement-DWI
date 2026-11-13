@@ -8,6 +8,12 @@ import org.springframework.data.jpa.repository.*;
 
 public interface MovimientoRepository extends JpaRepository<MovimientoPersistido, Long> {
   @Query(
+      "select m from MovimientoPersistido m where m.fecha<:desde and not exists (select n.id from"
+          + " MovimientoPersistido n where n.producto=m.producto and n.almacen=m.almacen and"
+          + " n.fecha<:desde and (n.fecha>m.fecha or (n.fecha=m.fecha and n.id>m.id)))")
+  List<MovimientoPersistido> saldosAntes(Instant desde);
+
+  @Query(
       "select coalesce(max(m.id),0) from MovimientoPersistido m where m.producto.id=:productoId and"
           + " m.almacen.id=:almacenId")
   long ultimoId(Long productoId, Long almacenId);
