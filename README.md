@@ -4,6 +4,7 @@ Backend Spring Boot 4.1.1 / Java 21 / PostgreSQL para inventarios.
 
 La rama `prueba` desarrolla el mínimo APF2: catálogo persistente, inventario transaccional con claves foráneas de usuario, consultas JPQL, JWT y cinco roles, conteos/ajustes, cortes e indicadores I05/I07/I10. RF08 es parcial; compras y frontend quedan para siguientes avances.
 
+- [Documento de Traspaso Técnico y Estado del Proyecto (HANDOVER)](HANDOVER_ESTADO_PROYECTO.md)
 - [Instalación, permisos, fórmulas y alcance APF2](backend/docs/APF2/APF2-MINIMO.md)
 - [Colección Postman APF2](backend/docs/APF2/StockGuard-APF2.postman_collection.json)
 - [Validación: 58 pruebas aprobadas](backend/docs/APF2/APF2-VALIDACION.md)
