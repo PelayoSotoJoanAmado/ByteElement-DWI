@@ -22,6 +22,9 @@ public class ReporteService {
   private final CorteStockRepository cortes;
   private final ConteoRepository conteos;
   private final ActorActual actor;
+  private final jakarta.persistence.EntityManager em;
+  private final SolicitudCompraRepository solicitudes;
+  private final OrdenCompraRepository ordenes;
 
   public ReporteService(
       ProductoRepository p,
@@ -31,7 +34,10 @@ public class ReporteService {
       PoliticaStockRepository ps,
       CorteStockRepository c,
       ConteoRepository co,
-      ActorActual actor) {
+      ActorActual actor,
+      SolicitudCompraRepository solicitudes,
+      OrdenCompraRepository ordenes,
+      jakarta.persistence.EntityManager em) {
     productos = p;
     almacenes = a;
     existencias = e;
@@ -40,6 +46,9 @@ public class ReporteService {
     cortes = c;
     conteos = co;
     this.actor = actor;
+    this.em = em;
+    this.solicitudes = solicitudes;
+    this.ordenes = ordenes;
   }
 
   // Fotografiar catálogo activo, todos sus almacenes activos (también saldos cero) y límites
@@ -52,14 +61,16 @@ public class ReporteService {
     String lote = UUID.randomUUID().toString();
     Instant fecha = Instant.now().truncatedTo(java.time.temporal.ChronoUnit.MICROS);
     Usuario usuario = actor.usuario();
+    Map<String, Long> saldos = new HashMap<>();
+    for (var e : existencias.findAll())
+      saldos.put(par(e.getProducto().getId(), e.getAlmacen().getId()), e.getCantidad());
+    Map<String, PoliticaStock> limites = new HashMap<>();
+    for (var politica : politicas.findAll())
+      limites.put(par(politica.getProducto().getId(), politica.getAlmacen().getId()), politica);
     for (var p : ps)
       for (var a : as) {
-        long saldo =
-            existencias
-                .findByProductoIdAndAlmacenId(p.getId(), a.getId())
-                .map(Existencia::getCantidad)
-                .orElse(0L);
-        var politica = politicas.findByProductoIdAndAlmacenId(p.getId(), a.getId()).orElse(null);
+        long saldo = saldos.getOrDefault(par(p.getId(), a.getId()), 0L);
+        var politica = limites.get(par(p.getId(), a.getId()));
         resultado.add(new CorteStock(lote, fecha, usuario, p, a, saldo, politica));
       }
     return cortes.saveAllAndFlush(resultado).stream().map(CorteStockResponse::desde).toList();
@@ -89,7 +100,47 @@ public class ReporteService {
     String skuNormal = sku == null ? null : sku.trim().toUpperCase(Locale.ROOT);
     long n = 0, d = 0;
     String nombre, lote = null;
-    if (codigo.equals("I07")) {
+    if (codigo.equals("I06") || codigo.equals("I09")) {
+      Object[] fila =
+          (codigo.equals("I06")
+                  ? ordenes.urgencias(desde, hasta, skuNormal, almacenId)
+                  : solicitudes.duplicidades(desde, hasta, skuNormal, almacenId))
+              .getFirst();
+      d = ((Number) fila[0]).longValue();
+      n = ((Number) fila[1]).longValue();
+      nombre = codigo.equals("I06") ? "Compras urgentes" : "Solicitudes duplicadas confirmadas";
+    } else if (codigo.equals("I08")) {
+      var tiempos = solicitudes.tiempos(desde, hasta, skuNormal, almacenId);
+      BigDecimal segundos = BigDecimal.ZERO;
+      for (var t : tiempos) {
+        var duracion = java.time.Duration.between((Instant) t[0], (Instant) t[1]);
+        if (duracion.isNegative())
+          throw new IllegalArgumentException("Fechas de aprobacion inconsistentes");
+        segundos =
+            segundos.add(
+                BigDecimal.valueOf(duracion.getSeconds())
+                    .add(BigDecimal.valueOf(duracion.getNano(), 9)));
+      }
+      d = tiempos.size();
+      var valor =
+          d == 0
+              ? null
+              : segundos.divide(
+                  BigDecimal.valueOf(d).multiply(BigDecimal.valueOf(86400)),
+                  4,
+                  RoundingMode.HALF_UP);
+      return new IndicadorResponse(
+          codigo,
+          "Tiempo promedio de aprobacion",
+          "dias",
+          segundos.longValue(),
+          d,
+          valor,
+          d == 0,
+          desde,
+          hasta,
+          null);
+    } else if (codigo.equals("I07")) {
       var lista =
           conteos.periodo(desde, hasta).stream()
               .filter(
@@ -118,9 +169,13 @@ public class ReporteService {
       Set<Long> afectados = new HashSet<>();
       if (codigo.equals("I05")) {
         Set<String> pares = new HashSet<>();
+        Map<String, Long> iniciales = new HashMap<>();
+        for (var m : movimientos.saldosAntes(desde))
+          iniciales.put(
+              par(m.getProducto().getId(), m.getAlmacen().getId()), m.getSaldoResultante());
         for (var c : observados) {
           pares.add(par(c.getProductoId(), c.getAlmacenId()));
-          if (saldoAntes(c.getProductoId(), c.getAlmacenId(), desde) == 0)
+          if (iniciales.getOrDefault(par(c.getProductoId(), c.getAlmacenId()), 0L) == 0)
             afectados.add(c.getProductoId());
         }
         for (var m : movimientos.periodo(desde, hasta)) {
@@ -190,26 +245,39 @@ public class ReporteService {
   public Page<Map<String, Object>> rotacion(
       String sku, Long almacenId, Instant desde, Instant hasta, int pagina, int tamanio) {
     Periodo.validar(desde, hasta);
-    // Consumo comercial: SALIDA; transferencias y ajustes no representan ventas.
+    String filtro =
+        " from MovimientoPersistido m where m.fecha<:hasta and (:sku is null or"
+            + " m.producto.sku=:sku) and (:a is null or m.almacen.id=:a)";
+    String normal = sku == null ? null : sku.trim().toUpperCase(Locale.ROOT);
+    var page = PageRequest.of(pagina, tamanio);
+    long total =
+        em.createQuery(
+                "select count(distinct concat(cast(m.producto.id as string),':',cast(m.almacen.id"
+                    + " as string)))"
+                    + filtro,
+                Long.class)
+            .setParameter("hasta", hasta)
+            .setParameter("sku", normal)
+            .setParameter("a", almacenId)
+            .getSingleResult();
     var pares =
-        movimientos
-            .buscar(
-                null,
-                sku == null ? null : sku.trim().toUpperCase(Locale.ROOT),
-                almacenId,
-                Instant.parse("1970-01-01T00:00:00Z"),
-                hasta,
-                Pageable.unpaged())
-            .getContent();
-    Map<String, MovimientoPersistido> claves = new TreeMap<>();
-    for (var m : pares) claves.put(par(m.getProducto().getId(), m.getAlmacen().getId()), m);
+        em.createQuery(
+                "select m.producto.id,m.almacen.id,m.producto.sku"
+                    + filtro
+                    + " group by m.producto.id,m.almacen.id,m.producto.sku order by"
+                    + " m.producto.id,m.almacen.id",
+                Object[].class)
+            .setParameter("hasta", hasta)
+            .setParameter("sku", normal)
+            .setParameter("a", almacenId)
+            .setFirstResult(Math.toIntExact(page.getOffset()))
+            .setMaxResults(tamanio)
+            .getResultList();
     List<Map<String, Object>> lista = new ArrayList<>();
-    for (var m : claves.values()) {
-      long p = m.getProducto().getId(), a = m.getAlmacen().getId();
+    for (var par : pares) {
+      long p = ((Number) par[0]).longValue(), a = ((Number) par[1]).longValue();
       var historial =
-          pares.stream()
-              .filter(x -> x.getProducto().getId() == p && x.getAlmacen().getId() == a)
-              .filter(x -> !x.getFecha().isBefore(desde))
+          movimientos.buscar(p, null, a, desde, hasta, Pageable.unpaged()).getContent().stream()
               .sorted(
                   Comparator.comparing(MovimientoPersistido::getFecha)
                       .thenComparing(MovimientoPersistido::getId))
@@ -218,16 +286,16 @@ public class ReporteService {
       Instant inicio = desde;
       double area = 0;
       for (var x : historial) {
-        area += saldo * (segundos(inicio, x.getFecha()));
+        area += saldo * segundos(inicio, x.getFecha());
         inicio = x.getFecha();
         saldo = x.getSaldoResultante();
         if (x.getTipo() == TipoMovimiento.SALIDA) consumo = Math.addExact(consumo, x.getCantidad());
       }
-      area += saldo * (segundos(inicio, hasta));
-      double promedio = area / (segundos(desde, hasta));
+      area += saldo * segundos(inicio, hasta);
+      double promedio = area / segundos(desde, hasta);
       Map<String, Object> r = new LinkedHashMap<>();
       r.put("productoId", p);
-      r.put("sku", m.getProducto().getSku());
+      r.put("sku", par[2]);
       r.put("almacenId", a);
       r.put("consumo", consumo);
       r.put("stockPromedio", BigDecimal.valueOf(promedio).setScale(4, RoundingMode.HALF_UP));
@@ -240,7 +308,7 @@ public class ReporteService {
       r.put("hasta", hasta);
       lista.add(r);
     }
-    return paginar(lista, pagina, tamanio);
+    return new PageImpl<>(lista, page, total);
   }
 
   private static double segundos(Instant a, Instant b) {
