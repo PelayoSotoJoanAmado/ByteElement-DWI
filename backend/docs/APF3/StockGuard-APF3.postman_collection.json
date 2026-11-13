@@ -1,0 +1,747 @@
+{
+  "info": {
+    "name": "StockGuard APF3 - Backend",
+    "description": "Completar usuarios/passwords en variables locales de Postman. No exportar secretos. Coleccion de demostracion; no sustituye suite automatizada. Crear politica para cada par critico antes de consultar I10 sin filtro de almacen. Para probar reintentos, fijar la misma clave UUID manualmente.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "almacenId",
+      "value": "1"
+    },
+    {
+      "key": "desde",
+      "value": "2026-11-09T05:00:00Z"
+    },
+    {
+      "key": "hasta",
+      "value": "2026-11-16T05:00:00Z"
+    },
+    {
+      "key": "usuarioAdmin",
+      "value": ""
+    },
+    {
+      "key": "passwordAdmin",
+      "value": ""
+    },
+    {
+      "key": "usuarioCompras",
+      "value": ""
+    },
+    {
+      "key": "passwordCompras",
+      "value": ""
+    },
+    {
+      "key": "usuarioSupervisor",
+      "value": ""
+    },
+    {
+      "key": "passwordSupervisor",
+      "value": ""
+    },
+    {
+      "key": "usuarioAlmacen",
+      "value": ""
+    },
+    {
+      "key": "passwordAlmacen",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Login ADMINISTRADOR",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/auth/login",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"{{usuarioAdmin}}\",\n  \"password\": \"{{passwordAdmin}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Respuesta valida\", () => pm.expect(pm.response.code).to.be.oneOf([200,201]));",
+              "if(pm.response.code===200) pm.collectionVariables.set(\"tokenAdmin\",pm.response.json().accessToken);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Login COMPRAS",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/auth/login",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"{{usuarioCompras}}\",\n  \"password\": \"{{passwordCompras}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Respuesta valida\", () => pm.expect(pm.response.code).to.be.oneOf([200,201]));",
+              "if(pm.response.code===200) pm.collectionVariables.set(\"tokenCompras\",pm.response.json().accessToken);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Login SUPERVISOR",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/auth/login",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"{{usuarioSupervisor}}\",\n  \"password\": \"{{passwordSupervisor}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Respuesta valida\", () => pm.expect(pm.response.code).to.be.oneOf([200,201]));",
+              "if(pm.response.code===200) pm.collectionVariables.set(\"tokenSupervisor\",pm.response.json().accessToken);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Login ALMACEN",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/auth/login",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"{{usuarioAlmacen}}\",\n  \"password\": \"{{passwordAlmacen}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Respuesta valida\", () => pm.expect(pm.response.code).to.be.oneOf([200,201]));",
+              "if(pm.response.code===200) pm.collectionVariables.set(\"tokenAlmacen\",pm.response.json().accessToken);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Crear producto",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/productos",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{tokenAdmin}}",
+              "type": "string"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"sku\": \"APF3-{{$guid}}\",\n  \"categoria\": \"RAM\",\n  \"marca\": \"Prueba\",\n  \"modelo\": \"Modelo\",\n  \"especificacion\": \"8GB\",\n  \"critico\": true\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Respuesta valida\", () => pm.expect(pm.response.code).to.be.oneOf([200,201]));",
+              "if(pm.response.code < 300) pm.collectionVariables.set(\"productoId\", pm.response.json().id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Configurar politica",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/productos/{{productoId}}/almacenes/{{almacenId}}/politica-stock",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{tokenSupervisor}}",
+              "type": "string"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"minimo\": 10,\n  \"maximo\": 100\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Respuesta valida\", () => pm.expect(pm.response.code).to.be.oneOf([200,201]));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Consultar reposicion",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/reposicion?almacenId={{almacenId}}&tamanio=20",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{tokenCompras}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Respuesta valida\", () => pm.expect(pm.response.code).to.be.oneOf([200,201]));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Enviar solicitud",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/solicitudes-compra",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{tokenCompras}}",
+              "type": "string"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"productoId\": \"{{productoId}}\",\n  \"almacenId\": \"{{almacenId}}\",\n  \"cantidad\": 20,\n  \"motivo\": \"Reposicion de demostracion\",\n  \"montoEstimado\": 1000,\n  \"claveIdempotencia\": \"{{$guid}}\",\n  \"urgente\": true,\n  \"motivoUrgencia\": \"Stock inicial sin unidades\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Respuesta valida\", () => pm.expect(pm.response.code).to.be.oneOf([200,201]));",
+              "if(pm.response.code < 300) pm.collectionVariables.set(\"solicitudId\", pm.response.json().id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Consultar solicitud",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/solicitudes-compra/{{solicitudId}}",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{tokenCompras}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Respuesta valida\", () => pm.expect(pm.response.code).to.be.oneOf([200,201]));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Aprobar",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/solicitudes-compra/{{solicitudId}}/aprobar",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{tokenSupervisor}}",
+              "type": "string"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"justificacion\": \"Compra de demostracion\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Respuesta valida\", () => pm.expect(pm.response.code).to.be.oneOf([200,201]));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Emitir orden",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/solicitudes-compra/{{solicitudId}}/emitir-orden",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{tokenCompras}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Respuesta valida\", () => pm.expect(pm.response.code).to.be.oneOf([200,201]));",
+              "if(pm.response.code < 300) pm.collectionVariables.set(\"ordenId\", pm.response.json().id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Recibir parcialmente",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/ordenes-compra/{{ordenId}}/recepciones",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{tokenAlmacen}}",
+              "type": "string"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"cantidad\": 10,\n  \"motivo\": \"Primera entrega\",\n  \"claveIdempotencia\": \"{{$guid}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Respuesta valida\", () => pm.expect(pm.response.code).to.be.oneOf([200,201]));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Consultar orden",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/ordenes-compra/{{ordenId}}",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{tokenCompras}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Respuesta valida\", () => pm.expect(pm.response.code).to.be.oneOf([200,201]));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Listar recepciones",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/ordenes-compra/{{ordenId}}/recepciones",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{tokenAlmacen}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Respuesta valida\", () => pm.expect(pm.response.code).to.be.oneOf([200,201]));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Registrar conteo",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/conteos",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{tokenAlmacen}}",
+              "type": "string"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"productoId\": \"{{productoId}}\",\n  \"almacenId\": \"{{almacenId}}\",\n  \"cantidadFisica\": 9,\n  \"motivo\": \"Conteo de control\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Respuesta valida\", () => pm.expect(pm.response.code).to.be.oneOf([200,201]));",
+              "if(pm.response.code < 300) pm.collectionVariables.set(\"conteoId\", pm.response.json().id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Confirmar ajuste",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/conteos/{{conteoId}}/confirmar",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{tokenSupervisor}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Respuesta valida\", () => pm.expect(pm.response.code).to.be.oneOf([200,201]));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Fotografiar stock",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/cortes-stock",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{tokenSupervisor}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Respuesta valida\", () => pm.expect(pm.response.code).to.be.oneOf([200,201]));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Dashboard filtrado",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/dashboard?desde={{desde}}&hasta={{hasta}}&almacenId={{almacenId}}",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{tokenSupervisor}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Respuesta valida\", () => pm.expect(pm.response.code).to.be.oneOf([200,201]));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Evidencias de version",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/evidencias",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{tokenAdmin}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Respuesta valida\", () => pm.expect(pm.response.code).to.be.oneOf([200,201]));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Salud",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/salud",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{tokenAdmin}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Respuesta valida\", () => pm.expect(pm.response.code).to.be.oneOf([200,201]));"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
