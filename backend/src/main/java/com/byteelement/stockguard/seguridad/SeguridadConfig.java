@@ -18,8 +18,21 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
 
+@org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity
 @Configuration
 public class SeguridadConfig {
+  @Bean
+  org.springframework.web.cors.CorsConfigurationSource corsConfigurationSource(
+      @Value("${stockguard.cors.origenes:http://localhost:4200}") String origenes) {
+    var c = new org.springframework.web.cors.CorsConfiguration();
+    c.setAllowedOrigins(java.util.Arrays.stream(origenes.split(",")).map(String::trim).toList());
+    c.setAllowedMethods(java.util.List.of("GET", "POST", "PUT", "PATCH", "OPTIONS"));
+    c.setAllowedHeaders(java.util.List.of("Authorization", "Content-Type"));
+    var source = new org.springframework.web.cors.UrlBasedCorsConfigurationSource();
+    source.registerCorsConfiguration("/api/**", c);
+    return source;
+  }
+
   @Bean
   PasswordEncoder passwordEncoder() {
     return new BCryptPasswordEncoder();
@@ -62,11 +75,36 @@ public class SeguridadConfig {
     authorities.setAuthorityPrefix("ROLE_");
     var converter = new JwtAuthenticationConverter();
     converter.setJwtGrantedAuthoritiesConverter(authorities);
-    return http.csrf(c -> c.disable())
+    return http.cors(org.springframework.security.config.Customizer.withDefaults())
+        .csrf(c -> c.disable())
         .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(
             a ->
-                a.requestMatchers(HttpMethod.POST, "/api/v1/auth/login")
+                a.requestMatchers(HttpMethod.GET, "/api/v1/evidencias")
+                    .hasRole("ADMINISTRADOR")
+                    .requestMatchers(HttpMethod.GET, "/api/v1/salud")
+                    .hasAnyRole("SUPERVISOR", "ADMINISTRADOR")
+                    .requestMatchers(
+                        HttpMethod.POST,
+                        "/api/v1/solicitudes-compra",
+                        "/api/v1/solicitudes-compra/*/emitir-orden")
+                    .hasRole("COMPRAS")
+                    .requestMatchers(
+                        HttpMethod.POST,
+                        "/api/v1/solicitudes-compra/*/aprobar",
+                        "/api/v1/solicitudes-compra/*/rechazar",
+                        "/api/v1/solicitudes-compra/*/confirmar-duplicidad",
+                        "/api/v1/ordenes-compra/*/cancelar")
+                    .hasRole("SUPERVISOR")
+                    .requestMatchers(HttpMethod.POST, "/api/v1/ordenes-compra/*/recepciones")
+                    .hasRole("ALMACEN")
+                    .requestMatchers(
+                        HttpMethod.GET,
+                        "/api/v1/solicitudes-compra/**",
+                        "/api/v1/ordenes-compra/**",
+                        "/api/v1/reposicion")
+                    .hasAnyRole("COMPRAS", "ALMACEN", "SUPERVISOR", "ADMINISTRADOR")
+                    .requestMatchers(HttpMethod.POST, "/api/v1/auth/login")
                     .permitAll()
                     .requestMatchers("/api/v1/usuarios/**")
                     .hasRole("ADMINISTRADOR")
@@ -92,9 +130,12 @@ public class SeguridadConfig {
                         HttpMethod.POST, "/api/v1/conteos/*/confirmar", "/api/v1/cortes-stock")
                     .hasRole("SUPERVISOR")
                     .requestMatchers(
-                        HttpMethod.GET, "/api/v1/indicadores", "/api/v1/cortes-stock/**")
+                        HttpMethod.GET,
+                        "/api/v1/indicadores",
+                        "/api/v1/dashboard",
+                        "/api/v1/cortes-stock/**")
                     .hasAnyRole("SUPERVISOR", "ADMINISTRADOR")
-                    .requestMatchers(HttpMethod.GET, "/api/v1/conteos/**")
+                    .requestMatchers(HttpMethod.GET, "/api/v1/conteos", "/api/v1/conteos/**")
                     .hasAnyRole("ALMACEN", "SUPERVISOR")
                     .requestMatchers(
                         HttpMethod.GET,
