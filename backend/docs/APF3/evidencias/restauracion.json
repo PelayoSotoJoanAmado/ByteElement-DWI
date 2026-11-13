@@ -1,0 +1,229 @@
+﻿{
+    "motor":  "PostgreSQL 18.1",
+    "resultados":  [
+                       {
+                           "origen":  "stockguard_volumen",
+                           "verificado":  true,
+                           "tablas":  [
+                                          {
+                                              "coincide":  true,
+                                              "huella":  "b4b7afb06b3bf7ccff2f39e59ff5825d",
+                                              "filas":  10000,
+                                              "tabla":  "producto"
+                                          },
+                                          {
+                                              "coincide":  true,
+                                              "huella":  "8155dbbf63a0f46a06fc144f2701a3df",
+                                              "filas":  3,
+                                              "tabla":  "almacen"
+                                          },
+                                          {
+                                              "coincide":  true,
+                                              "huella":  "23b013bbfca25b96b6f94fcd00a36fc5",
+                                              "filas":  5,
+                                              "tabla":  "usuario"
+                                          },
+                                          {
+                                              "coincide":  true,
+                                              "huella":  "261c6efd26397e1d37684f92333ead6d",
+                                              "filas":  30000,
+                                              "tabla":  "politica_stock"
+                                          },
+                                          {
+                                              "coincide":  true,
+                                              "huella":  "e11835c7c96c657a4206e92d93de16d3",
+                                              "filas":  30000,
+                                              "tabla":  "existencia"
+                                          },
+                                          {
+                                              "coincide":  true,
+                                              "huella":  "3eb9b21cbac5ec19a84d1880528fe4e9",
+                                              "filas":  60000,
+                                              "tabla":  "movimiento"
+                                          },
+                                          {
+                                              "coincide":  true,
+                                              "huella":  "7d35ca41767e444f04892c94bdd70375",
+                                              "filas":  1000,
+                                              "tabla":  "conteo"
+                                          },
+                                          {
+                                              "coincide":  true,
+                                              "huella":  "4093020411dc8045bbc04fa813ed40a9",
+                                              "filas":  30000,
+                                              "tabla":  "corte_stock"
+                                          },
+                                          {
+                                              "coincide":  true,
+                                              "huella":  "095d913e0b94a1f1989addbf32a03d76",
+                                              "filas":  2000,
+                                              "tabla":  "solicitud_compra"
+                                          },
+                                          {
+                                              "coincide":  true,
+                                              "huella":  "08e5e40fd7a19905174a2be429cbf9c8",
+                                              "filas":  1840,
+                                              "tabla":  "orden_compra"
+                                          },
+                                          {
+                                              "coincide":  true,
+                                              "huella":  "vacio",
+                                              "filas":  0,
+                                              "tabla":  "recepcion_compra"
+                                          }
+                                      ],
+                           "restaurada":  "stockguard_volumen_restaurada"
+                       },
+                       {
+                           "origen":  "stockguard_test",
+                           "verificado":  true,
+                           "tablas":  [
+                                          {
+                                              "coincide":  true,
+                                              "huella":  "1b35d42f882f0f1468b2ebf63d0918ef",
+                                              "filas":  126,
+                                              "tabla":  "producto"
+                                          },
+                                          {
+                                              "coincide":  true,
+                                              "huella":  "b4ce32e9fdd2447e49cd01cf5b33445e",
+                                              "filas":  213,
+                                              "tabla":  "almacen"
+                                          },
+                                          {
+                                              "coincide":  true,
+                                              "huella":  "ad7210bb53af15ef14eef259871c54d2",
+                                              "filas":  11,
+                                              "tabla":  "usuario"
+                                          },
+                                          {
+                                              "coincide":  true,
+                                              "huella":  "8e850dbc8c9b002aca0c20c1720db593",
+                                              "filas":  8694,
+                                              "tabla":  "politica_stock"
+                                          },
+                                          {
+                                              "coincide":  true,
+                                              "huella":  "aacb0da056a38378a608f513e213a577",
+                                              "filas":  110,
+                                              "tabla":  "existencia"
+                                          },
+                                          {
+                                              "coincide":  true,
+                                              "huella":  "9dd606cf9824dea8bf365965fb156e6d",
+                                              "filas":  270,
+                                              "tabla":  "movimiento"
+                                          },
+                                          {
+                                              "coincide":  true,
+                                              "huella":  "7f98af73eedc2b4053a6ac0c85396164",
+                                              "filas":  16,
+                                              "tabla":  "conteo"
+                                          },
+                                          {
+                                              "coincide":  true,
+                                              "huella":  "23a5b9060d2829bc06cbbb26312da44d",
+                                              "filas":  104101,
+                                              "tabla":  "corte_stock"
+                                          },
+                                          {
+                                              "coincide":  true,
+                                              "huella":  "07a044f70408ab29ad2051435338ce6a",
+                                              "filas":  43,
+                                              "tabla":  "solicitud_compra"
+                                          },
+                                          {
+                                              "coincide":  true,
+                                              "huella":  "87fa965543e66423e7df7c7013939f8b",
+                                              "filas":  33,
+                                              "tabla":  "orden_compra"
+                                          },
+                                          {
+                                              "coincide":  true,
+                                              "huella":  "74891e52d13fa36c2818bed389173aa7",
+                                              "filas":  30,
+                                              "tabla":  "recepcion_compra"
+                                          }
+                                      ],
+                           "restaurada":  "stockguard_test_restaurada"
+                       }
+                   ],
+    "fecha":  "2026-11-13T21:29:04.1913659Z",
+    "indicadoresRestaurados":  {
+                                   "value":  [
+                                                 {
+                                                     "codigo":  "I05",
+                                                     "nombre":  "Quiebre en el perÃ­odo",
+                                                     "unidad":  "%",
+                                                     "numerador":  1000,
+                                                     "denominador":  10000,
+                                                     "valor":  10.00,
+                                                     "sinDatos":  false,
+                                                     "desde":  "2026-11-06T21:36:07.110903400Z",
+                                                     "hasta":  "2026-11-13T21:37:07.116165400Z",
+                                                     "lote":  "00000000-0000-4000-8000-000000010000"
+                                                 },
+                                                 {
+                                                     "codigo":  "I06",
+                                                     "nombre":  "Compras urgentes",
+                                                     "unidad":  "%",
+                                                     "numerador":  368,
+                                                     "denominador":  1840,
+                                                     "valor":  20.00,
+                                                     "sinDatos":  false,
+                                                     "desde":  "2026-11-06T21:36:07.110903400Z",
+                                                     "hasta":  "2026-11-13T21:37:07.116165400Z",
+                                                     "lote":  null
+                                                 },
+                                                 {
+                                                     "codigo":  "I07",
+                                                     "nombre":  "Coincidencia de inventario",
+                                                     "unidad":  "%",
+                                                     "numerador":  900,
+                                                     "denominador":  1000,
+                                                     "valor":  90.00,
+                                                     "sinDatos":  false,
+                                                     "desde":  "2026-11-06T21:36:07.110903400Z",
+                                                     "hasta":  "2026-11-13T21:37:07.116165400Z",
+                                                     "lote":  null
+                                                 },
+                                                 {
+                                                     "codigo":  "I08",
+                                                     "nombre":  "Tiempo promedio de aprobacion",
+                                                     "unidad":  "dias",
+                                                     "numerador":  317952000,
+                                                     "denominador":  1840,
+                                                     "valor":  2.0000,
+                                                     "sinDatos":  false,
+                                                     "desde":  "2026-11-06T21:36:07.110903400Z",
+                                                     "hasta":  "2026-11-13T21:37:07.116165400Z",
+                                                     "lote":  null
+                                                 },
+                                                 {
+                                                     "codigo":  "I09",
+                                                     "nombre":  "Solicitudes duplicadas confirmadas",
+                                                     "unidad":  "%",
+                                                     "numerador":  160,
+                                                     "denominador":  2000,
+                                                     "valor":  8.00,
+                                                     "sinDatos":  false,
+                                                     "desde":  "2026-11-06T21:36:07.110903400Z",
+                                                     "hasta":  "2026-11-13T21:37:07.116165400Z",
+                                                     "lote":  null
+                                                 },
+                                                 {
+                                                     "codigo":  "I10",
+                                                     "nombre":  "Productos sobre el mÃ¡ximo al corte",
+                                                     "unidad":  "%",
+                                                     "numerador":  1000,
+                                                     "denominador":  10000,
+                                                     "valor":  10.00,
+                                                     "sinDatos":  false,
+                                                     "desde":  "2026-11-06T21:36:07.110903400Z",
+                                                     "hasta":  "2026-11-13T21:37:07.116165400Z",
+                                                     "lote":  "00000000-0000-4000-8000-000000010000"
+                                                 }
+                                             ],
+                                   "Count":  6
+                               }
+}

@@ -1,0 +1,41 @@
+﻿{
+    "evidenciasHttp":  true,
+    "contratos":  44,
+    "pruebas":  71,
+    "fecha":  "2026-11-13T21:40:05.4563363Z",
+    "corsAngular":  true,
+    "metricas":  [
+                     {
+                         "codigo":  "I01",
+                         "numerador":  10,
+                         "denominador":  10,
+                         "valor":  100,
+                         "sinDatos":  false,
+                         "alcance":  "backend"
+                     },
+                     {
+                         "codigo":  "I02",
+                         "numerador":  44,
+                         "denominador":  44,
+                         "valor":  100,
+                         "sinDatos":  false,
+                         "alcance":  "backend"
+                     },
+                     {
+                         "codigo":  "I03",
+                         "numerador":  5,
+                         "denominador":  5,
+                         "valor":  100,
+                         "sinDatos":  false,
+                         "alcance":  "backend"
+                     },
+                     {
+                         "codigo":  "I04",
+                         "numerador":  8,
+                         "denominador":  8,
+                         "valor":  100,
+                         "sinDatos":  false,
+                         "alcance":  "backend"
+                     }
+                 ]
+}

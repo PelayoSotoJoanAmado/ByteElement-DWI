@@ -1,0 +1,12 @@
+﻿{
+    "generadoEn":  "2026-11-13T21:28:20.2724980Z",
+    "ruta":  "/api/v1/reposicion?tamanio=20",
+    "solicitudes":  30,
+    "concurrencia":  1,
+    "errores":  0,
+    "tasaErrores":  0,
+    "promedioMs":  122.51741666666666,
+    "p95Ms":  140.7433,
+    "maximoMs":  193.39020000000002,
+    "nota":  "Medicion secuencial del entorno indicado. No sustituye pruebas concurrentes ni un SLA acordado."
+}

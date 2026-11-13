@@ -1,0 +1,12 @@
+﻿{
+    "generadoEn":  "2026-11-13T21:28:23.1025562Z",
+    "ruta":  "/api/v1/reportes/rotacion?desde=2026-11-06T21:28:14.4187551Z\u0026hasta=2026-11-13T21:29:14.4232591Z\u0026tamanio=20",
+    "solicitudes":  20,
+    "concurrencia":  1,
+    "errores":  0,
+    "tasaErrores":  0,
+    "promedioMs":  139.485855,
+    "p95Ms":  169.44490000000002,
+    "maximoMs":  210.59900000000002,
+    "nota":  "Medicion secuencial del entorno indicado. No sustituye pruebas concurrentes ni un SLA acordado."
+}

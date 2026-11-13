@@ -1,0 +1,93 @@
+﻿{
+    "generadoEn":  "2026-11-13T21:28:16.3787286Z",
+    "dashboardMs":  1942.1679000000001,
+    "productos":  10000,
+    "motor":  "PostgreSQL 18.1",
+    "esperados":  {
+                      "I05":  10,
+                      "I09":  8,
+                      "I08":  2,
+                      "I10":  10,
+                      "I07":  90,
+                      "I06":  20
+                  },
+    "filasNuevas":  164840,
+    "verificado":  true,
+    "indicadores":  {
+                        "value":  [
+                                      {
+                                          "codigo":  "I05",
+                                          "nombre":  "Quiebre en el perÃ­odo",
+                                          "unidad":  "%",
+                                          "numerador":  1000,
+                                          "denominador":  10000,
+                                          "valor":  10.00,
+                                          "sinDatos":  false,
+                                          "desde":  "2026-11-06T21:28:14.418755100Z",
+                                          "hasta":  "2026-11-13T21:29:14.423259100Z",
+                                          "lote":  "00000000-0000-4000-8000-000000010000"
+                                      },
+                                      {
+                                          "codigo":  "I06",
+                                          "nombre":  "Compras urgentes",
+                                          "unidad":  "%",
+                                          "numerador":  368,
+                                          "denominador":  1840,
+                                          "valor":  20.00,
+                                          "sinDatos":  false,
+                                          "desde":  "2026-11-06T21:28:14.418755100Z",
+                                          "hasta":  "2026-11-13T21:29:14.423259100Z",
+                                          "lote":  null
+                                      },
+                                      {
+                                          "codigo":  "I07",
+                                          "nombre":  "Coincidencia de inventario",
+                                          "unidad":  "%",
+                                          "numerador":  900,
+                                          "denominador":  1000,
+                                          "valor":  90.00,
+                                          "sinDatos":  false,
+                                          "desde":  "2026-11-06T21:28:14.418755100Z",
+                                          "hasta":  "2026-11-13T21:29:14.423259100Z",
+                                          "lote":  null
+                                      },
+                                      {
+                                          "codigo":  "I08",
+                                          "nombre":  "Tiempo promedio de aprobacion",
+                                          "unidad":  "dias",
+                                          "numerador":  317952000,
+                                          "denominador":  1840,
+                                          "valor":  2.0000,
+                                          "sinDatos":  false,
+                                          "desde":  "2026-11-06T21:28:14.418755100Z",
+                                          "hasta":  "2026-11-13T21:29:14.423259100Z",
+                                          "lote":  null
+                                      },
+                                      {
+                                          "codigo":  "I09",
+                                          "nombre":  "Solicitudes duplicadas confirmadas",
+                                          "unidad":  "%",
+                                          "numerador":  160,
+                                          "denominador":  2000,
+                                          "valor":  8.00,
+                                          "sinDatos":  false,
+                                          "desde":  "2026-11-06T21:28:14.418755100Z",
+                                          "hasta":  "2026-11-13T21:29:14.423259100Z",
+                                          "lote":  null
+                                      },
+                                      {
+                                          "codigo":  "I10",
+                                          "nombre":  "Productos sobre el mÃ¡ximo al corte",
+                                          "unidad":  "%",
+                                          "numerador":  1000,
+                                          "denominador":  10000,
+                                          "valor":  10.00,
+                                          "sinDatos":  false,
+                                          "desde":  "2026-11-06T21:28:14.418755100Z",
+                                          "hasta":  "2026-11-13T21:29:14.423259100Z",
+                                          "lote":  "00000000-0000-4000-8000-000000010000"
+                                      }
+                                  ],
+                        "Count":  6
+                    }
+}
