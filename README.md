@@ -2,7 +2,8 @@
 
 Backend Java 21 / Spring Boot / JPA-Hibernate / PostgreSQL para inventario y reposicion.
 APF3 completa compras, recepciones, reglas de reposicion, I05-I10, evidencias de backend y CORS para Angular.
-La interfaz Angular y el E2E desplegado corresponden a la integracion posterior del equipo.
+La carpeta `frontend/` contiene la base Angular con SCSS y la presentación pública de StockGuard.
+El login, los módulos internos y el E2E integrado se desarrollan en entregas posteriores.
 
 - [Estado y traspaso](HANDOVER_ESTADO_PROYECTO.md)
 - [Documentacion APF3](backend/docs/APF3/README.md)
@@ -20,3 +21,15 @@ Las migraciones V1-V7 se aplican con Flyway; Hibernate valida el esquema.
 InsForge puede incorporarse despues como PostgreSQL por JDBC, conservando el backend.
 
 Se mantiene la rama prueba. Las evidencias APF1/APF2 son historicas y no describen el alcance actual.
+
+## Frontend Angular
+
+Desde `frontend/`, con Node compatible con Angular 22 (ver `engines` en package.json):
+
+```bash
+npm ci
+npm start
+```
+
+Abrir http://localhost:4200. Para compilar: `npm run build`. Para verificar: `npm test -- --watch=false`.
+Consulta [la guía del frontend](frontend/README.md) para conocer el alcance de esta entrega.

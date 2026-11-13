@@ -1,59 +1,50 @@
-# Frontend
+# StockGuard · Frontend
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 22.2.7.
+Angular 22, componentes standalone, Router y SCSS. Proyecto generado con Angular CLI; las dependencias quedan fijadas en `package-lock.json`.
 
-## Development server
+## Arranque
 
-To start a local development server, run:
-
-```bash
-ng serve
-```
-
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
-
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+Usar una versión de Node admitida por `package.json` (desarrollo verificado con Node 24.22.1).
 
 ```bash
-ng generate component component-name
+cd frontend
+npm ci
+npm start
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+Abrir http://localhost:4200. Esta dirección coincide con el origen permitido por el backend.
 
 ```bash
-ng generate --help
+npm run build
+npm test -- --watch=false
 ```
 
-## Building
+La compilación de producción se genera en `dist/frontend/browser/`. El servidor de despliegue debe devolver `index.html` para las rutas de la SPA, como `/login`.
 
-To build the project run:
+## Alcance de esta entrega
 
-```bash
-ng build
-```
+- `/`: presentación pública responsive, fondo original optimizado en WebP, funcionalidades, funcionamiento y footer completo.
+- Menú público sin opción «Inicio»; el logo vuelve a la presentación.
+- Navegación a secciones, menú móvil, enlace para saltar al contenido, foco visible y preferencias de movimiento reducido.
+- `/login`: destino temporal explícito «Próximamente», con retorno a la presentación. No autentica ni solicita credenciales.
+- Las rutas públicas se cargan por separado mediante lazy loading. Las URL desconocidas vuelven a la presentación.
+- No se consulta la API ni se muestran datos reales del inventario en esta entrega.
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+## Siguiente entrega: autenticación y permisos
 
-## Running unit tests
+Integrar `POST /api/v1/auth/login` conforme a `backend/docs/APF3/API-ANGULAR.md`.
+Respetar los cinco roles exactos: `ALMACEN`, `COMPRAS`, `SUPERVISOR`, `CONSULTA_COMERCIAL` y `ADMINISTRADOR`.
+Al añadir módulos internos, implementar sesión, interceptor Bearer, expiración/401, guards y permisos por ruta conforme a la matriz del backend. Ocultar un enlace no sustituye la autorización; el backend conserva la validación final.
+Esta entrega no define rutas internas ni simula una sesión o permisos.
 
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
+## Organización
 
-```bash
-ng test
-```
+- `src/app/pages/home/`: pantalla pública.
+- `src/app/pages/login-pending/`: destino temporal del acceso.
+- `src/app/shared/icon.ts`: iconos SVG y marca.
+- `src/styles.scss` y `src/styles/_home.scss`: estilos globales, página y adaptaciones responsive.
+- `public/images/warehouse-hero.webp`: fondo generado específicamente para StockGuard.
 
-## Running end-to-end tests
+## Imagen de fondo
 
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+Generada con ImageGen a partir de un almacén moderno con estanterías, cajas y transpaleta, iluminación turquesa, sombras azul oscuro y espacio despejado a la izquierda. Se exportó a WebP sin cambiar la composición. Los textos, tarjetas, enlaces y botones son HTML real; no forman parte de la imagen.

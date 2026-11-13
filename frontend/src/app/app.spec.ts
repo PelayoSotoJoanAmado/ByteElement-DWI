@@ -1,24 +1,25 @@
 import { TestBed } from '@angular/core/testing';
-import { App } from './app';
+import { provideRouter } from '@angular/router';
+import { RouterTestingHarness } from '@angular/router/testing';
+import { routes } from './app.routes';
 
-describe('App', () => {
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [App],
-    })
-      .compileComponents();
+describe('Public navigation', () => {
+  beforeEach(() => TestBed.configureTestingModule({ providers: [provideRouter(routes)] }));
+  it('loads the public presentation without a session or an Inicio menu item', async () => {
+    const harness = await RouterTestingHarness.create('/');
+    const page = harness.routeNativeElement!;
+    expect(page.querySelector('h1')?.textContent).toContain('Tu inventario');
+    expect(page.querySelector('footer')?.textContent).toContain('Todos los derechos reservados');
+    const links = [...page.querySelectorAll('nav[aria-label="Navegación principal"] a')];
+    expect(links.map((link) => link.textContent?.trim())).toEqual([
+      'Funcionalidades',
+      'Cómo funciona',
+      'Iniciar sesión',
+    ]);
   });
-
-  it('should create the app', () => {
-    const fixture = TestBed.createComponent(App);
-    const app = fixture.componentInstance;
-    expect(app).toBeTruthy();
-  });
-
-  it('should render title', async () => {
-    const fixture = TestBed.createComponent(App);
-    await fixture.whenStable();
-    const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('h1')?.textContent).toContain('Hello, frontend');
+  it('opens the explicit pending access page without exposing internal modules', async () => {
+    const harness = await RouterTestingHarness.create('/login');
+    expect(harness.routeNativeElement?.textContent).toContain('PRÓXIMAMENTE');
+    expect(harness.routeNativeElement?.querySelector('input[type="password"]')).toBeNull();
   });
 });
