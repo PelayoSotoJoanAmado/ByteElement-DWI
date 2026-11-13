@@ -1,6 +1,7 @@
 package com.byteelement.stockguard.entity;
 
 import jakarta.persistence.*;
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Objects;
 
@@ -44,7 +45,7 @@ public class SolicitudCompra {
   @JoinColumn(name = "revisado_por_id")
   private Usuario revisadoPor;
 
-  @Column(name = "motivo_rechazo", length = 255)
+  @Column(name = "motivo_rechazo", length = 500)
   private String motivoRechazo;
 
   @ManyToOne(fetch = FetchType.LAZY)
@@ -53,6 +54,36 @@ public class SolicitudCompra {
 
   @Column(name = "clave_idempotencia", length = 80)
   private String claveIdempotencia;
+
+  @Column(name = "monto_estimado", nullable = false, precision = 12, scale = 2)
+  private BigDecimal montoEstimado = BigDecimal.ZERO;
+
+  @Column(columnDefinition = "text")
+  private String respuestaCreacion;
+
+  public String getRespuestaCreacion() {
+    return respuestaCreacion;
+  }
+
+  public void guardarRespuestaCreacion(String respuesta) {
+    respuestaCreacion = respuesta;
+  }
+
+  private boolean urgente;
+  private String motivoUrgencia;
+
+  @Column(length = 500)
+  private String justificacionAprobacion;
+
+  private Instant revisadaEn;
+  private Instant duplicidadConfirmadaEn;
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "duplicidad_confirmada_por_id")
+  private Usuario duplicidadConfirmadaPor;
+
+  @Column(length = 500)
+  private String motivoDuplicidad;
 
   protected SolicitudCompra() {}
 
@@ -84,6 +115,7 @@ public class SolicitudCompra {
     this.estado = EstadoSolicitudCompra.APROBADA;
     this.revisadoPor = Objects.requireNonNull(supervisor, "Supervisor es requerido");
     this.aprobadaEn = Objects.requireNonNull(aprobadaEn, "Fecha aprobada es requerida");
+    this.revisadaEn = aprobadaEn;
   }
 
   public void rechazar(Usuario supervisor, String motivoRechazo, Instant fecha) {
@@ -93,11 +125,61 @@ public class SolicitudCompra {
     this.estado = EstadoSolicitudCompra.RECHAZADA;
     this.revisadoPor = Objects.requireNonNull(supervisor, "Supervisor es requerido");
     this.motivoRechazo = motivoRechazo;
-    this.aprobadaEn = fecha;
+    this.revisadaEn = fecha;
   }
 
-  public void marcarDuplicada(SolicitudCompra original) {
-    this.duplicadaDe = original;
+  public void confirmarDuplicada(
+      SolicitudCompra original, Usuario supervisor, Instant fecha, String motivo) {
+    if (estado != EstadoSolicitudCompra.PENDIENTE || original.getId().equals(id))
+      throw new com.byteelement.stockguard.exception.ConflictoCatalogoException(
+          "Duplicidad no permitida");
+    rechazar(supervisor, "Duplicada de " + original.getId(), fecha);
+    duplicadaDe = original;
+    duplicidadConfirmadaPor = supervisor;
+    duplicidadConfirmadaEn = fecha;
+    motivoDuplicidad = motivo;
+  }
+
+  public void configurarCompra(BigDecimal monto, boolean urgente, String motivo) {
+    this.montoEstimado = monto;
+    this.urgente = urgente;
+    this.motivoUrgencia = motivo;
+  }
+
+  public void justificar(String texto) {
+    justificacionAprobacion = texto;
+  }
+
+  public BigDecimal getMontoEstimado() {
+    return montoEstimado;
+  }
+
+  public boolean isUrgente() {
+    return urgente;
+  }
+
+  public String getMotivoUrgencia() {
+    return motivoUrgencia;
+  }
+
+  public String getJustificacionAprobacion() {
+    return justificacionAprobacion;
+  }
+
+  public Instant getRevisadaEn() {
+    return revisadaEn;
+  }
+
+  public Instant getDuplicidadConfirmadaEn() {
+    return duplicidadConfirmadaEn;
+  }
+
+  public Usuario getDuplicidadConfirmadaPor() {
+    return duplicidadConfirmadaPor;
+  }
+
+  public String getMotivoDuplicidad() {
+    return motivoDuplicidad;
   }
 
   public Long getId() {
@@ -152,4 +234,3 @@ public class SolicitudCompra {
     return claveIdempotencia;
   }
 }
-
