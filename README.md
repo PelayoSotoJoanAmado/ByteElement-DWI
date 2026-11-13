@@ -1,15 +1,22 @@
-# ByteElement-DWI — StockGuard MYPE
+# ByteElement-DWI - StockGuard MYPE
 
-Backend Spring Boot 4.1.1 / Java 21 / PostgreSQL para inventarios.
+Backend Java 21 / Spring Boot / JPA-Hibernate / PostgreSQL para inventario y reposicion.
+APF3 completa compras, recepciones, reglas de reposicion, I05-I10, evidencias de backend y CORS para Angular.
+La interfaz Angular y el E2E desplegado corresponden a la integracion posterior del equipo.
 
-La rama `prueba` desarrolla el mínimo APF2: catálogo persistente, inventario transaccional con claves foráneas de usuario, consultas JPQL, JWT y cinco roles, conteos/ajustes, cortes e indicadores I05/I07/I10. RF08 es parcial; compras y frontend quedan para siguientes avances.
+- [Estado y traspaso](HANDOVER_ESTADO_PROYECTO.md)
+- [Documentacion APF3](backend/docs/APF3/README.md)
+- [Contrato para Angular](backend/docs/APF3/API-ANGULAR.md)
+- [Cambios que deben trasladarse al informe](backend/docs/APF3/CAMBIOS-INFORME.md)
+- [Arranque, volumen, backup e InsForge](backend/docs/APF3/OPERACION.md)
+- [Coleccion Postman APF3](backend/docs/APF3/StockGuard-APF3.postman_collection.json)
+- [Evidencia de pruebas](backend/docs/APF3/evidencias/resultado.json)
 
-- [Documento de Traspaso Técnico y Estado del Proyecto (HANDOVER)](HANDOVER_ESTADO_PROYECTO.md)
-- [Instalación, permisos, fórmulas y alcance APF2](backend/docs/APF2/APF2-MINIMO.md)
-- [Colección Postman APF2](backend/docs/APF2/StockGuard-APF2.postman_collection.json)
-- [Validación: 58 pruebas aprobadas](backend/docs/APF2/APF2-VALIDACION.md)
-- [Modelo relacional](backend/docs/APF2/APF2-MODELO.md)
+Desde backend: `./mvnw.cmd test` o `./docs/APF3/Verificar-APF3.ps1`.
+Para arrancar: configurar secretos con application-local.properties.example y ejecutar
+`./mvnw.cmd spring-boot:run`. El perfil local ya no activa demo automaticamente.
+Prod no importa secretos locales; usar SPRING_PROFILES_ACTIVE=prod y variables de entorno.
+Las migraciones V1-V7 se aplican con Flyway; Hibernate valida el esquema.
+InsForge puede incorporarse despues como PostgreSQL por JDBC, conservando el backend.
 
-Desde `backend`: `./mvnw test`. Para iniciar: configurar credenciales con el archivo de ejemplo y ejecutar `./mvnw spring-boot:run`. Windows: `mvnw.cmd`.
-
-Las evidencias APF1 se conservan como historial de la versión inicial, anterior a seguridad y persistencia del inventario.
+Se mantiene la rama prueba. Las evidencias APF1/APF2 son historicas y no describen el alcance actual.

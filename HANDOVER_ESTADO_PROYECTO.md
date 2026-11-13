@@ -1,3 +1,43 @@
+# Estado actualizado para APF3 - 13 de noviembre de 2026
+
+La documentacion vigente esta en [backend/docs/APF3](backend/docs/APF3/README.md).
+El contenido anterior, conservado debajo, describe el corte APF2 y contiene pendientes ya resueltos.
+
+## Cambios de esta etapa
+
+- Compras: solicitudes con monto/urgencia/idempotencia, similitudes, duplicidad confirmada,
+  aprobacion/rechazo por supervisor, orden unica, recepciones parciales atomicas y cancelacion de pendiente.
+- Roles oficiales: COMPRAS solicita/emite; SUPERVISOR decide; ALMACEN recibe/mueve.
+- Reposicion: min/max + consumo comercial reciente + ordenes pendientes, con regla explicada.
+- Indicadores I05-I10, dashboard agregado y evidencias tecnicas I01-I04 de alcance backend.
+- Consultas de conteos, paginacion de rotacion en BD, saldos iniciales/cortes por lote.
+- CORS para Angular, salud protegida y logs HTTP sin cuerpos ni tokens.
+- V6/V7 agregan trazabilidad e idempotencia. Ahora hay 11 entidades de negocio, incluida recepcion_compra.
+- Perfil prod separado de la importacion de secretos locales; demo es optativo.
+- Scripts y datos para 10000 productos / 164840 filas nuevas de negocio, medicion y restauracion.
+- Coleccion Postman y guia de cambios al informe.
+
+## Validacion y siguientes pasos
+
+Consultar [resultado.json](backend/docs/APF3/evidencias/resultado.json) para la ultima suite,
+version, huella y matriz de permisos; [volumen.json](backend/docs/APF3/evidencias/volumen.json)
+para los seis indicadores de control; y [restauracion.json](backend/docs/APF3/evidencias/restauracion.json)
+para backups restaurados y contrastados. La validacion local usa PostgreSQL 18.1 y H2;
+el compose historico conserva PostgreSQL 16.
+
+Angular, flujos E2E desde navegador y despliegue HTTPS siguen pendientes del equipo.
+La carga masiva se realizo en una base aislada. Durante el primer arranque, el antiguo import
+incondicional hizo que Flyway ampliara tambien la base local existente de V5 a V7; no se cargo
+alli el volumen ni se borraron registros. Se corrigio moviendo la importacion al perfil local
+y se agrego una prueba de aislamiento del perfil prod.
+
+No se configuraron servicios cloud. La entrega APF3 se comparte en la rama prueba. La conexion a InsForge puede hacerse
+posteriormente siguiendo [OPERACION.md](backend/docs/APF3/OPERACION.md).
+
+---
+
+## Corte APF2 conservado como historial
+
 # 📌 DOCUMENTO DE TRASPASO TÉCNICO Y ESTADO DEL PROYECTO (HANDOVER)
 **Proyecto:** StockGuard MYPE por ByteElement — Sistema de Gestión de Inventarios y Reposición  
 **Curso:** Desarrollo Web Integrado (100000ST61) — Universidad Tecnológica del Perú (UTP)  
@@ -256,8 +296,8 @@ spring.datasource.username=postgres
 spring.datasource.password=admin
 stockguard.jwt.secret=clave_secreta_super_segura_de_mas_de_32_caracteres_12345
 stockguard.bootstrap.username=administrador
-stockguard.bootstrap.password=ContrasenaSeguraDeMasDe12Caracteres!
-stockguard.demo.password=OtraContrasenaSeguraDeMasDe12Caracteres!
+stockguard.bootstrap.password=REEMPLAZAR_CON_SECRETO_LOCAL_ALEATORIO
+stockguard.demo.password=OtraREEMPLAZAR_CON_SECRETO_LOCAL_ALEATORIO
 ```
 
 ### Paso 4: Ejecutar las Pruebas Automatizadas
