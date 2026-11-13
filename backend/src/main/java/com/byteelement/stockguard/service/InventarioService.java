@@ -271,6 +271,26 @@ public class InventarioService {
     return ConteoResponse.desde(c);
   }
 
+  public Page<ConteoResponse> listarConteos(
+      String sku,
+      Long almacenId,
+      Boolean confirmado,
+      Instant desde,
+      Instant hasta,
+      int pagina,
+      int tamanio) {
+    Periodo.validar(desde, hasta);
+    return conteos
+        .buscar(
+            sku == null ? null : sku.trim().toUpperCase(Locale.ROOT),
+            almacenId,
+            confirmado,
+            desde,
+            hasta,
+            PageRequest.of(pagina, tamanio, Sort.by("fechaCorte", "id").descending()))
+        .map(ConteoResponse::desde);
+  }
+
   public ConteoResponse obtenerConteo(Long id) {
     return ConteoResponse.desde(
         conteos.findById(id).orElseThrow(() -> new NoSuchElementException("Conteo no encontrado")));
