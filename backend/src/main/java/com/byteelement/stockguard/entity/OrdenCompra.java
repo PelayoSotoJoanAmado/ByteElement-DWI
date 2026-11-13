@@ -40,6 +40,48 @@ public class OrdenCompra {
   @Column(name = "monto_estimado", nullable = false, precision = 12, scale = 2)
   private BigDecimal montoEstimado = BigDecimal.ZERO;
 
+  private long cantidadRecibida;
+  private Instant canceladaEn;
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "cancelada_por_id")
+  private Usuario canceladaPor;
+
+  @Column(length = 500)
+  private String motivoCancelacion;
+
+  public long getCantidadRecibida() {
+    return cantidadRecibida;
+  }
+
+  public Instant getCanceladaEn() {
+    return canceladaEn;
+  }
+
+  public String getMotivoCancelacion() {
+    return motivoCancelacion;
+  }
+
+  public void recibir(long cantidad) {
+    if (estado != EstadoOrdenCompra.EMITIDA
+        || cantidad <= 0
+        || cantidad > solicitud.getCantidad() - cantidadRecibida)
+      throw new com.byteelement.stockguard.exception.ConflictoCatalogoException(
+          "Recepcion supera saldo pendiente o la orden no esta emitida");
+    cantidadRecibida += cantidad;
+    if (cantidadRecibida == solicitud.getCantidad()) estado = EstadoOrdenCompra.ATENDIDA;
+  }
+
+  public void cancelar(Usuario actor, Instant fecha, String motivo) {
+    if (estado != EstadoOrdenCompra.EMITIDA)
+      throw new com.byteelement.stockguard.exception.ConflictoCatalogoException(
+          "Solo se cancela el pendiente de una orden emitida");
+    estado = EstadoOrdenCompra.CANCELADA;
+    canceladaPor = actor;
+    canceladaEn = fecha;
+    motivoCancelacion = motivo;
+  }
+
   protected OrdenCompra() {}
 
   public OrdenCompra(
@@ -58,14 +100,6 @@ public class OrdenCompra {
     this.emitidaEn = Objects.requireNonNull(emitidaEn, "Fecha emitida es requerida");
     this.montoEstimado = montoEstimado != null ? montoEstimado : BigDecimal.ZERO;
     this.estado = EstadoOrdenCompra.EMITIDA;
-  }
-
-  public void marcarAtendida() {
-    this.estado = EstadoOrdenCompra.ATENDIDA;
-  }
-
-  public void cancelar() {
-    this.estado = EstadoOrdenCompra.CANCELADA;
   }
 
   public Long getId() {
@@ -104,4 +138,3 @@ public class OrdenCompra {
     return montoEstimado;
   }
 }
-
