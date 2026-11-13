@@ -37,6 +37,17 @@ public class ReporteController {
     return reportes.indicador(codigo, desde, hasta, sku, almacenId);
   }
 
+  @GetMapping("/dashboard")
+  public List<IndicadorResponse> dashboard(
+      @RequestParam Instant desde,
+      @RequestParam Instant hasta,
+      @RequestParam(required = false) String sku,
+      @RequestParam(required = false) Long almacenId) {
+    return List.of("I05", "I06", "I07", "I08", "I09", "I10").stream()
+        .map(codigo -> reportes.indicador(codigo, desde, hasta, sku, almacenId))
+        .toList();
+  }
+
   @GetMapping("/reportes/{tipo}")
   public Page<Map<String, Object>> reporte(
       @PathVariable String tipo,
