@@ -20,6 +20,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { tap } from 'rxjs';
+import { AuthService } from '../../../core/auth/auth.service';
 import { ROLES } from '../../../core/auth/auth.models';
 import { AdminApi, Resource, Row } from '../shared/admin-api';
 import { RemoteState } from '../shared/remote-state';
@@ -99,6 +100,7 @@ export const passwordBytes: ValidatorFn = (control) =>
 })
 export class AdminResources {
   private readonly api = inject(AdminApi);
+  readonly canManage = inject(AuthService).user()?.rol === 'ADMINISTRADOR';
   private readonly changeDetector = inject(ChangeDetectorRef);
   private readonly destroy = inject(DestroyRef);
   private readonly route = inject(ActivatedRoute);
@@ -128,13 +130,14 @@ export class AdminResources {
   readonly singular = computed(
     () => ({ usuarios: 'usuario', productos: 'producto', almacenes: 'almacén' })[this.kind()],
   );
-  readonly description = computed(
-    () =>
-      ({
-        usuarios: 'Administra las cuentas y los roles de tu equipo.',
-        productos: 'Organiza el catálogo de tu inventario.',
-        almacenes: 'Mantén tus ubicaciones organizadas.',
-      })[this.kind()],
+  readonly description = computed(() =>
+    !this.canManage
+      ? 'Consulta el catálogo y el estado de los registros.'
+      : {
+          usuarios: 'Administra las cuentas y los roles de tu equipo.',
+          productos: 'Organiza el catálogo de tu inventario.',
+          almacenes: 'Mantén tus ubicaciones organizadas.',
+        }[this.kind()],
   );
   readonly fields = computed(() => FIELDS[this.kind()]);
   readonly columns = computed(() => COLUMNS[this.kind()]);
@@ -179,6 +182,7 @@ export class AdminResources {
     this.page.set(0);
   }
   openEditor(row?: Row): void {
+    if (!this.canManage) return;
     this.mutation.clear();
     this.showPassword.set(false);
     this.editingId.set(row ? Number(row['id']) : undefined);
@@ -223,6 +227,7 @@ export class AdminResources {
     return !!c?.touched && !!c.invalid;
   }
   save(): void {
+    if (!this.canManage) return;
     if (this.mutation.loading()) return;
     this.form.markAllAsTouched();
     if (this.form.invalid) return;
@@ -258,11 +263,13 @@ export class AdminResources {
     this.detailDialog().nativeElement.showModal();
   }
   askDeactivate(row: Row): void {
+    if (!this.canManage) return;
     this.mutation.clear();
     this.confirming.set(row);
     this.confirmation().nativeElement.showModal();
   }
   deactivate(): void {
+    if (!this.canManage) return;
     const row = this.confirming();
     const kind = this.kind();
     if (!row || kind === 'usuarios' || this.mutation.loading()) return;

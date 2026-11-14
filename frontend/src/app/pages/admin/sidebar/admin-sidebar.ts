@@ -13,5 +13,7 @@ export class AdminSidebar {
   readonly username = input('Administrador');
   readonly navigate = output<void>();
   readonly signOut = output<void>();
-  readonly groups = ADMIN_NAVIGATION;
+  readonly groups = input(ADMIN_NAVIGATION);
+  readonly home = input('/admin');
+  readonly roleLabel = input('ADMINISTRADOR');
 }

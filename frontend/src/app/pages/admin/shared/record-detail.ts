@@ -3,6 +3,17 @@ import { Row } from './admin-api';
 import { display } from './presentation';
 const TITLES: Record<string, string> = {
   id: 'ID',
+  origenAlmacenId: 'Almacén de origen',
+  destinoAlmacenId: 'Almacén de destino',
+  movimientoSalidaId: 'Movimiento de salida',
+  movimientoEntradaId: 'Movimiento de entrada',
+  saldoOrigenResultante: 'Saldo del origen',
+  saldoDestinoResultante: 'Saldo del destino',
+  cantidadFisica: 'Cantidad física',
+  saldoCorte: 'Saldo al corte',
+  confirmado: 'Confirmado',
+  confirmadoPor: 'Confirmado por',
+  confirmadoEn: 'Fecha de confirmación',
   username: 'Usuario',
   rol: 'Rol',
   activo: 'Activo',

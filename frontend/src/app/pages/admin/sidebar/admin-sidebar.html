@@ -1,19 +1,19 @@
 <a
   class="sidebar-brand brand"
-  routerLink="/admin"
+  [routerLink]="home()"
   (click)="navigate.emit()"
-  aria-label="StockGuard, panel de administrador"
+  aria-label="StockGuard, panel principal"
   ><app-icon name="shield" />StockGuard</a
 >
-<nav aria-label="Menú del administrador">
-  @for (group of groups; track group.label) {
+<nav aria-label="Menú principal">
+  @for (group of groups(); track group.label) {
     <div class="nav-group">
       <h2>{{ group.label }}</h2>
       @for (link of group.links; track link.path) {
         <a
           [routerLink]="link.path"
           routerLinkActive="active"
-          [routerLinkActiveOptions]="{ exact: link.path === '/admin' }"
+          [routerLinkActiveOptions]="{ exact: link.path === home() }"
           ariaCurrentWhenActive="page"
           (click)="navigate.emit()"
           ><app-icon [name]="link.icon" /><span>{{ link.label }}</span></a
@@ -27,7 +27,7 @@
     <span class="account-avatar" aria-hidden="true">{{ username().charAt(0).toUpperCase() }}</span>
     <div>
       <p [title]="username()">{{ username() }}</p>
-      <span class="account-role">ADMINISTRADOR</span>
+      <span class="account-role">{{ roleLabel() }}</span>
     </div>
   </div>
   <button class="sign-out" type="button" (click)="signOut.emit()">

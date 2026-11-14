@@ -1,0 +1,393 @@
+<header class="ap-page-header">
+  <div>
+    <h1 class="ap-title">{{ title() }}</h1>
+    <p class="ap-subtitle">
+      {{
+        kind() === 'conteos'
+          ? 'Registra el conteo físico; la confirmación corresponde al supervisor.'
+          : kind() === 'transferencias'
+            ? 'Traslada productos entre almacenes con trazabilidad de salida y entrada.'
+            : kind() === 'recepciones'
+              ? 'Consulta las órdenes y registra recepciones parciales o completas.'
+              : 'Registra y consulta las entradas y salidas de inventario.'
+      }}
+    </p>
+  </div>
+  <button
+    class="ap-button"
+    [disabled]="busy() || warehouses.loading() || products.loading()"
+    (click)="loadOptions()"
+  >
+    Actualizar opciones
+  </button>
+</header>
+<section class="ap-panel" id="warehouse-operation">
+  <h2>
+    {{
+      kind() === 'conteos'
+        ? 'Registrar conteo'
+        : kind() === 'transferencias'
+          ? 'Nueva transferencia'
+          : kind() === 'recepciones'
+            ? 'Registrar recepción'
+            : 'Registrar movimiento'
+    }}
+  </h2>
+  @if (products.loading() || warehouses.loading()) {
+    <p class="ap-help" role="status">Cargando opciones…</p>
+  }
+  @if (products.error() || warehouses.error()) {
+    <p class="ap-notice ap-error" role="alert">
+      {{ products.error() || warehouses.error() }}
+      <button class="ap-button" (click)="loadOptions()">Reintentar</button>
+    </p>
+  }
+  @if (
+    kind() !== 'recepciones' &&
+    !products.loading() &&
+    !warehouses.loading() &&
+    !products.error() &&
+    !warehouses.error() &&
+    (!activeProducts().length || !activeWarehouses().length)
+  ) {
+    <p class="ap-notice" role="status">
+      No hay productos o almacenes activos disponibles. El administrador debe completar los
+      catálogos antes de registrar operaciones.
+    </p>
+  }
+  <form
+    class="warehouse-form"
+    [formGroup]="form"
+    (ngSubmit)="submit()"
+    novalidate
+    [attr.aria-busy]="busy()"
+  >
+    @if (kind() === 'recepciones') {
+      <div class="warehouse-wide">
+        <label for="wh-order" class="ap-label">ID de la orden</label>
+        <div class="ap-actions">
+          <input
+            id="wh-order"
+            class="ap-input"
+            type="number"
+            min="1"
+            step="1"
+            formControlName="ordenId"
+            placeholder="Selecciona una orden del listado o escribe su ID"
+          /><button
+            class="ap-button"
+            type="button"
+            [disabled]="busy() || order.loading()"
+            (click)="loadOrder()"
+          >
+            Consultar orden
+          </button>
+        </div>
+        @if (order.loading()) {
+          <p role="status">Consultando orden…</p>
+        }
+        @if (order.error()) {
+          <p class="ap-notice ap-error" role="alert">{{ order.error() }}</p>
+        }
+        @if (order.data(); as o) {
+          <div class="warehouse-order">
+            <strong>{{ show(o['numeroOrden']) }}</strong>
+            <p>Producto: {{ show(o['sku']) }} · Almacén: {{ warehouseLabel(o['almacenId']) }}</p>
+            <p>
+              Estado: {{ show(o['estado']) }} · Solicitada: {{ show(o['cantidad']) }} · Recibida:
+              {{ show(o['cantidadRecibida']) }} · Pendiente: {{ show(o['cantidadPendiente']) }}
+            </p>
+            <p class="ap-help">
+              La recepción ingresa el producto en el almacén indicado en la solicitud de compra.
+            </p>
+            @if (!canReceive() && !locked()) {
+              <p role="status">Esta orden no tiene una recepción disponible.</p>
+            }
+          </div>
+        }
+      </div>
+    } @else {
+      <label
+        ><span class="ap-label">Producto</span
+        ><select class="ap-select" formControlName="productoId">
+          <option value="">Selecciona un producto activo</option>
+          @for (p of activeProducts(); track p.id) {
+            <option [value]="p.id">{{ p.sku }} · {{ p.marca }} {{ p.modelo }}</option>
+          }
+        </select></label
+      >
+      <label
+        ><span class="ap-label">{{
+          kind() === 'transferencias' ? 'Almacén de origen' : 'Almacén'
+        }}</span
+        ><select class="ap-select" formControlName="almacenId">
+          <option value="">Selecciona un almacén activo</option>
+          @for (w of activeWarehouses(); track w.id) {
+            <option [value]="w.id">{{ w.codigo }} · {{ w.nombre }}</option>
+          }
+        </select></label
+      >
+      @if (kind() === 'transferencias') {
+        <label
+          ><span class="ap-label">Almacén de destino</span
+          ><select class="ap-select" formControlName="destinoAlmacenId">
+            <option value="">Selecciona otro almacén</option>
+            @for (w of activeWarehouses(); track w.id) {
+              <option [value]="w.id" [disabled]="'' + w.id === form.controls.almacenId.value">
+                {{ w.codigo }} · {{ w.nombre }}
+              </option>
+            }
+          </select></label
+        >
+      }
+      @if (kind() === 'movimientos') {
+        <label
+          ><span class="ap-label">Tipo de movimiento</span
+          ><select class="ap-select" formControlName="tipo">
+            <option value="ENTRADA">Entrada</option>
+            <option value="SALIDA">Salida</option>
+          </select></label
+        >
+      }
+    }
+    <label
+      ><span class="ap-label">{{
+        kind() === 'conteos' ? 'Cantidad física contada' : 'Cantidad'
+      }}</span
+      ><input
+        class="ap-input"
+        type="number"
+        [min]="kind() === 'conteos' ? 0 : 1"
+        step="1"
+        formControlName="cantidad"
+        placeholder="Cantidad en unidades"
+      /><span class="ap-help">{{
+        kind() === 'conteos' ? 'Número entero desde cero.' : 'Número entero mayor que cero.'
+      }}</span></label
+    >
+    <label class="warehouse-wide"
+      ><span class="ap-label">Motivo</span
+      ><textarea
+        class="ap-textarea"
+        formControlName="motivo"
+        maxlength="500"
+        rows="3"
+        placeholder="Describe el motivo de la operación"
+      ></textarea
+      ><span class="ap-help">Obligatorio. Hasta 500 caracteres.</span></label
+    >
+    <div class="warehouse-wide ap-actions">
+      @if (!locked()) {
+        <button
+          type="submit"
+          class="ap-button ap-primary"
+          [disabled]="
+            busy() ||
+            products.loading() ||
+            warehouses.loading() ||
+            (kind() === 'recepciones' && !canReceive())
+          "
+        >
+          Registrar
+          {{
+            kind() === 'conteos'
+              ? 'conteo'
+              : kind() === 'transferencias'
+                ? 'transferencia'
+                : kind() === 'recepciones'
+                  ? 'recepción'
+                  : 'movimiento'
+          }}
+        </button>
+      }
+      @if (locked() && !busy()) {
+        @if (uncertain() && kind() === 'recepciones') {
+          <button type="button" class="ap-button ap-primary" (click)="retryReceipt()">
+            Reintentar la misma recepción
+          </button>
+        }
+        <button type="button" class="ap-button" (click)="newOperation()">Nueva operación</button>
+      }
+      @if (busy()) {
+        <span class="ap-help" role="status">Registrando operación, espera la respuesta…</span>
+      }
+    </div>
+  </form>
+  @if (failure()) {
+    <p class="ap-notice ap-error" role="alert">{{ failure() }}</p>
+  }
+  @if (notice()) {
+    <p class="ap-notice" role="status">{{ notice() }}</p>
+  }
+  @if (result(); as row) {
+    <h3>Resultado de la operación</h3>
+    <app-record-detail [record]="row" />
+  }
+</section>
+@if (kind() === 'transferencias') {
+  <section class="ap-panel warehouse-section">
+    <h2>Trazabilidad de las transferencias</h2>
+    <p class="ap-subtitle">
+      Cada transferencia genera un movimiento de salida y otro de entrada. Al registrarla verás sus
+      identificadores y los saldos resultantes.
+    </p>
+    <a class="ap-button" routerLink="/almacen/movimientos">Consultar movimientos →</a>
+  </section>
+} @else {
+  <section class="ap-panel warehouse-section">
+    <h2>
+      {{
+        kind() === 'conteos'
+          ? 'Historial de conteos'
+          : kind() === 'recepciones'
+            ? 'Órdenes de compra'
+            : 'Historial de movimientos'
+      }}
+    </h2>
+    <form class="ap-toolbar" [formGroup]="filters" (ngSubmit)="query()" novalidate>
+      <label
+        ><span class="ap-label">SKU</span
+        ><input
+          class="ap-input"
+          formControlName="sku"
+          maxlength="50"
+          placeholder="Todos los productos"
+      /></label>
+      <label
+        ><span class="ap-label">Almacén</span
+        ><select class="ap-select" formControlName="almacenId">
+          <option value="">Todos los almacenes</option>
+          @for (w of warehouses.data() ?? []; track w.id) {
+            <option [value]="w.id">{{ w.codigo }} · {{ w.nombre }}</option>
+          }
+        </select></label
+      >
+      <label
+        ><span class="ap-label">Desde</span
+        ><input class="ap-input" type="date" formControlName="desde" /></label
+      ><label
+        ><span class="ap-label">Hasta (inclusive)</span
+        ><input class="ap-input" type="date" formControlName="hasta"
+      /></label>
+      @if (kind() === 'conteos') {
+        <label
+          ><span class="ap-label">Confirmación</span
+          ><select class="ap-select" formControlName="confirmado">
+            <option value="">Todos</option>
+            <option value="false">Pendientes</option>
+            <option value="true">Confirmados</option>
+          </select></label
+        >
+      }
+      @if (kind() === 'recepciones') {
+        <label
+          ><span class="ap-label">Estado</span
+          ><select class="ap-select" formControlName="estado">
+            <option value="">Todos</option>
+            <option value="EMITIDA">Emitida</option>
+            <option value="ATENDIDA">Atendida</option>
+            <option value="CANCELADA">Cancelada</option>
+          </select></label
+        >
+      }
+      <button class="ap-button ap-primary" type="submit" [disabled]="results.loading()">
+        {{ results.loading() ? 'Consultando…' : 'Consultar' }}
+      </button>
+    </form>
+    <p class="ap-help">Fechas en horario de Lima. La fecha final incluye el día completo.</p>
+    @if (queryError()) {
+      <p class="ap-notice ap-error" role="alert">{{ queryError() }}</p>
+    }
+    @if (results.loading()) {
+      <p class="ap-loading" role="status">Cargando información…</p>
+    } @else if (results.error()) {
+      <p class="ap-notice ap-error" role="alert">
+        {{ results.error() }} <button class="ap-button" (click)="query(page())">Reintentar</button>
+      </p>
+    } @else if (results.data(); as list) {
+      <app-data-table
+        [rows]="list.content"
+        [columns]="columns()"
+        [caption]="title()"
+        [detail]="true"
+        (inspect)="inspect($event)"
+      />
+      <div class="ap-pager">
+        <button class="ap-button" [disabled]="page() === 0" (click)="query(page() - 1)">
+          Anterior</button
+        ><span
+          >Página {{ page() + 1 }} de {{ list.totalPages || 1 }} ·
+          {{ list.totalElements }} resultados</span
+        ><button
+          class="ap-button"
+          [disabled]="page() + 1 >= list.totalPages"
+          (click)="query(page() + 1)"
+        >
+          Siguiente
+        </button>
+      </div>
+    }
+  </section>
+}
+@if (kind() === 'recepciones' && form.controls.ordenId.value) {
+  <section class="ap-panel warehouse-section">
+    <h2>Historial de recepciones de la orden</h2>
+    <button class="ap-button" [disabled]="receipts.loading()" (click)="loadReceipts(receiptPage())">
+      Actualizar historial
+    </button>
+    @if (receipts.loading()) {
+      <p role="status">Cargando recepciones…</p>
+    } @else if (receipts.error()) {
+      <p class="ap-notice ap-error" role="alert">{{ receipts.error() }}</p>
+    } @else if (receipts.data(); as list) {
+      <app-data-table
+        [rows]="list.content"
+        [columns]="receptionColumns"
+        caption="Recepciones registradas"
+      />
+      <div class="ap-pager">
+        <button
+          class="ap-button"
+          [disabled]="receiptPage() === 0"
+          (click)="loadReceipts(receiptPage() - 1)"
+        >
+          Anterior</button
+        ><span>Página {{ receiptPage() + 1 }} · {{ list.totalElements }} recepciones</span
+        ><button
+          class="ap-button"
+          [disabled]="receiptPage() + 1 >= list.totalPages"
+          (click)="loadReceipts(receiptPage() + 1)"
+        >
+          Siguiente
+        </button>
+      </div>
+    }
+  </section>
+}
+<dialog #detailDialog class="ap-dialog">
+  <div class="ap-dialog-header">
+    <h2>
+      Detalle de
+      {{
+        kind() === 'conteos'
+          ? 'conteo'
+          : kind() === 'recepciones'
+            ? 'orden de compra'
+            : 'movimiento'
+      }}
+    </h2>
+    <button class="ap-close" aria-label="Cerrar detalle" (click)="detailDialog.close()">×</button>
+  </div>
+  @if (selected(); as row) {
+    <app-record-detail [record]="row" />
+    @if (kind() === 'recepciones') {
+      <button
+        class="ap-button"
+        [disabled]="busy() || locked()"
+        (click)="chooseOrder(row); detailDialog.close()"
+      >
+        Consultar orden y recepciones
+      </button>
+    }
+  }
+</dialog>

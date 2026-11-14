@@ -26,7 +26,20 @@ describe('Administrator route protection', () => {
       providers: [
         provideRouter(routes),
         provideHttpClient(),
-        { provide: AdminApi, useValue: { list: () => of([]), pageRows: () => of([]) } },
+        {
+          provide: AdminApi,
+          useValue: {
+            list: () => of([]),
+            pageRows: () => of([]),
+            products: () => of([]),
+            get: (path: string) =>
+              of(
+                path === 'almacenes'
+                  ? []
+                  : { content: [], totalElements: 0, totalPages: 0, number: 0, size: 20 },
+              ),
+          },
+        },
       ],
     });
   });
@@ -43,7 +56,7 @@ describe('Administrator route protection', () => {
     await RouterTestingHarness.create('/admin/usuarios/nuevo');
     expect(TestBed.inject(Router).url).toBe('/login');
   });
-  it.each<Role>(['ALMACEN', 'COMPRAS', 'SUPERVISOR', 'CONSULTA_COMERCIAL'])(
+  it.each<Role>(['COMPRAS', 'SUPERVISOR', 'CONSULTA_COMERCIAL'])(
     'rejects the %s role',
     async (role) => {
       storedSession(role);
@@ -53,6 +66,11 @@ describe('Administrator route protection', () => {
       expect(harness.routeNativeElement?.querySelector('app-admin-layout')).toBeNull();
     },
   );
+  it('keeps the warehouse role in its own panel when an administrator URL is requested', async () => {
+    storedSession('ALMACEN');
+    await RouterTestingHarness.create('/admin');
+    expect(TestBed.inject(Router).url).toBe('/almacen');
+  });
   it('opens the panel for an administrator and shows no invented metrics', async () => {
     storedSession('ADMINISTRADOR');
     const harness = await RouterTestingHarness.create('/admin');

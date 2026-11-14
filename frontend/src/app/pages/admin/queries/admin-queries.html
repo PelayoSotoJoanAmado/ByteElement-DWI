@@ -149,8 +149,9 @@
       @for (metric of items; track metric['codigo']) {
         <article class="ap-metric">
           <div class="ap-metric-code">
-            <span>{{ metric['codigo'] }}</span
-            ><span>{{ metric['unidad'] === 'dias' ? 'días' : metric['unidad'] }}</span>
+            <span>{{ metric['codigo'] }}</span><span>{{
+              metric['unidad'] === 'dias' ? 'días' : metric['unidad']
+            }}</span>
           </div>
           <h2>{{ metric['nombre'] }}</h2>
           @if (metric['error']) {
@@ -233,6 +234,18 @@
     <app-record-detail [record]="row" />
   }
   @if (kind() === 'compras' && tab() === 'ordenes') {
+    @if (
+      warehouse &&
+      selected()?.['estado'] === 'EMITIDA' &&
+      +$any(selected()?.['cantidadPendiente']) > 0
+    ) {
+      <a
+        class="ap-button ap-primary"
+        routerLink="/almacen/recepciones"
+        [queryParams]="{ orden: selected()?.['id'] }"
+        >Registrar recepción</a
+      >
+    }
     <h3>Recepciones de la orden</h3>
     @if (receptions.loading()) {
       <p role="status">Cargando recepciones…</p>

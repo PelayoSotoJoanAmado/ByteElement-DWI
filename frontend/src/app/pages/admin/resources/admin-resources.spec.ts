@@ -4,6 +4,7 @@ import { of, Subject, throwError } from 'rxjs';
 import { HttpErrorResponse } from '@angular/common/http';
 import { AdminResources, passwordBytes } from './admin-resources';
 import { AdminApi, Resource } from '../shared/admin-api';
+import { AuthService } from '../../../core/auth/auth.service';
 import { FormControl } from '@angular/forms';
 function setup(resource: Resource) {
   const api = {
@@ -26,6 +27,7 @@ function setup(resource: Resource) {
     imports: [AdminResources],
     providers: [
       provideRouter([]),
+      { provide: AuthService, useValue: { user: () => ({ rol: 'ADMINISTRADOR' }) } },
       { provide: AdminApi, useValue: api },
       {
         provide: ActivatedRoute,

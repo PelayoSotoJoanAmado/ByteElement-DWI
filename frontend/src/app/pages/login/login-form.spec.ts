@@ -70,7 +70,7 @@ describe('Login', () => {
     });
     expect(TestBed.inject(AuthService).session()?.usuario.rol).toBe('ALMACEN');
     expect(fixture.componentInstance.form.controls.password.value).toBe('');
-    expect(navigate).toHaveBeenCalledWith('/');
+    expect(navigate).toHaveBeenCalledWith('/almacen');
     expect(fixture.componentInstance.submitting()).toBe(false);
   });
   it('redirects a successful administrator login to its protected panel', () => {
@@ -78,14 +78,12 @@ describe('Login', () => {
     const fixture = TestBed.createComponent(LoginForm);
     fixture.componentInstance.form.setValue({ username: 'admin.test', password: 'test-password' });
     fixture.componentInstance.submit();
-    http
-      .expectOne('/api/v1/auth/login')
-      .flush({
-        accessToken: 'admin-token',
-        tokenType: 'Bearer',
-        expiresIn: 1800,
-        usuario: { id: 1, username: 'admin.test', rol: 'ADMINISTRADOR', activo: true },
-      });
+    http.expectOne('/api/v1/auth/login').flush({
+      accessToken: 'admin-token',
+      tokenType: 'Bearer',
+      expiresIn: 1800,
+      usuario: { id: 1, username: 'admin.test', rol: 'ADMINISTRADOR', activo: true },
+    });
     expect(navigate).toHaveBeenCalledWith('/admin');
   });
 

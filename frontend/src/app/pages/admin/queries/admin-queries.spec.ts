@@ -4,6 +4,7 @@ import { of, throwError } from 'rxjs';
 import { HttpErrorResponse } from '@angular/common/http';
 import { AdminQueries } from './admin-queries';
 import { AdminApi } from '../shared/admin-api';
+import { AuthService } from '../../../core/auth/auth.service';
 import { QueryKind } from './query.config';
 function setup(query: QueryKind) {
   const api = {
@@ -24,6 +25,7 @@ function setup(query: QueryKind) {
     imports: [AdminQueries],
     providers: [
       provideRouter([]),
+      { provide: AuthService, useValue: { user: () => ({ rol: 'ADMINISTRADOR' }) } },
       { provide: AdminApi, useValue: api },
       { provide: ActivatedRoute, useValue: { data: of({ query }) } },
     ],

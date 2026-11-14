@@ -42,9 +42,29 @@ La salida de producción está en `dist/frontend/browser/`. El alojamiento debe 
 
 Se conserva la estructura visual del panel original: menú, tipografía, dimensiones y colores. Las vistas usan controles, tablas, estados de petición y formularios comunes; los formularios se abren en diálogos nativos a la derecha y se adaptan a móvil. El formulario de login no tiene registro público.
 
+## Panel de Almacén
+
+| Ruta                                       | Funcionalidad                                                                                                                                                        |
+| ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/almacen`                                 | Inicio de operaciones, últimos cinco movimientos y accesos rápidos.                                                                                                  |
+| `/almacen/existencias`                     | Consulta compartida de stock por producto y almacén.                                                                                                                 |
+| `/almacen/movimientos`                     | Registrar entrada/salida; historial paginado con SKU, almacén, fechas y detalle.                                                                                     |
+| `/almacen/transferencias`                  | Transferir entre almacenes activos distintos; resultado con ambos movimientos y saldos. Historial consultable en Movimientos, sin inventar un GET de transferencias. |
+| `/almacen/conteos`                         | Registrar conteo (incluye cero), historial con filtros de confirmación y detalle. No permite confirmar ni ajustar.                                                   |
+| `/almacen/recepciones`                     | Órdenes emitidas pendientes, selección por detalle o ID, producto/almacén de destino, recepción parcial/completa e historial paginado por orden.                     |
+| `/almacen/productos`, `/almacen/almacenes` | Catálogos compartidos de solo lectura, búsqueda, filtros y detalle.                                                                                                  |
+| `/almacen/reposicion`, `/almacen/compras`  | Consultas compartidas de reposición, solicitudes y órdenes; enlace desde la orden a su recepción.                                                                    |
+| `/almacen/reportes`                        | Reportes compartidos de rotación y stock crítico.                                                                                                                    |
+
+Se reutilizan la estructura visual, navegación, footer, componentes de catálogos, consultas, tablas y cliente HTTP del administrador. La selección de acciones depende del rol; la API conserva la autorización y todas las reglas de negocio. No se modifica el backend.
+
+Las cantidades se validan como enteros seguros (positivos o cero para conteos); se exige motivo y producto/almacén activos para operar. Los errores de stock insuficiente y conflictos se muestran con el mensaje del servidor. No se permite doble envío mientras la petición está pendiente. Tras éxito, el formulario queda bloqueado hasta iniciar otra operación.
+
+Cada recepción conserva su clave de idempotencia y contenido al reintentar, incluso al recargar en la misma pestaña mediante `sessionStorage` por usuario. Ante resultado incierto, solo la recepción permite reenviar exactamente la misma petición; movimientos, transferencias y conteos deben revisarse en el historial antes de iniciar otra operación, porque sus endpoints no admiten claves de idempotencia. No se realizan reintentos automáticos. La recuperación depende de que el almacenamiento de sesión esté disponible.
+
 ## Permisos y sesión
 
-El panel y todas sus rutas hijas requieren una sesión vigente con rol `ADMINISTRADOR`. Los cuatro roles restantes no acceden al panel; sus propias áreas de trabajo aún no se implementan y conservan la presentación pública como destino tras el login.
+El área `/admin` requiere una sesión vigente con rol `ADMINISTRADOR`. El área `/almacen` y todas sus rutas hijas requieren `ALMACEN`. El login redirige cada uno a su panel; sus menús no permiten saltar de rol. Los otros tres roles aún conservan la presentación pública como destino tras el login.
 
 El interceptor adjunta Bearer solo a rutas relativas `/api/v1/`, excluyendo login. Un 401 de la sesión actual la cierra; un 403 no la elimina y un 401 tardío de una sesión anterior no cierra una sesión nueva. El panel vigila el vencimiento, y cerrar sesión elimina el token y vuelve al login.
 
@@ -68,7 +88,8 @@ La interfaz respeta los cinco roles del backend: `ALMACEN`, `COMPRAS`, `SUPERVIS
 ## Organización
 
 - `src/app/core/auth/`: login, sesión, guards e interceptor.
-- `src/app/pages/admin/layout/` y `sidebar/`: estructura y navegación originales.
+- `src/app/pages/admin/layout/` y `sidebar/`: estructura y navegación compartidas por rol.
+- `src/app/pages/warehouse/`: inicio de Almacén, operaciones, navegación y estilos de esa área.
 - `src/app/pages/admin/dashboard/`: resumen conectado a la API.
 - `src/app/pages/admin/resources/`: cuentas y catálogos.
 - `src/app/pages/admin/queries/`: inventario, compras, reportes e indicadores.
@@ -79,8 +100,10 @@ La interfaz respeta los cinco roles del backend: `ALMACEN`, `COMPRAS`, `SUPERVIS
 
 ## Verificación
 
-Compilación de producción sin advertencias y 53 pruebas automatizadas. Cubren protección por los cinco roles, sesión, login, creación y validación de usuarios, confirmación de contraseñas, máximo BCrypt de 72 bytes UTF-8, contratos de catálogo y paginación completa, fechas inclusive/exclusiva en Lima, consultas de stock cero, indicadores sin datos/errores parciales y estados de salud/evidencias.
+La entrega anterior del administrador se verificó con compilación y 53 pruebas automatizadas. Esas pruebas cubren protección por los cinco roles, sesión, login, creación y validación de usuarios, confirmación de contraseñas, máximo BCrypt de 72 bytes UTF-8, contratos de catálogo y paginación completa, fechas inclusive/exclusiva en Lima, consultas de stock cero, indicadores sin datos/errores parciales y estados de salud/evidencias.
 
 Las respuestas de la API se verifican con HttpTestingController o servicios de prueba. La revisión visual en navegador usa HTML renderizado por los componentes Angular con datos de prueba; esos fixtures no forman parte de la aplicación ni agregan excepciones a los guards.
+
+Para esta ampliación de Almacén se verifica la compilación de producción. La ejecución de pruebas se deja para la etapa final solicitada por el usuario; se actualizan las expectativas existentes de redirección y los fixtures de permisos.
 
 Queda pendiente validar los nuevos flujos de extremo a extremo con el backend/PostgreSQL del usuario. No se modificó el backend ni se crearon usuarios/productos/almacenes reales en esta entrega. Ver `docs/VALIDACION-ADMIN.md` para la comprobación local.

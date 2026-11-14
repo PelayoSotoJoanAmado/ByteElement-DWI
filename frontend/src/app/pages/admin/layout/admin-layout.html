@@ -10,6 +10,9 @@
   }
   <aside class="admin-sidebar" id="admin-navigation" [class.open]="menuOpen()">
     <app-admin-sidebar
+      [groups]="groups"
+      [home]="home"
+      [roleLabel]="roleLabel"
       [username]="user()?.username ?? 'Administrador'"
       (navigate)="menuOpen.set(false)"
       (signOut)="logout()"
@@ -28,21 +31,21 @@
         >
           <app-icon [name]="menuOpen() ? 'close' : 'menu'" /></button
         ><span
-          >Administración <span class="breadcrumb-divider">/</span>
+          >{{ section }} <span class="breadcrumb-divider">/</span>
           <strong>{{ pageTitle() }}</strong></span
         >
       </div>
       <div class="topbar-account">
-        <span class="role-badge">ADMINISTRADOR</span
-        ><span class="topbar-avatar" [attr.aria-label]="user()?.username">{{
-          user()?.username?.charAt(0)?.toUpperCase()
-        }}</span>
+        <span class="role-badge">{{ roleLabel }}</span><span
+          class="topbar-avatar"
+          [attr.aria-label]="user()?.username"
+          >{{ user()?.username?.charAt(0)?.toUpperCase() }}</span
+        >
       </div>
     </header>
     <main class="admin-content" id="admin-content" tabindex="-1"><router-outlet /></main>
     <footer class="admin-footer">
-      <span>© {{ year }} StockGuard</span
-      ><span><app-icon name="lock" />Panel de administrador</span>
+      <span>© {{ year }} StockGuard</span><span><app-icon name="lock" />{{ panelLabel }}</span>
     </footer>
   </div>
 </div>

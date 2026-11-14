@@ -17,6 +17,7 @@ import { RemoteState, errorMessage } from '../shared/remote-state';
 import { DataTable } from '../shared/data-table';
 import { RecordDetail } from '../shared/record-detail';
 import { display, todayLima, daysBefore, periodParams } from '../shared/presentation';
+import { AuthService } from '../../../core/auth/auth.service';
 import { METRICS, PurchaseTab, QUERY_COLUMNS, QUERY_TITLES, QueryKind } from './query.config';
 @Component({
   selector: 'app-admin-queries',
@@ -28,6 +29,7 @@ export class AdminQueries {
   private readonly api = inject(AdminApi);
   private readonly destroy = inject(DestroyRef);
   private readonly route = inject(ActivatedRoute);
+  readonly warehouse = inject(AuthService).user()?.rol === 'ALMACEN';
   readonly kind = signal<QueryKind>('movimientos');
   readonly tab = signal<PurchaseTab>('reposicion');
   readonly selected = signal<Row | null>(null);
@@ -76,7 +78,7 @@ export class AdminQueries {
     });
     this.route.data.pipe(takeUntilDestroyed()).subscribe((data) => {
       this.kind.set(data['query'] as QueryKind);
-      this.tab.set('reposicion');
+      this.tab.set((data['initialTab'] as PurchaseTab) ?? 'reposicion');
       this.form.controls.estado.setValue('', { emitEvent: false });
       this.clear();
       this.loadOptions();

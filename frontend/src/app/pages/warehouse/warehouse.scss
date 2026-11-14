@@ -1,0 +1,54 @@
+:host {
+  display: block;
+}
+.warehouse-welcome {
+  font-family: Georgia, serif;
+  font-size: clamp(25px, 2.6vw, 35px);
+  line-height: 1.18;
+  letter-spacing: -0.8px;
+  margin: 0 0 12px;
+}
+.warehouse-stock {
+  margin-top: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+.warehouse-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+.warehouse-wide {
+  grid-column: 1 / -1;
+}
+.warehouse-section {
+  margin-top: 22px;
+}
+.warehouse-form label {
+  display: block;
+}
+.warehouse-order {
+  padding: 14px;
+  border: 1px solid #bbd4c8;
+  border-radius: 10px;
+  background: #f0fcf7;
+  margin: 16px 0;
+}
+.warehouse-form fieldset {
+  display: contents;
+}
+.warehouse-form :disabled {
+  cursor: not-allowed;
+  opacity: 0.75;
+}
+@media (max-width: 760px) {
+  .warehouse-form {
+    grid-template-columns: 1fr;
+  }
+  .warehouse-stock {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

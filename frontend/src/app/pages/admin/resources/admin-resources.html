@@ -5,10 +5,13 @@
   </div>
   <div class="ap-actions">
     <button class="ap-button" type="button" [disabled]="records.loading()" (click)="load()">
-      Actualizar</button
-    ><button class="ap-button ap-primary" type="button" (click)="openEditor()">
-      + {{ kind() === 'usuarios' ? 'Crear' : 'Nuevo' }} {{ singular() }}
+      Actualizar
     </button>
+    @if (canManage) {
+      <button class="ap-button ap-primary" type="button" (click)="openEditor()">
+        + {{ kind() === 'usuarios' ? 'Crear' : 'Nuevo' }} {{ singular() }}
+      </button>
+    }
   </div>
 </header>
 @if (notice()) {
@@ -57,7 +60,7 @@
       [columns]="columns()"
       [caption]="title()"
       [detail]="true"
-      [editable]="kind() !== 'usuarios'"
+      [editable]="canManage && kind() !== 'usuarios'"
       (inspect)="inspect($event)"
       (edit)="openEditor($event)"
       (deactivate)="askDeactivate($event)"
@@ -173,8 +176,9 @@
         [disabled]="mutation.loading()"
         (click)="closeEditor()"
       >
-        Cancelar</button
-      ><button class="ap-button ap-primary" type="submit" [disabled]="mutation.loading()">
+        Cancelar
+      </button>
+      <button class="ap-button ap-primary" type="submit" [disabled]="mutation.loading()">
         {{ mutation.loading() ? 'Guardando…' : 'Guardar ' + singular() }}
       </button>
     </div>

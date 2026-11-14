@@ -1,0 +1,72 @@
+<header class="ap-page-header">
+  <div>
+    <h1 class="ap-title">Panel de almacén</h1>
+    <p class="ap-subtitle">Gestiona las operaciones diarias de tu almacén.</p>
+  </div>
+</header>
+<section class="welcome-banner" aria-labelledby="welcome-title">
+  <div class="welcome-copy">
+    <p class="admin-eyebrow">Operaciones de inventario</p>
+    <h2 id="welcome-title" class="warehouse-welcome">Todo en orden, de principio a fin</h2>
+    <p>
+      Controla entradas, salidas y movimientos de tu inventario con un flujo simple y confiable.
+    </p>
+  </div>
+  <img
+    class="welcome-warehouse"
+    src="images/admin-warehouse.webp"
+    alt=""
+    width="1024"
+    height="683"
+  />
+</section>
+<section class="shortcut-grid" aria-label="Accesos rápidos">
+  @for (item of shortcuts; track item.path) {
+    <article class="shortcut-card">
+      <div class="mint-icon"><app-icon [name]="item.icon" /></div>
+      <div>
+        <h3>{{ item.title }}</h3>
+        <p>{{ item.description }}</p>
+        <a [routerLink]="['/almacen', item.path]">Comenzar <app-icon name="arrow" /></a>
+      </div>
+    </article>
+  }
+</section>
+<div class="overview-grid">
+  <section class="inventory-panel">
+    <div class="panel-header">
+      <h2 class="panel-heading">Movimientos recientes</h2>
+      <a routerLink="/almacen/movimientos">Ver todos →</a>
+    </div>
+    @if (movements.loading()) {
+      <p class="ap-loading" role="status">Cargando movimientos…</p>
+    } @else if (movements.error()) {
+      <p class="ap-notice ap-error" role="alert">{{ movements.error() }}</p>
+      <button class="ap-button" (click)="refresh()">Reintentar</button>
+    } @else {
+      <app-data-table
+        [rows]="movements.data()?.content ?? []"
+        [columns]="columns"
+        caption="Movimientos recientes"
+      />
+    }
+  </section>
+  <section class="supervision-panel">
+    <h2 class="panel-heading">Recepciones de compra</h2>
+    <div class="inventory-empty">
+      <div class="empty-illustration" aria-hidden="true"><app-icon name="box" /></div>
+      <h3>Recibe las compras de tu almacén</h3>
+      <p>Consulta las órdenes emitidas, revisa lo pendiente y registra cada recepción.</p>
+      <a class="ap-button" routerLink="/almacen/recepciones" style="margin-top: 16px"
+        >Ver órdenes</a
+      >
+    </div>
+  </section>
+</div>
+<section class="ap-panel warehouse-stock">
+  <div>
+    <h2>Consultar existencias</h2>
+    <p class="ap-subtitle">Revisa la cantidad disponible de un producto en un almacén.</p>
+  </div>
+  <a class="ap-button ap-primary" routerLink="/almacen/existencias">Consultar existencias →</a>
+</section>

@@ -11,6 +11,8 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { filter } from 'rxjs';
 import { AuthService } from '../../../core/auth/auth.service';
 import { Icon } from '../../../shared/icon';
+import { ADMIN_NAVIGATION } from '../admin.navigation';
+import { WAREHOUSE_NAVIGATION } from '../../warehouse/warehouse.navigation';
 import { AdminSidebar } from '../sidebar/admin-sidebar';
 @Component({
   selector: 'app-admin-layout',
@@ -25,6 +27,12 @@ export class AdminLayout {
   private readonly destroyRef = inject(DestroyRef);
   private leaving = false;
   readonly user = this.auth.user;
+  readonly warehouse = this.auth.user()?.rol === 'ALMACEN';
+  readonly groups = this.warehouse ? WAREHOUSE_NAVIGATION : ADMIN_NAVIGATION;
+  readonly home = this.warehouse ? '/almacen' : '/admin';
+  readonly roleLabel = this.warehouse ? 'ALMACÉN' : 'ADMINISTRADOR';
+  readonly section = this.warehouse ? 'Operaciones' : 'Administración';
+  readonly panelLabel = this.warehouse ? 'Panel de almacén' : 'Panel de administrador';
   readonly year = new Date().getFullYear();
   readonly menuOpen = signal(false);
   readonly pageTitle = signal('Panel general');
