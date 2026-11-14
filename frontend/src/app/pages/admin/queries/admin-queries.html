@@ -1,0 +1,268 @@
+<header class="ap-page-header">
+  <div>
+    <h1 class="ap-title">{{ title() }}</h1>
+    <p class="ap-subtitle">
+      {{
+        kind() === 'existencias'
+          ? 'Consulta el stock por producto y almacén.'
+          : 'Consulta la información autorizada de tus operaciones.'
+      }}
+    </p>
+  </div>
+  <button class="ap-button" [disabled]="warehouses.loading()" (click)="loadOptions()">
+    Actualizar opciones
+  </button>
+</header>
+@if (kind() === 'compras') {
+  <div class="ap-tabs" aria-label="Consultas de compras">
+    @for (t of ['reposicion', 'solicitudes', 'ordenes']; track t) {
+      <button
+        type="button"
+        [class.selected]="tab() === t"
+        [attr.aria-pressed]="tab() === t"
+        (click)="changeTab($any(t))"
+      >
+        {{
+          t === 'reposicion'
+            ? 'Reposición'
+            : t === 'solicitudes'
+              ? 'Solicitudes'
+              : 'Órdenes de compra'
+        }}
+      </button>
+    }
+  </div>
+  <p class="ap-help">
+    Consulta de compras: la emisión de órdenes, las aprobaciones y las recepciones corresponden a
+    sus roles autorizados.
+  </p>
+}
+<section class="ap-panel">
+  <form [formGroup]="form" (ngSubmit)="query()" class="ap-toolbar" novalidate>
+    @if (kind() === 'existencias') {
+      <label
+        ><span class="ap-label">Producto</span
+        ><select class="ap-select" formControlName="productoId">
+          <option value="">Selecciona un producto</option>
+          @for (p of products.data() ?? []; track p.id) {
+            <option [value]="p.id">
+              {{ p.sku }} · {{ p.marca }} {{ p.modelo }}{{ p.activo ? '' : ' (inactivo)' }}
+            </option>
+          }
+        </select></label
+      >
+    } @else {
+      <label
+        ><span class="ap-label">SKU</span
+        ><input
+          class="ap-input"
+          formControlName="sku"
+          maxlength="50"
+          placeholder="Todos los productos"
+      /></label>
+    }
+    <label
+      ><span class="ap-label">Almacén</span
+      ><select class="ap-select" formControlName="almacenId">
+        <option value="">
+          {{ kind() === 'existencias' ? 'Selecciona un almacén' : 'Todos los almacenes' }}
+        </option>
+        @for (w of warehouses.data() ?? []; track w.id) {
+          <option [value]="w.id">
+            {{ w.codigo }} · {{ w.nombre }}{{ w.activo ? '' : ' (inactivo)' }}
+          </option>
+        }
+      </select></label
+    >
+    @if (needsDates()) {
+      <label
+        ><span class="ap-label">Desde</span
+        ><input class="ap-input" type="date" formControlName="desde" /></label
+      ><label
+        ><span class="ap-label">Hasta (inclusive)</span
+        ><input class="ap-input" type="date" formControlName="hasta"
+      /></label>
+    }
+    @if (kind() === 'compras' && tab() !== 'reposicion') {
+      <label
+        ><span class="ap-label">Estado</span
+        ><select class="ap-select" formControlName="estado">
+          <option value="">Todos los estados</option>
+          @for (state of states(); track state) {
+            <option [value]="state">{{ show(state) }}</option>
+          }
+        </select></label
+      >
+    }
+    @if (kind() === 'reportes') {
+      <label
+        ><span class="ap-label">Reporte</span
+        ><select class="ap-select" formControlName="tipo">
+          <option value="rotacion">Rotación de inventario</option>
+          <option value="stock-critico">Stock crítico</option>
+        </select></label
+      >
+    }
+    <button class="ap-button ap-primary" type="submit" [disabled]="loading()">
+      {{ loading() ? 'Consultando…' : 'Consultar' }}
+    </button>
+  </form>
+  <p class="ap-help">
+    {{
+      needsDates()
+        ? 'Fechas y horas de Lima. La fecha final incluye el día completo.'
+        : 'Consulta los datos actuales.'
+    }}
+  </p>
+  @if (warehouses.error() || products.error()) {
+    <p class="ap-notice ap-error" role="alert">
+      No se pudieron cargar las opciones. {{ warehouses.error() || products.error() }}
+      <button class="ap-button" (click)="loadOptions()">Reintentar</button>
+    </p>
+  }
+  @if (warehouses.loading() || products.loading()) {
+    <p class="ap-help" role="status">Cargando opciones…</p>
+  }
+</section>
+@if (failure()) {
+  <p class="ap-notice ap-error" role="alert">{{ failure() }}</p>
+}
+@if (loading()) {
+  <p class="ap-panel ap-loading" role="status">Consultando información…</p>
+}
+@if (context()) {
+  <p class="ap-help">{{ context() }}</p>
+}
+@if (kind() === 'existencias' && stock.data(); as row) {
+  <section class="ap-panel">
+    <h2>Stock consultado</h2>
+    <p>{{ productName(row['productoId']) }}</p>
+    <p>{{ warehouseName(row['almacenId']) }}</p>
+    <div class="ap-metric">
+      <span class="ap-label">Cantidad disponible</span><strong>{{ show(row['cantidad']) }}</strong>
+    </div>
+  </section>
+}
+@if (kind() === 'indicadores') {
+  @if (metrics.data(); as items) {
+    <section class="ap-result-grid" aria-label="Resultados de indicadores">
+      @for (metric of items; track metric['codigo']) {
+        <article class="ap-metric">
+          <div class="ap-metric-code">
+            <span>{{ metric['codigo'] }}</span
+            ><span>{{ metric['unidad'] === 'dias' ? 'días' : metric['unidad'] }}</span>
+          </div>
+          <h2>{{ metric['nombre'] }}</h2>
+          @if (metric['error']) {
+            <p class="ap-notice ap-error" role="alert">{{ metric['error'] }}</p>
+          } @else {
+            <strong>{{
+              metric['sinDatos'] || metric['valor'] === null ? '—' : show(metric['valor'])
+            }}</strong>
+            <p>
+              {{
+                metric['sinDatos'] || metric['valor'] === null
+                  ? 'Sin datos'
+                  : 'Resultado del periodo seleccionado'
+              }}
+            </p>
+            <button class="ap-button" (click)="inspect(metric)">Ver cálculo</button>
+          }
+        </article>
+      }
+    </section>
+  } @else if (!loading()) {
+    <section class="ap-panel">
+      <h2>Consulta los indicadores</h2>
+      <p class="ap-subtitle">
+        Selecciona un periodo y pulsa Consultar para obtener los seis indicadores.
+      </p>
+    </section>
+  }
+  <p class="ap-help">
+    Algunos indicadores requieren un corte de stock y políticas previamente configurados por el
+    supervisor. La ausencia de datos no equivale a 0 %.
+  </p>
+  <section class="ap-panel" style="margin-top: 20px">
+    <h2>Reportes disponibles</h2>
+    <a routerLink="/admin/reportes">Consultar rotación de inventario y stock crítico →</a>
+  </section>
+}
+@if (results.data(); as result) {
+  <section class="ap-panel">
+    <app-data-table
+      [rows]="result.content"
+      [columns]="currentColumns()"
+      [caption]="title()"
+      [detail]="true"
+      (inspect)="inspect($event)"
+    />
+    <div class="ap-pager">
+      <button class="ap-button" [disabled]="page() === 0 || loading()" (click)="query(page() - 1)">
+        Anterior</button
+      ><span
+        >Página {{ page() + 1 }} de {{ result.totalPages || 1 }} ·
+        {{ result.totalElements }} resultados</span
+      ><button
+        class="ap-button"
+        [disabled]="page() + 1 >= result.totalPages || loading()"
+        (click)="query(page() + 1)"
+      >
+        Siguiente
+      </button>
+    </div>
+  </section>
+}
+@if (kind() === 'reportes' && !results.data() && !loading() && !failure()) {
+  <section class="ap-panel">
+    <h2>Selecciona tu consulta</h2>
+    <p class="ap-subtitle">Elige el reporte y el periodo, y pulsa Consultar.</p>
+  </section>
+}
+@if (kind() === 'reportes' && form.controls.tipo.value === 'stock-critico') {
+  <p class="ap-help">
+    El reporte refleja el último corte de stock del periodo, no el saldo actual.
+  </p>
+}
+<dialog #detailDialog class="ap-dialog" (cancel)="receptions.clear()">
+  <div class="ap-dialog-header">
+    <h2>Detalle de la consulta</h2>
+    <button class="ap-close" aria-label="Cerrar detalle" (click)="closeDetail()">×</button>
+  </div>
+  @if (selected(); as row) {
+    <app-record-detail [record]="row" />
+  }
+  @if (kind() === 'compras' && tab() === 'ordenes') {
+    <h3>Recepciones de la orden</h3>
+    @if (receptions.loading()) {
+      <p role="status">Cargando recepciones…</p>
+    }
+    @if (receptions.error()) {
+      <p class="ap-notice ap-error" role="alert">{{ receptions.error() }}</p>
+      <button class="ap-button" (click)="loadReceptions(receptionPage())">Reintentar</button>
+    }
+    @if (receptions.data(); as page) {
+      <app-data-table
+        [rows]="page.content"
+        [columns]="receptionColumns"
+        caption="Recepciones de la orden"
+      />
+      <div class="ap-pager">
+        <button
+          class="ap-button"
+          [disabled]="receptionPage() === 0"
+          (click)="loadReceptions(receptionPage() - 1)"
+        >
+          Anterior</button
+        ><span>Página {{ receptionPage() + 1 }} · {{ page.totalElements }} recepciones</span
+        ><button
+          class="ap-button"
+          [disabled]="receptionPage() + 1 >= page.totalPages"
+          (click)="loadReceptions(receptionPage() + 1)"
+        >
+          Siguiente
+        </button>
+      </div>
+    }
+  }
+</dialog>

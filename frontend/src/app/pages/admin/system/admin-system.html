@@ -1,0 +1,122 @@
+<header class="ap-page-header">
+  <div>
+    <h1 class="ap-title">
+      {{ kind() === 'estado' ? 'Estado del sistema' : 'Evidencias técnicas' }}
+    </h1>
+    <p class="ap-subtitle">
+      {{
+        kind() === 'estado'
+          ? 'Comprueba la disponibilidad del servicio y su conexión a la base de datos.'
+          : 'Consulta los resultados registrados de pruebas y su alcance.'
+      }}
+    </p>
+  </div>
+  <button class="ap-button ap-primary" [disabled]="response.loading()" (click)="load()">
+    {{ response.loading() ? 'Consultando…' : 'Actualizar' }}
+  </button>
+</header>
+@if (kind() === 'evidencias') {
+  <section class="ap-panel">
+    <label
+      ><span class="ap-label">Tipo de evidencia</span
+      ><select class="ap-select" [value]="type()" (change)="selectType($event)">
+        @for (t of ['todos', 'requisitos', 'seguridad', 'e2e', 'reglas']; track t) {
+          <option [value]="t">
+            {{
+              t === 'todos'
+                ? 'Todas'
+                : t === 'e2e'
+                  ? 'Flujos de prueba'
+                  : t === 'reglas'
+                    ? 'Reglas de negocio'
+                    : t === 'seguridad'
+                      ? 'Seguridad'
+                      : 'Requisitos'
+            }}
+          </option>
+        }
+      </select></label
+    >
+    <p class="ap-help">
+      Las evidencias corresponden al archivo de resultados y a su fecha de generación; esta consulta
+      no ejecuta nuevas pruebas.
+    </p>
+  </section>
+}
+@if (response.loading()) {
+  <p class="ap-panel ap-loading" role="status">Consultando información…</p>
+}
+@if (response.error()) {
+  <p class="ap-notice ap-error" role="alert">
+    {{ response.error() }} <button class="ap-button" (click)="load()">Reintentar</button>
+  </p>
+}
+@if (response.data(); as data) {
+  @if (kind() === 'estado') {
+    <section class="ap-result-grid">
+      <article class="ap-metric">
+        <span class="ap-metric-code">Servicio</span>
+        <h2>{{ data['estado'] === 'UP' ? 'Disponible' : show(data['estado']) }}</h2>
+        <p>Respuesta de la comprobación actual.</p>
+      </article>
+      <article class="ap-metric">
+        <span class="ap-metric-code">Base de datos</span>
+        <h2>{{ data['baseDatos'] === 'UP' ? 'Conectada' : show(data['baseDatos']) }}</h2>
+        <p>Conexión verificada por el servicio.</p>
+      </article>
+      <article class="ap-metric">
+        <span class="ap-metric-code">Tiempo de consulta</span>
+        <h2>{{ show(data['consultaMs']) }} ms</h2>
+        <p>{{ show(data['fecha'], 'date') }} · Lima</p>
+      </article>
+    </section>
+  } @else if (data['sinDatos']) {
+    <section class="ap-panel">
+      <h2>Sin evidencias disponibles</h2>
+      <p class="ap-subtitle">
+        {{ data['mensaje'] || 'Aún no se ha generado información de pruebas.' }}
+      </p>
+    </section>
+  } @else {
+    <section class="ap-panel">
+      <h2>Información de la evidencia</h2>
+      <p>Generada: {{ show(data['generadoEn'], 'date') }} · Lima</p>
+      @if (data['motor']) {
+        <p>Motor de pruebas: {{ data['motor'] }}</p>
+      }
+      @if (data['alcance']) {
+        <p class="ap-notice">{{ data['alcance'] }}</p>
+      }
+      @if (data['suite']) {
+        <app-record-detail [record]="asObject(data['suite'])" />
+      }
+      @if (data['version']) {
+        <details>
+          <summary>Versión del código evaluado</summary>
+          <app-record-detail [record]="asObject(data['version'])" />
+        </details>
+      }
+    </section>
+    @for (group of groups(); track group.key) {
+      <section class="ap-panel">
+        <h2>{{ group.title }}</h2>
+        <app-data-table
+          [rows]="group.rows"
+          [columns]="columns(group.rows)"
+          [caption]="group.title"
+          [detail]="true"
+          (inspect)="inspect($event)"
+        />
+      </section>
+    }
+  }
+}
+<dialog #detail class="ap-dialog">
+  <div class="ap-dialog-header">
+    <h2>Detalle de evidencia</h2>
+    <button class="ap-close" aria-label="Cerrar detalle" (click)="detail.close()">×</button>
+  </div>
+  @if (selected(); as row) {
+    <app-record-detail [record]="row" />
+  }
+</dialog>

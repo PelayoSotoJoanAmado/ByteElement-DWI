@@ -1,0 +1,216 @@
+<header class="ap-page-header">
+  <div>
+    <h1 class="ap-title">{{ title() }}</h1>
+    <p class="ap-subtitle">{{ description() }}</p>
+  </div>
+  <div class="ap-actions">
+    <button class="ap-button" type="button" [disabled]="records.loading()" (click)="load()">
+      Actualizar</button
+    ><button class="ap-button ap-primary" type="button" (click)="openEditor()">
+      + {{ kind() === 'usuarios' ? 'Crear' : 'Nuevo' }} {{ singular() }}
+    </button>
+  </div>
+</header>
+@if (notice()) {
+  <p class="ap-notice" role="status">{{ notice() }}</p>
+}
+<section class="ap-panel" [attr.aria-busy]="records.loading()">
+  <div class="ap-toolbar">
+    <label
+      ><span class="ap-label">Buscar {{ singular() }}</span
+      ><input
+        class="ap-input"
+        type="search"
+        placeholder="Buscar en el listado"
+        [value]="search()"
+        (input)="filter('search', $event)"
+    /></label>
+    @if (kind() === 'usuarios') {
+      <label
+        ><span class="ap-label">Rol</span
+        ><select class="ap-select" [value]="role()" (change)="filter('role', $event)">
+          <option value="">Todos los roles</option>
+          @for (r of roles; track r) {
+            <option [value]="r">{{ roleLabels[r] }}</option>
+          }
+        </select></label
+      >
+    }
+    <label
+      ><span class="ap-label">Estado</span
+      ><select class="ap-select" [value]="status()" (change)="filter('status', $event)">
+        <option value="">Todos los estados</option>
+        <option value="activo">Activos</option>
+        <option value="inactivo">Inactivos</option>
+      </select></label
+    >
+  </div>
+  @if (records.loading()) {
+    <p class="ap-loading" role="status">Cargando {{ title().toLowerCase() }}…</p>
+  } @else if (records.error()) {
+    <div class="ap-notice ap-error" role="alert">
+      {{ records.error() }} <button class="ap-button" (click)="load()">Reintentar</button>
+    </div>
+  } @else {
+    <app-data-table
+      [rows]="visible()"
+      [columns]="columns()"
+      [caption]="title()"
+      [detail]="true"
+      [editable]="kind() !== 'usuarios'"
+      (inspect)="inspect($event)"
+      (edit)="openEditor($event)"
+      (deactivate)="askDeactivate($event)"
+    />
+    <div class="ap-pager">
+      <button class="ap-button" [disabled]="page() === 0" (click)="page.set(page() - 1)">
+        Anterior</button
+      ><span>Página {{ page() + 1 }} · {{ filtered().length }} resultados</span
+      ><button
+        class="ap-button"
+        [disabled]="(page() + 1) * 20 >= filtered().length"
+        (click)="page.set(page() + 1)"
+      >
+        Siguiente
+      </button>
+    </div>
+  }
+</section>
+@if (kind() !== 'usuarios') {
+  <p class="ap-help">Los registros desactivados conservan su historial.</p>
+}
+<dialog #editor class="ap-dialog ap-editor" (cancel)="closeEditor($event)">
+  <div class="ap-dialog-header">
+    <h2>{{ editingId() ? 'Editar' : 'Crear' }} {{ singular() }}</h2>
+    <button
+      class="ap-close"
+      aria-label="Cerrar formulario"
+      [disabled]="mutation.loading()"
+      (click)="closeEditor()"
+    >
+      ×
+    </button>
+  </div>
+  <form [formGroup]="form" (ngSubmit)="save()" novalidate [attr.aria-busy]="mutation.loading()">
+    @for (field of fields(); track field.key) {
+      @if (form.contains(field.key)) {
+        <div class="ap-field">
+          @if (field.type === 'checkbox') {
+            <label class="ap-check"
+              ><input type="checkbox" [formControlName]="field.key" />{{ field.label }}</label
+            >
+          } @else {
+            <label class="ap-label" [for]="'field-' + field.key">{{ field.label }}</label>
+            @if (field.type === 'role') {
+              <select
+                class="ap-select"
+                [id]="'field-' + field.key"
+                [formControlName]="field.key"
+                [attr.aria-invalid]="invalid(field.key)"
+              >
+                <option value="">Selecciona un rol</option>
+                @for (r of roles; track r) {
+                  <option [value]="r">{{ roleLabels[r] }}</option>
+                }
+              </select>
+            } @else if (field.type === 'textarea') {
+              <textarea
+                class="ap-textarea"
+                [id]="'field-' + field.key"
+                [formControlName]="field.key"
+                [maxlength]="field.max"
+                [attr.aria-invalid]="invalid(field.key)"
+              ></textarea>
+            } @else {
+              <div class="ap-password">
+                <input
+                  class="ap-input"
+                  [id]="'field-' + field.key"
+                  [type]="
+                    field.type === 'password' ? (showPassword() ? 'text' : 'password') : 'text'
+                  "
+                  [autocomplete]="field.type === 'password' ? 'new-password' : 'off'"
+                  [formControlName]="field.key"
+                  [maxlength]="field.max"
+                  [attr.aria-invalid]="invalid(field.key)"
+                />
+                @if (field.type === 'password') {
+                  <button
+                    class="ap-button"
+                    type="button"
+                    [attr.aria-label]="showPassword() ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+                    [attr.aria-pressed]="showPassword()"
+                    (click)="showPassword.set(!showPassword())"
+                  >
+                    {{ showPassword() ? 'Ocultar' : 'Ver' }}
+                  </button>
+                }
+              </div>
+            }
+            @if (field.help) {
+              <span class="ap-help">{{ field.help }}</span>
+            }
+            @if (invalid(field.key)) {
+              <p class="ap-invalid" role="alert">
+                Revisa {{ field.label.toLowerCase() }}: campo obligatorio y formato o longitud no
+                válidos.
+              </p>
+            }
+          }
+        </div>
+      }
+    }
+    @if (form.hasError('mismatch') && form.get('confirm')?.touched) {
+      <p class="ap-invalid" role="alert">Las contraseñas deben coincidir.</p>
+    }
+    @if (mutation.error()) {
+      <p class="ap-notice ap-error" role="alert">{{ mutation.error() }}</p>
+    }
+    <div class="ap-actions">
+      <button
+        class="ap-button"
+        type="button"
+        [disabled]="mutation.loading()"
+        (click)="closeEditor()"
+      >
+        Cancelar</button
+      ><button class="ap-button ap-primary" type="submit" [disabled]="mutation.loading()">
+        {{ mutation.loading() ? 'Guardando…' : 'Guardar ' + singular() }}
+      </button>
+    </div>
+  </form>
+</dialog>
+<dialog #detailDialog class="ap-dialog">
+  <div class="ap-dialog-header">
+    <h2>Detalle de {{ singular() }}</h2>
+    <button class="ap-close" aria-label="Cerrar detalle" (click)="detailDialog.close()">×</button>
+  </div>
+  @if (selected(); as row) {
+    <app-record-detail [record]="row" />
+  }
+</dialog>
+<dialog
+  #confirmation
+  class="ap-dialog"
+  (cancel)="mutation.loading() ? $event.preventDefault() : null"
+>
+  @if (kind() !== 'usuarios') {
+    <div class="ap-dialog-header">
+      <h2>Desactivar {{ singular() }}</h2>
+    </div>
+    <p>
+      ¿Deseas desactivar {{ show(confirming()?.['sku'] ?? confirming()?.['codigo']) }}? Se
+      conservará su historial.
+    </p>
+    @if (mutation.error()) {
+      <p class="ap-notice ap-error" role="alert">{{ mutation.error() }}</p>
+    }
+    <div class="ap-actions">
+      <button class="ap-button" [disabled]="mutation.loading()" (click)="confirmation.close()">
+        Cancelar</button
+      ><button class="ap-button ap-danger" [disabled]="mutation.loading()" (click)="deactivate()">
+        {{ mutation.loading() ? 'Desactivando…' : 'Desactivar' }}
+      </button>
+    </div>
+  }
+</dialog>

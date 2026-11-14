@@ -4,6 +4,8 @@ import { provideRouter, Router } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { routes } from '../../app.routes';
 import { Role } from './auth.models';
+import { of } from 'rxjs';
+import { AdminApi } from '../../pages/admin/shared/admin-api';
 import { AdminLayout } from '../../pages/admin/layout/admin-layout';
 import { AuthService } from './auth.service';
 
@@ -20,7 +22,13 @@ function storedSession(role: Role, expiresAt = Date.now() + 1800000): void {
 describe('Administrator route protection', () => {
   beforeEach(() => {
     sessionStorage.clear();
-    TestBed.configureTestingModule({ providers: [provideRouter(routes), provideHttpClient()] });
+    TestBed.configureTestingModule({
+      providers: [
+        provideRouter(routes),
+        provideHttpClient(),
+        { provide: AdminApi, useValue: { list: () => of([]), pageRows: () => of([]) } },
+      ],
+    });
   });
   afterEach(() => {
     sessionStorage.clear();
@@ -86,16 +94,30 @@ describe('Administrator route protection', () => {
     });
   });
 
-  it('keeps unimplemented modules explicit and updates the breadcrumb', async () => {
+  it('opens a populated creation form when entering the create-user route directly', async () => {
+    storedSession('ADMINISTRADOR');
+    const original = HTMLDialogElement.prototype.showModal;
+    HTMLDialogElement.prototype.showModal = function () {
+      this.open = true;
+    };
+    try {
+      const harness = await RouterTestingHarness.create('/admin/usuarios/nuevo');
+      await harness.fixture.whenStable();
+      expect(harness.routeNativeElement?.querySelector('#field-username')).not.toBeNull();
+      expect(harness.routeNativeElement?.querySelector('dialog[open]')).not.toBeNull();
+    } finally {
+      HTMLDialogElement.prototype.showModal = original;
+    }
+  });
+
+  it('opens administrator modules and updates the breadcrumb', async () => {
     storedSession('ADMINISTRADOR');
     const harness = await RouterTestingHarness.create('/admin/usuarios');
-    expect(harness.routeNativeElement?.textContent).toContain('PRÓXIMAMENTE');
+    expect(harness.routeNativeElement?.querySelector('.ap-title')?.textContent).toBe('Usuarios');
     expect(harness.routeNativeElement?.querySelector('.breadcrumb strong')?.textContent).toBe(
       'Usuarios',
     );
     await harness.navigateByUrl('/admin/productos');
-    expect(harness.routeNativeElement?.querySelector('.pending-section h1')?.textContent).toBe(
-      'Productos',
-    );
+    expect(harness.routeNativeElement?.querySelector('.ap-title')?.textContent).toBe('Productos');
   });
 });

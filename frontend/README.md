@@ -1,10 +1,10 @@
 # StockGuard · Frontend
 
-Angular 22, componentes standalone, Router y SCSS. Proyecto generado con Angular CLI; las dependencias quedan fijadas en `package-lock.json`.
+Angular 22, componentes standalone, Router y SCSS. Las dependencias están fijadas en `package-lock.json`.
 
 ## Arranque
 
-Usar una versión de Node admitida por `package.json` (desarrollo verificado con Node 24.22.1).
+Usar Node compatible con `package.json` (verificado con Node 24.22.1):
 
 ```bash
 cd frontend
@@ -12,56 +12,75 @@ npm ci
 npm start
 ```
 
-Abrir http://localhost:4200. Esta dirección coincide con el origen permitido por el backend.
+Abrir http://localhost:4200. Iniciar el backend por separado en http://localhost:8080. `proxy.conf.json` reenvía `/api/**` al backend durante desarrollo. Ajustar su destino si cambia el puerto.
 
 ```bash
 npm run build
 npm test -- --watch=false
 ```
 
-La compilación de producción se genera en `dist/frontend/browser/`. El servidor de despliegue debe devolver `index.html` para las rutas de la SPA, como `/login`.
+La salida de producción está en `dist/frontend/browser/`. El alojamiento debe devolver `index.html` para las rutas de la SPA y reenviar `/api/` al backend del mismo origen. No se incluyen secretos ni credenciales reales.
 
-## Alcance de esta entrega
+## Pantallas implementadas
 
-- `/`: presentación pública responsive, fondo original optimizado en WebP, funcionalidades, funcionamiento y footer completo.
-- Menú público sin opción «Inicio»; el logo vuelve a la presentación.
-- Navegación a secciones, menú móvil, enlace para saltar al contenido, foco visible y preferencias de movimiento reducido.
-- `/login`: interfaz de acceso con tarjeta redondeada a la derecha, fondo de almacén, campos usuario/contraseña, validaciones, mostrar/ocultar contraseña y estados de carga/error.
-- Se eliminó el bloque de ayuda de cuentas y el texto de roles del formulario. No hay registro público.
-- El formulario envía `POST /api/v1/auth/login`. Al recibir una respuesta válida, conserva token, usuario y vencimiento en `sessionStorage` (memoria si el almacenamiento está bloqueado), limpia la contraseña y redirige a `/admin` si el rol es `ADMINISTRADOR`. Los otros roles conservan la presentación pública como destino hasta desarrollar sus áreas de trabajo.
-- `/admin`: panel de administrador con menú lateral, resumen sin datos, accesos rápidos, ilustración original y cierre de sesión. Adaptación a móvil con menú desplegable.
-- Las rutas públicas y el panel se cargan por separado mediante lazy loading. Las URL desconocidas vuelven a la presentación.
-- Los enlaces internos del panel apuntan a rutas protegidas con un aviso «Próximamente». Usuarios, alta de cuentas, productos, almacenes y consultas aún no realizan operaciones ni muestran datos del backend.
-- No se muestran datos reales del inventario en esta entrega. La interfaz de registro será un apartado exclusivo del administrador.
+| Ruta                    | Funciones                                                                                                  |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `/`                     | Presentación pública, funcionalidades, funcionamiento y footer.                                            |
+| `/login`                | Usuario/contraseña, validación, visibilidad, envío al backend, errores y estado de carga.                  |
+| `/admin`                | Panel y contadores de usuarios/productos/almacenes activos y alertas de reposición, consultados en la API. |
+| `/admin/usuarios`       | Listado, búsqueda, filtros por rol/estado, detalle y creación de cuentas.                                  |
+| `/admin/usuarios/nuevo` | Abre directamente el formulario de creación; vuelve al listado tras crear/cancelar.                        |
+| `/admin/productos`      | Listado completo, filtros, detalle, creación, edición y desactivación con confirmación.                    |
+| `/admin/almacenes`      | Listado, filtros, detalle, creación, edición y desactivación con confirmación.                             |
+| `/admin/existencias`    | Consulta de cantidad por producto y almacén.                                                               |
+| `/admin/movimientos`    | Historial con SKU, almacén, periodo, paginación y detalle.                                                 |
+| `/admin/compras`        | Reposición, solicitudes, órdenes y recepciones de cada orden; consulta con filtros/paginación/detalles.    |
+| `/admin/reportes`       | Rotación y stock crítico, por periodo/SKU/almacén, paginados y con detalle.                                |
+| `/admin/indicadores`    | I05–I10, con resultados, unidades, estados sin datos, errores parciales y detalle del cálculo.             |
+| `/admin/evidencias`     | Archivo de resultados, fecha, alcance, versión y evidencias por categoría. No ejecuta pruebas.             |
+| `/admin/estado`         | Comprobación de servicio y base de datos, fecha y tiempo de consulta.                                      |
 
-## Conexión al backend y próximos pasos
+Se conserva la estructura visual del panel original: menú, tipografía, dimensiones y colores. Las vistas usan controles, tablas, estados de petición y formularios comunes; los formularios se abren en diálogos nativos a la derecha y se adaptan a móvil. El formulario de login no tiene registro público.
 
-El contrato de login sigue `backend/docs/APF3/API-ANGULAR.md`. En desarrollo, `proxy.conf.json` reenvía `/api/**` a `http://localhost:8080`; arrancar el backend por separado. Ajustar el destino si el backend usa otro puerto. En producción, configurar el mismo origen con un proxy inverso para `/api/`. No se incluyen secretos ni credenciales.
-Respetar los cinco roles exactos: `ALMACEN`, `COMPRAS`, `SUPERVISOR`, `CONSULTA_COMERCIAL` y `ADMINISTRADOR`.
-El panel y sus rutas hijas requieren sesión vigente con rol `ADMINISTRADOR`. Los accesos sin sesión se redirigen al login; los otros cuatro roles reciben un aviso de falta de permiso. Una sesión de administrador existente redirige desde el login al panel.
+## Permisos y sesión
 
-El interceptor envía Bearer únicamente a rutas relativas `/api/v1/`, excluyendo login, y cierra la sesión ante 401 de la misma sesión. Un 403 no la elimina y un 401 tardío de una sesión anterior no cierra una sesión nueva. El panel vigila el vencimiento mientras permanece abierto; cerrar sesión elimina el token y vuelve al login. La sesión local también comprueba el vencimiento al consultarla y nunca incluye la contraseña. Ocultar un enlace no sustituye la autorización; el backend conserva la validación final.
-El formulario de login no permite elegir rol. El menú del administrador omite operaciones de almacén y aprobaciones asignadas a otros roles; sus enlaces de compras y movimientos son consultas. La comprobación de sesión en el cliente no sustituye la validación del JWT en el servidor.
+El panel y todas sus rutas hijas requieren una sesión vigente con rol `ADMINISTRADOR`. Los cuatro roles restantes no acceden al panel; sus propias áreas de trabajo aún no se implementan y conservan la presentación pública como destino tras el login.
 
-Verificación: compilación de producción y 28 pruebas de login, navegación, redirección de administrador, rechazo de los otros cuatro roles, acceso por URL directa y rutas hijas, logout, expiración y alcance del interceptor Bearer. Las respuestas de autenticación se verifican con HttpTestingController; queda pendiente la prueba integrada con backend y cuenta reales.
+El interceptor adjunta Bearer solo a rutas relativas `/api/v1/`, excluyendo login. Un 401 de la sesión actual la cierra; un 403 no la elimina y un 401 tardío de una sesión anterior no cierra una sesión nueva. El panel vigila el vencimiento, y cerrar sesión elimina el token y vuelve al login.
+
+El token, usuario y vencimiento se guardan en `sessionStorage` (en memoria si el navegador bloquea almacenamiento). Nunca se guarda la contraseña en la sesión. Los controles del cliente complementan la autorización real y la validación del JWT del servidor.
+
+La interfaz respeta los cinco roles del backend: `ALMACEN`, `COMPRAS`, `SUPERVISOR`, `CONSULTA_COMERCIAL`, `ADMINISTRADOR`.
+
+## Límites y reglas del backend respetados
+
+- Usuarios: solo listar/crear. No hay edición, desactivación ni cambio de contraseña en la API actual.
+- Productos y almacenes: desactivación lógica; sin borrado definitivo ni reactivación no soportada.
+- Compras y movimientos son de consulta para el administrador. No hay botones para aprobar, emitir órdenes, recibir, generar cortes o registrar movimientos, que pertenecen a otros roles.
+- Existencias requiere un producto y un almacén: no se simula un endpoint de stock global.
+- La API de productos devuelve arrays paginados sin totales. Se recorren páginas de 100 hasta completarlas para búsquedas, selectores y conteos correctos. Usuarios/almacenes se reciben completos. Los filtros de estos listados y su paginación de 20 filas son locales. Un catálogo muy grande podría justificar ampliar el contrato con totales/búsqueda en servidor; no se truncan resultados silenciosamente.
+- Movimientos, compras y reportes usan paginación real del servidor, filtros y totales.
+- Las fechas elegidas son días de Lima; la fecha final incluye el día completo y se convierte al instante exclusivo del día siguiente, conforme al contrato.
+- Indicadores nulos/sin datos muestran «— / Sin datos», nunca 0 %. I08 usa días; los demás porcentajes. El fallo de un indicador no oculta los otros cinco.
+- Stock crítico y algunos indicadores dependen de cortes/políticas del supervisor. Alertas de reposición solo cubre los pares con políticas configuradas. No se crean datos ficticios para llenar el panel.
+- Las evidencias muestran el alcance y motor registrados en el archivo; no prueban automáticamente el estado actual ni el frontend.
 
 ## Organización
 
-- `src/app/pages/home/`: pantalla pública.
-- `src/app/pages/login/`: página de acceso y componente de formulario.
-- `src/app/core/auth/`: modelos de los cinco roles, cliente de login, sesión, guards e interceptor.
-- `src/app/pages/admin/`: estructura del panel, menú, vista general y apartados pendientes.
-- `public/images/admin-warehouse.webp`: ilustración decorativa del panel con transparencia.
-- `src/app/shared/icon.ts`: iconos SVG y marca.
-- `src/styles.scss` y `src/styles/_home.scss`: estilos globales, página y adaptaciones responsive.
-- `public/images/warehouse-hero.webp`: fondo generado específicamente para StockGuard.
+- `src/app/core/auth/`: login, sesión, guards e interceptor.
+- `src/app/pages/admin/layout/` y `sidebar/`: estructura y navegación originales.
+- `src/app/pages/admin/dashboard/`: resumen conectado a la API.
+- `src/app/pages/admin/resources/`: cuentas y catálogos.
+- `src/app/pages/admin/queries/`: inventario, compras, reportes e indicadores.
+- `src/app/pages/admin/system/`: salud y evidencias.
+- `src/app/pages/admin/shared/`: cliente HTTP, formatos de fecha, tablas, detalles y estados de peticiones.
+- `src/styles/_admin-modules.scss`: estilos comunes, limitados al área administrativa.
+- `public/images/`: fondos e ilustración originales (ver `docs/IMAGENES.md`).
 
-## Imagen de fondo
+## Verificación
 
-Generada con ImageGen a partir de un almacén moderno con estanterías, cajas y transpaleta, iluminación turquesa, sombras azul oscuro y espacio despejado a la izquierda. Se exportó a WebP sin cambiar la composición. Los textos, tarjetas, enlaces y botones son HTML real; no forman parte de la imagen.
+Compilación de producción sin advertencias y 53 pruebas automatizadas. Cubren protección por los cinco roles, sesión, login, creación y validación de usuarios, confirmación de contraseñas, máximo BCrypt de 72 bytes UTF-8, contratos de catálogo y paginación completa, fechas inclusive/exclusiva en Lima, consultas de stock cero, indicadores sin datos/errores parciales y estados de salud/evidencias.
 
-## Revisión visual y prueba integrada
+Las respuestas de la API se verifican con HttpTestingController o servicios de prueba. La revisión visual en navegador usa HTML renderizado por los componentes Angular con datos de prueba; esos fixtures no forman parte de la aplicación ni agregan excepciones a los guards.
 
-La revisión visual del panel se hizo con HTML renderizado por los componentes Angular en un fixture de pruebas con una sesión ficticia. Esa sesión solo se usó en el entorno de pruebas; no hay ruta pública de demostración, token precargado ni excepción a los guards en la aplicación. La ilustración se generó con ImageGen y se optimizó en WebP con canal alfa.
-
-La siguiente etapa es arrancar backend y base de datos reales y verificar login → panel → cierre de sesión, además de conectar los módulos que ahora muestran «Próximamente». No se modificó el backend ni se crearon usuarios o registros reales en esta entrega.
+Queda pendiente validar los nuevos flujos de extremo a extremo con el backend/PostgreSQL del usuario. No se modificó el backend ni se crearon usuarios/productos/almacenes reales en esta entrega. Ver `docs/VALIDACION-ADMIN.md` para la comprobación local.

@@ -1,6 +1,5 @@
 import { Routes } from '@angular/router';
 import { adminGuard, guestGuard } from './core/auth/auth.guards';
-import { ADMIN_NAVIGATION } from './pages/admin/admin.navigation';
 export const routes: Routes = [
   {
     path: '',
@@ -31,19 +30,32 @@ export const routes: Routes = [
       {
         path: 'usuarios/nuevo',
         title: 'Crear usuario | StockGuard',
-        data: { label: 'Crear usuario' },
+        data: { label: 'Crear usuario', resource: 'usuarios', create: true },
         loadComponent: () =>
-          import('./pages/admin/section/admin-section').then((m) => m.AdminSection),
+          import('./pages/admin/resources/admin-resources').then((m) => m.AdminResources),
       },
-      ...ADMIN_NAVIGATION.flatMap((group) => group.links)
-        .filter((link) => link.path !== '/admin')
-        .map((link) => ({
-          path: link.path.replace('/admin/', ''),
-          title: `${link.label} | StockGuard`,
-          data: { label: link.label },
+      ...(['usuarios', 'productos', 'almacenes'] as const).map((resource) => ({
+        path: resource,
+        title: `${resource.charAt(0).toUpperCase() + resource.slice(1)} | StockGuard`,
+        data: { label: resource.charAt(0).toUpperCase() + resource.slice(1), resource },
+        loadComponent: () =>
+          import('./pages/admin/resources/admin-resources').then((m) => m.AdminResources),
+      })),
+      ...(['existencias', 'movimientos', 'compras', 'reportes', 'indicadores'] as const).map(
+        (query) => ({
+          path: query,
+          title: `${query.charAt(0).toUpperCase() + query.slice(1)} | StockGuard`,
+          data: { label: query.charAt(0).toUpperCase() + query.slice(1), query },
           loadComponent: () =>
-            import('./pages/admin/section/admin-section').then((m) => m.AdminSection),
-        })),
+            import('./pages/admin/queries/admin-queries').then((m) => m.AdminQueries),
+        }),
+      ),
+      ...(['evidencias', 'estado'] as const).map((system) => ({
+        path: system,
+        title: `${system === 'estado' ? 'Estado del sistema' : 'Evidencias'} | StockGuard`,
+        data: { label: system === 'estado' ? 'Estado del sistema' : 'Evidencias', system },
+        loadComponent: () => import('./pages/admin/system/admin-system').then((m) => m.AdminSystem),
+      })),
       { path: '**', redirectTo: '' },
     ],
   },

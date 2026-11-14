@@ -18,13 +18,23 @@
   />
 </section>
 <section class="summary-grid" aria-label="Resumen general">
-  @for (summary of summaries; track summary.label) {
+  @for (summary of summaries; track summary.label; let i = $index) {
     <article class="summary-card">
       <div class="mint-icon"><app-icon [name]="summary.icon" /></div>
       <div>
         <h2>{{ summary.label }}</h2>
-        <p class="summary-value" aria-label="Sin datos">—</p>
-        <p class="summary-caption">Sin datos disponibles</p>
+        <p class="summary-value">{{ count(i) }}</p>
+        <p class="summary-caption">
+          {{
+            counts[i].loading()
+              ? 'Cargando…'
+              : counts[i].error()
+                ? 'No disponible'
+                : counts[i].data() === null
+                  ? 'Sin datos disponibles'
+                  : 'Datos actuales'
+          }}
+        </p>
       </div>
     </article>
   }
@@ -53,7 +63,17 @@
     <div class="inventory-empty">
       <div class="empty-illustration" aria-hidden="true"><app-icon name="boxes" /></div>
       <h3>Consulta el stock de tus almacenes</h3>
-      <p>Las existencias se mostrarán al cargar la información.</p>
+      <p>
+        {{
+          counts[2].loading()
+            ? 'Cargando almacenes…'
+            : counts[2].error()
+              ? 'No se pudieron consultar los almacenes.'
+              : counts[2].data()?.length === 0
+                ? 'Aún no hay almacenes registrados.'
+                : 'Selecciona un producto y un almacén en Existencias para ver su stock.'
+        }}
+      </p>
     </div>
   </section>
   <section class="supervision-panel" aria-labelledby="supervision-title">
@@ -72,3 +92,12 @@
     </div>
   </section>
 </div>
+
+@if (counts[0].error() || counts[1].error() || counts[2].error() || counts[3].error()) {
+  <p class="ap-notice ap-error" role="alert" style="margin-top: 20px">
+    Parte del resumen no pudo cargarse.
+    <button class="ap-button" (click)="refresh()">Reintentar</button>
+  </p>
+}
+
+<p class="ap-help">Las alertas de reposición consideran los productos y almacenes con políticas de stock configuradas.</p>
