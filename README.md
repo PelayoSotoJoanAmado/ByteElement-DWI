@@ -2,8 +2,8 @@
 
 Backend Java 21 / Spring Boot / JPA-Hibernate / PostgreSQL para inventario y reposicion.
 APF3 completa compras, recepciones, reglas de reposicion, I05-I10, evidencias de backend y CORS para Angular.
-La carpeta `frontend/` contiene la base Angular con SCSS y la presentación pública de StockGuard.
-El login, los módulos internos y el E2E integrado se desarrollan en entregas posteriores.
+La carpeta `frontend/` contiene la base Angular con SCSS, la presentación pública y la interfaz de inicio de sesión de StockGuard.
+Los módulos internos, la gestión de cuentas del administrador y el E2E integrado se desarrollan en entregas posteriores.
 
 - [Estado y traspaso](HANDOVER_ESTADO_PROYECTO.md)
 - [Documentacion APF3](backend/docs/APF3/README.md)

@@ -1,6 +1,18 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 export type IconName =
-  'shield' | 'box' | 'arrows' | 'cart' | 'chart' | 'lock' | 'arrow' | 'menu' | 'close';
+  | 'shield'
+  | 'box'
+  | 'arrows'
+  | 'cart'
+  | 'chart'
+  | 'lock'
+  | 'arrow'
+  | 'menu'
+  | 'close'
+  | 'user'
+  | 'eye'
+  | 'eye-off'
+  | 'alert';
 @Component({
   selector: 'app-icon',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -42,6 +54,22 @@ export type IconName =
       }
       @case ('menu') {
         <path d="M4 6h16M4 12h16M4 18h16" />
+      }
+      @case ('user') {
+        <circle cx="12" cy="7" r="4" />
+        <path d="M4 22v-3a8 8 0 0 1 16 0v3" />
+      }
+      @case ('eye') {
+        <path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Z" />
+        <circle cx="12" cy="12" r="3" />
+      }
+      @case ('eye-off') {
+        <path
+          d="m3 3 18 18M9.5 5.3A10 10 0 0 1 12 5c6 0 10 7 10 7a19 19 0 0 1-3.2 4M6 6.5A22 22 0 0 0 2 12s4 7 10 7a11 11 0 0 0 5-1.3M10 10a3 3 0 0 0 4 4"
+        />
+      }
+      @case ('alert') {
+        <path d="m12 3 10 18H2ZM12 9v5M12 17v.2" />
       }
       @case ('close') {
         <path d="m6 6 12 12M6 18 18 6" />

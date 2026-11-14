@@ -1,0 +1,189 @@
+:host {
+  display: block;
+  width: 100%;
+}
+.login-card {
+  background: #fffffff9;
+  color: #152632;
+  border: 1px solid #bcebdc;
+  border-radius: 28px;
+  padding: 42px 36px 45px;
+  box-shadow: 0 24px 65px #00121d4d;
+}
+.card-brand {
+  justify-content: center;
+  display: flex;
+  font-family: Georgia, serif;
+  font-size: 32px;
+  margin-bottom: 34px;
+}
+.card-brand app-icon {
+  color: #1cbf8e;
+  font-size: 52px;
+}
+.login-card h2 {
+  text-align: center;
+  font-family: Georgia, serif;
+  font-size: clamp(26px, 2.8vw, 35px);
+  line-height: 1.2;
+  letter-spacing: -0.9px;
+  margin: 0 0 11px;
+}
+.login-description {
+  color: #566572;
+  text-align: center;
+  line-height: 1.6;
+  margin: 0 0 33px;
+  font-size: 15px;
+}
+.form-field {
+  margin-bottom: 23px;
+}
+.form-field label {
+  display: block;
+  font-size: 15px;
+  font-weight: 650;
+  margin-bottom: 9px;
+}
+.input-shell {
+  display: flex;
+  align-items: center;
+  min-height: 53px;
+  border: 1px solid #b8c3cc;
+  border-radius: 10px;
+  background: #fff;
+  padding-left: 14px;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+}
+.input-shell > app-icon {
+  color: #657582;
+  font-size: 21px;
+}
+.input-shell input {
+  min-width: 0;
+  width: 100%;
+  height: 51px;
+  padding: 12px;
+  border: 0;
+  border-radius: 10px;
+  outline: none;
+  background: transparent;
+  color: #152632;
+  font-size: 15px;
+}
+.input-shell input::placeholder {
+  color: #73808d;
+  opacity: 1;
+}
+.input-shell:focus-within {
+  border-color: #008362;
+  box-shadow: 0 0 0 3px #0fad8426;
+}
+.input-invalid {
+  border-color: #b52f3e;
+}
+.password-toggle {
+  border: 0;
+  padding: 13px;
+  min-width: 46px;
+  min-height: 46px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  color: #5f6c78;
+  border-radius: 8px;
+}
+.password-toggle:hover {
+  color: #00775c;
+  background: #e7f7f1;
+}
+.password-toggle app-icon {
+  font-size: 22px;
+}
+.field-error {
+  color: #aa2839;
+  font-size: 12px;
+  margin: 7px 0 0;
+}
+.submit-button {
+  width: 100%;
+  min-height: 53px;
+  margin-top: 4px;
+  border: 0;
+  background: #62edc4;
+  font-size: 16px;
+}
+.submit-button:disabled {
+  cursor: wait;
+  opacity: 0.75;
+  transform: none;
+}
+.login-error {
+  display: flex;
+  gap: 9px;
+  border: 1px solid #eac1c7;
+  padding: 12px;
+  margin-bottom: 18px;
+  border-radius: 9px;
+  background: #fff3f4;
+  color: #8c2431;
+}
+.login-error app-icon {
+  font-size: 19px;
+}
+.login-error p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.spinner {
+  height: 17px;
+  width: 17px;
+  border: 2px solid #12504440;
+  border-top-color: #125044;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 1100px) {
+  .login-card {
+    padding-inline: 28px;
+  }
+}
+@media (max-width: 760px) {
+  :host {
+    max-width: 500px;
+    justify-self: center;
+  }
+  .login-card {
+    border-radius: 23px;
+    padding: 30px 24px 33px;
+  }
+  .card-brand {
+    font-size: 28px;
+    margin-bottom: 27px;
+  }
+  .card-brand app-icon {
+    font-size: 46px;
+  }
+  .login-card h2 {
+    font-size: 28px;
+  }
+  .login-description {
+    font-size: 14px;
+    margin-bottom: 28px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation: none;
+  }
+}

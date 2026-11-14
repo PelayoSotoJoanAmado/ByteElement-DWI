@@ -9,7 +9,7 @@ export const routes: Routes = [
   {
     path: 'login',
     title: 'Acceso al sistema | StockGuard',
-    loadComponent: () => import('./pages/login-pending/login-pending').then((m) => m.LoginPending),
+    loadComponent: () => import('./pages/login/login').then((m) => m.Login),
   },
   { path: '**', redirectTo: '' },
 ];
