@@ -1,0 +1,36 @@
+<a
+  class="sidebar-brand brand"
+  routerLink="/admin"
+  (click)="navigate.emit()"
+  aria-label="StockGuard, panel de administrador"
+  ><app-icon name="shield" />StockGuard</a
+>
+<nav aria-label="Menú del administrador">
+  @for (group of groups; track group.label) {
+    <div class="nav-group">
+      <h2>{{ group.label }}</h2>
+      @for (link of group.links; track link.path) {
+        <a
+          [routerLink]="link.path"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: link.path === '/admin' }"
+          ariaCurrentWhenActive="page"
+          (click)="navigate.emit()"
+          ><app-icon [name]="link.icon" /><span>{{ link.label }}</span></a
+        >
+      }
+    </div>
+  }
+</nav>
+<div class="sidebar-account">
+  <div class="account-row">
+    <span class="account-avatar" aria-hidden="true">{{ username().charAt(0).toUpperCase() }}</span>
+    <div>
+      <p [title]="username()">{{ username() }}</p>
+      <span class="account-role">ADMINISTRADOR</span>
+    </div>
+  </div>
+  <button class="sign-out" type="button" (click)="signOut.emit()">
+    <app-icon name="logout" />Cerrar sesión
+  </button>
+</div>

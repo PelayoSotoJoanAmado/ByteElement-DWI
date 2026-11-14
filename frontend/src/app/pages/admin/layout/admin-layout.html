@@ -1,0 +1,48 @@
+<div class="admin-layout" (keydown.escape)="menuOpen.set(false)">
+  <a class="admin-skip" href="#admin-content">Saltar al contenido</a>
+  @if (menuOpen()) {
+    <button
+      class="sidebar-overlay"
+      type="button"
+      aria-label="Cerrar menú"
+      (click)="menuOpen.set(false)"
+    ></button>
+  }
+  <aside class="admin-sidebar" id="admin-navigation" [class.open]="menuOpen()">
+    <app-admin-sidebar
+      [username]="user()?.username ?? 'Administrador'"
+      (navigate)="menuOpen.set(false)"
+      (signOut)="logout()"
+    />
+  </aside>
+  <div class="admin-workspace">
+    <header class="admin-topbar">
+      <div class="breadcrumb">
+        <button
+          class="menu-button"
+          type="button"
+          aria-controls="admin-navigation"
+          [attr.aria-expanded]="menuOpen()"
+          [attr.aria-label]="menuOpen() ? 'Cerrar menú' : 'Abrir menú'"
+          (click)="menuOpen.set(!menuOpen())"
+        >
+          <app-icon [name]="menuOpen() ? 'close' : 'menu'" /></button
+        ><span
+          >Administración <span class="breadcrumb-divider">/</span>
+          <strong>{{ pageTitle() }}</strong></span
+        >
+      </div>
+      <div class="topbar-account">
+        <span class="role-badge">ADMINISTRADOR</span
+        ><span class="topbar-avatar" [attr.aria-label]="user()?.username">{{
+          user()?.username?.charAt(0)?.toUpperCase()
+        }}</span>
+      </div>
+    </header>
+    <main class="admin-content" id="admin-content" tabindex="-1"><router-outlet /></main>
+    <footer class="admin-footer">
+      <span>© {{ year }} StockGuard</span
+      ><span><app-icon name="lock" />Panel de administrador</span>
+    </footer>
+  </div>
+</div>

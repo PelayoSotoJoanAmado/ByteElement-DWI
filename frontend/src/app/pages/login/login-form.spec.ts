@@ -73,6 +73,22 @@ describe('Login', () => {
     expect(navigate).toHaveBeenCalledWith('/');
     expect(fixture.componentInstance.submitting()).toBe(false);
   });
+  it('redirects a successful administrator login to its protected panel', () => {
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
+    const fixture = TestBed.createComponent(LoginForm);
+    fixture.componentInstance.form.setValue({ username: 'admin.test', password: 'test-password' });
+    fixture.componentInstance.submit();
+    http
+      .expectOne('/api/v1/auth/login')
+      .flush({
+        accessToken: 'admin-token',
+        tokenType: 'Bearer',
+        expiresIn: 1800,
+        usuario: { id: 1, username: 'admin.test', rol: 'ADMINISTRADOR', activo: true },
+      });
+    expect(navigate).toHaveBeenCalledWith('/admin');
+  });
+
   it('shows invalid credentials without disclosing server details or retaining the password', async () => {
     const fixture = TestBed.createComponent(LoginForm);
     fixture.componentInstance.form.setValue({

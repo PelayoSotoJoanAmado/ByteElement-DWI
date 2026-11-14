@@ -1,10 +1,11 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { finalize, timeout } from 'rxjs';
 import { AuthService } from '../../core/auth/auth.service';
+import { landingPath } from '../../core/auth/auth.guards';
 import { Icon } from '../../shared/icon';
 
 @Component({
@@ -20,7 +21,15 @@ export class LoginForm {
   private readonly destroyRef = inject(DestroyRef);
   readonly showPassword = signal(false);
   readonly submitting = signal(false);
-  readonly error = signal('');
+  readonly error = signal(this.initialMessage());
+  private initialMessage(): string {
+    const reason = inject(ActivatedRoute).snapshot.queryParamMap.get('motivo');
+    if (reason === 'sin-permiso')
+      return 'Tu cuenta no tiene permiso para acceder al panel de administrador.';
+    if (reason === 'sesion-vencida')
+      return 'Tu sesión finalizó. Inicia sesión de nuevo para continuar.';
+    return '';
+  }
   readonly form = inject(FormBuilder).nonNullable.group({
     username: ['', [Validators.required, Validators.maxLength(80), Validators.pattern(/\S/)]],
     password: ['', [Validators.required, Validators.maxLength(72), Validators.pattern(/\S/)]],
@@ -47,10 +56,9 @@ export class LoginForm {
         finalize(() => this.submitting.set(false)),
       )
       .subscribe({
-        // The presentation remains the destination until the internal workspace is implemented.
-        next: () => {
+        next: (session) => {
           this.form.reset();
-          void this.router.navigateByUrl('/');
+          void this.router.navigateByUrl(landingPath(session.usuario.rol));
         },
         error: (error: unknown) => {
           this.showPassword.set(false);

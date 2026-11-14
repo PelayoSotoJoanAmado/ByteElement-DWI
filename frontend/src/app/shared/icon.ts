@@ -12,7 +12,18 @@ export type IconName =
   | 'user'
   | 'eye'
   | 'eye-off'
-  | 'alert';
+  | 'alert'
+  | 'home'
+  | 'users'
+  | 'warehouse'
+  | 'layers'
+  | 'pie'
+  | 'image'
+  | 'monitor'
+  | 'logout'
+  | 'user-plus'
+  | 'bell'
+  | 'boxes';
 @Component({
   selector: 'app-icon',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -70,6 +81,46 @@ export type IconName =
       }
       @case ('alert') {
         <path d="m12 3 10 18H2ZM12 9v5M12 17v.2" />
+      }
+      @case ('home') {
+        <path d="m2 10 10-8 10 8M5 8v14h14V8M9 22v-9h6v9" />
+      }
+      @case ('users') {
+        <circle cx="9" cy="6" r="4" />
+        <path d="M2 22v-3a7 7 0 0 1 14 0v3M17 3a4 4 0 0 1 0 8M18 15a6 6 0 0 1 4 6" />
+      }
+      @case ('warehouse') {
+        <path d="m2 7 10-5 10 5M3 7v15h18V7ZM7 22V11h10v11M7 15h10M7 18h10M6 7h12" />
+      }
+      @case ('layers') {
+        <path d="m12 2 10 6-10 6L2 8Zm-10 10 10 6 10-6M2 16l10 6 10-6" />
+      }
+      @case ('pie') {
+        <path d="M12 2v10h10A10 10 0 0 0 12 2ZM8 4a10 10 0 1 0 12 12H8Z" />
+      }
+      @case ('image') {
+        <rect x="2" y="3" width="20" height="18" rx="2" />
+        <circle cx="8" cy="8" r="2" />
+        <path d="m3 20 7-7 4 4 4-6 4 5" />
+      }
+      @case ('monitor') {
+        <rect x="2" y="3" width="20" height="14" rx="2" />
+        <path d="M8 22h8M12 17v5" />
+      }
+      @case ('logout') {
+        <path d="M9 3H3v18h6M10 12h12m-5-5 5 5-5 5" />
+      }
+      @case ('user-plus') {
+        <circle cx="9" cy="6" r="4" />
+        <path d="M2 22v-3a7 7 0 0 1 14 0v3M20 9v8M16 13h8" />
+      }
+      @case ('bell') {
+        <path d="M5 17V9a7 7 0 0 1 14 0v8l3 2H2ZM9 22h6M12 2V1" />
+      }
+      @case ('boxes') {
+        <path
+          d="m12 1 6 3v7l-6 3-6-3V4Zm-6 3 6 3 6-3M12 7v7M6 11l-6 3v7l6 3 6-3v-7M0 14l6 3 6-3M6 17v7M18 11l6 3v7l-6 3-6-3M12 14l6 3 6-3M18 17v7"
+        />
       }
       @case ('close') {
         <path d="m6 6 12 12M6 18 18 6" />

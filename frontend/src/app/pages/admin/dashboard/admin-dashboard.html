@@ -1,0 +1,74 @@
+<section class="welcome-banner" aria-labelledby="welcome-title">
+  <div class="welcome-copy">
+    <p class="admin-eyebrow">Panel de administración</p>
+    <h1 id="welcome-title">Bienvenido, administrador</h1>
+    <p>Organiza tus catálogos, gestiona usuarios y supervisa tu inventario.</p>
+    <div class="welcome-actions">
+      <a class="button button-primary" routerLink="/admin/usuarios/nuevo"
+        ><app-icon name="user-plus" />Crear usuario</a
+      ><a routerLink="/admin/usuarios">Ver usuarios</a>
+    </div>
+  </div>
+  <img
+    class="welcome-warehouse"
+    src="images/admin-warehouse.webp"
+    alt=""
+    width="1024"
+    height="683"
+  />
+</section>
+<section class="summary-grid" aria-label="Resumen general">
+  @for (summary of summaries; track summary.label) {
+    <article class="summary-card">
+      <div class="mint-icon"><app-icon [name]="summary.icon" /></div>
+      <div>
+        <h2>{{ summary.label }}</h2>
+        <p class="summary-value" aria-label="Sin datos">—</p>
+        <p class="summary-caption">Sin datos disponibles</p>
+      </div>
+    </article>
+  }
+</section>
+<section class="shortcuts-section" aria-labelledby="shortcuts-title">
+  <h2 class="panel-heading" id="shortcuts-title">Accesos rápidos</h2>
+  <div class="shortcut-grid">
+    @for (shortcut of shortcuts; track shortcut.link) {
+      <article class="shortcut-card">
+        <div class="mint-icon"><app-icon [name]="shortcut.icon" /></div>
+        <div>
+          <h3>{{ shortcut.title }}</h3>
+          <p>{{ shortcut.description }}</p>
+          <a [routerLink]="shortcut.link">{{ shortcut.label }}<app-icon name="arrow" /></a>
+        </div>
+      </article>
+    }
+  </div>
+</section>
+<div class="overview-grid">
+  <section class="inventory-panel" aria-labelledby="inventory-title">
+    <div class="panel-header">
+      <h2 class="panel-heading" id="inventory-title">Resumen de inventario</h2>
+      <a routerLink="/admin/existencias">Ver existencias<app-icon name="arrow" /></a>
+    </div>
+    <div class="inventory-empty">
+      <div class="empty-illustration" aria-hidden="true"><app-icon name="boxes" /></div>
+      <h3>Consulta el stock de tus almacenes</h3>
+      <p>Las existencias se mostrarán al cargar la información.</p>
+    </div>
+  </section>
+  <section class="supervision-panel" aria-labelledby="supervision-title">
+    <h2 class="panel-heading" id="supervision-title">Supervisión</h2>
+    <div class="supervision-links">
+      @for (item of supervision; track item.link) {
+        <a [routerLink]="item.link"
+          ><div class="mint-icon"><app-icon [name]="item.icon" /></div>
+          <div>
+            <h3>{{ item.title }}</h3>
+            <p>{{ item.description }}</p>
+          </div>
+          <app-icon name="arrow"
+        /></a>
+      }
+    </div>
+  </section>
+</div>
