@@ -3,6 +3,9 @@
 Esta es la guia de entrada para quien recibe el proyecto. Backend y frontend se ejecutan en
 dos terminales. La base es PostgreSQL; no se necesita InsForge ni activar el perfil demo.
 
+Una vez abierto, seguir [GUIA-USO-SISTEMA.md](GUIA-USO-SISTEMA.md) para conocer los módulos,
+los permisos de cada rol y los pasos de inventario, compras, conteos e indicadores.
+
 ## 1. Requisitos
 
 | Herramienta | Version / uso |

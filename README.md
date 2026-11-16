@@ -1,6 +1,7 @@
 # ByteElement-DWI - StockGuard MYPE
 
 Para clonar y arrancar por primera vez, seguir [GUIA-INICIO.md](GUIA-INICIO.md).
+Para conocer cada función y recorrer el sistema, consultar [GUIA-USO-SISTEMA.md](GUIA-USO-SISTEMA.md).
 
 Ultima correccion: [selectores de almacenes](frontend/docs/SELECTORES-ALMACENES.md), activos por defecto
 y consulta historica opcional. 102 pruebas Angular, build y siete comprobaciones reales aprobados.
