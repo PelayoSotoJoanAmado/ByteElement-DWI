@@ -12,7 +12,7 @@ import { errorMessage } from '../admin/shared/remote-state';
   imports: [ReactiveFormsModule, RouterLink],
   template: `<main class="account-page">
     <section class="ap-panel">
-      <p class="ap-help">STOCKGUARD · MI CUENTA</p>
+      <p class="ap-help">BYTEELEMENT · MI CUENTA</p>
       <h1>Cambiar contraseña</h1>
       <p>{{ auth.user()?.username }}</p>
       @if (auth.user()?.requiereCambioPassword) {

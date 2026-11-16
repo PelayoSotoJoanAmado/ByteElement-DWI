@@ -63,6 +63,8 @@ app-icon svg {
   margin-inline: auto;
 }
 .brand {
+  font-family: 'Segoe UI', Inter, Arial, sans-serif;
+  white-space: nowrap;
   display: inline-flex;
   align-items: center;
   gap: 11px;
@@ -70,6 +72,13 @@ app-icon svg {
   font-weight: 750;
   letter-spacing: -1px;
   text-decoration: none;
+}
+.brand-wordmark {
+  display: inline-block;
+  line-height: 1;
+}
+.brand-element {
+  color: var(--brand-accent, var(--mint));
 }
 .brand app-icon {
   color: var(--mint);

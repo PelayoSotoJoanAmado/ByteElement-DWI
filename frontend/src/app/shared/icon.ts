@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 export type IconName =
   | 'shield'
+  | 'byteelement'
   | 'box'
   | 'arrows'
   | 'cart'
@@ -38,6 +39,12 @@ export type IconName =
     focusable="false"
   >
     @switch (name()) {
+      @case ('byteelement') {
+        <g transform="translate(0.9 0) scale(0.46)">
+          <path fill="currentColor" stroke="none" fill-rule="evenodd"
+            d="M24 2 44 13v10q0 3-2 4 2 1 2 4v8L24 50 4 39V13Zm0 5L11 14.25 24 21.5l13-7.25ZM9 19v17l12.5 7V26Zm17.5 7v4L39 23v-4Zm0 10v7L39 36v-7Z" />
+        </g>
+      }
       @case ('shield') {
         <path d="m12 2 9 4v6c0 5-5.4 8.5-9 10-3.6-1.5-9-5-9-10V6Z" />
         <path d="m12 7 5 2.5v5L12 17l-5-2.5v-5ZM7 9.5l5 2.5 5-2.5M12 12v5" />
