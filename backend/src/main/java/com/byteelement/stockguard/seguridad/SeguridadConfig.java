@@ -62,25 +62,39 @@ public class SeguridadConfig {
           users
               .findByUsername(jwt.getSubject())
               .orElseThrow(() -> new BadJwtException("Usuario inválido"));
-      if (!u.isActivo() || !u.getRol().name().equals(jwt.getClaimAsString("rol")))
+      Object uid = jwt.getClaim("uid"), version = jwt.getClaim("ver");
+      if (!u.isActivo()
+          || !u.getRol().name().equals(jwt.getClaimAsString("rol"))
+          || !(uid instanceof Number)
+          || !(version instanceof Number)
+          || ((Number) uid).longValue() != u.getId()
+          || ((Number) version).longValue() != u.getVersionSesion())
         throw new BadJwtException("Usuario o permisos inválidos");
       return jwt;
     };
   }
 
   @Bean
-  SecurityFilterChain seguridad(HttpSecurity http) throws Exception {
+  SecurityFilterChain seguridad(HttpSecurity http, UsuarioRepository usuarios) throws Exception {
     var authorities = new JwtGrantedAuthoritiesConverter();
     authorities.setAuthoritiesClaimName("rol");
     authorities.setAuthorityPrefix("ROLE_");
     var converter = new JwtAuthenticationConverter();
     converter.setJwtGrantedAuthoritiesConverter(authorities);
-    return http.cors(org.springframework.security.config.Customizer.withDefaults())
+    return http.addFilterAfter(
+            new CambioPasswordObligatorioFilter(usuarios),
+            org.springframework.security.oauth2.server.resource.web.authentication
+                .BearerTokenAuthenticationFilter.class)
+        .cors(org.springframework.security.config.Customizer.withDefaults())
         .csrf(c -> c.disable())
         .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(
             a ->
-                a.requestMatchers(HttpMethod.GET, "/api/v1/evidencias")
+                a.requestMatchers(HttpMethod.GET, "/api/v1/auth/me")
+                    .authenticated()
+                    .requestMatchers(HttpMethod.POST, "/api/v1/auth/cambiar-password")
+                    .authenticated()
+                    .requestMatchers(HttpMethod.GET, "/api/v1/evidencias")
                     .hasRole("ADMINISTRADOR")
                     .requestMatchers(HttpMethod.GET, "/api/v1/salud")
                     .hasAnyRole("SUPERVISOR", "ADMINISTRADOR")

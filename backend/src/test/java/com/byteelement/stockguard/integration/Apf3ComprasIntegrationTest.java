@@ -46,9 +46,12 @@ class Apf3ComprasIntegrationTest {
 
   @BeforeEach
   void preparar() {
-    for (var rol : Rol.values())
+    for (var rol : Rol.values()) {
       if (users.findByUsername("apf3-" + rol).isEmpty())
         usuarios.crear(new CrearUsuarioRequest("apf3-" + rol, PASSWORD, rol));
+      jdbc.update(
+          "update usuario set requiere_cambio_password=false where username=?", "apf3-" + rol);
+    }
     String id = UUID.randomUUID().toString().substring(0, 8).toUpperCase();
     p = productos.saveAndFlush(new Producto("APF3-" + id, "RAM", "Marca", "Modelo", "8GB", true));
     a = almacenes.saveAndFlush(new Almacen("APF3-" + id, "Prueba"));

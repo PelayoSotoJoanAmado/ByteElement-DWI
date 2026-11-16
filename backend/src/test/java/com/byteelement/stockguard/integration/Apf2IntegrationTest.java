@@ -55,6 +55,10 @@ class Apf2IntegrationTest {
         usuarios.crear(new CrearUsuarioRequest("test-" + rol.name(), PASSWORD, rol));
       } catch (ConflictoCatalogoException ignored) {
       }
+      // Fixture operativo: el primer acceso se prueba en CuentasIntegrationTest.
+      jdbc.update(
+          "update usuario set requiere_cambio_password=false where username=?",
+          "test-" + rol.name());
     }
     autenticar("test-ALMACEN", Rol.ALMACEN);
     String codigo = UUID.randomUUID().toString().substring(0, 8).toUpperCase();

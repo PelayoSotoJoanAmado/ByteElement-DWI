@@ -22,6 +22,7 @@ class ContratosSeguridadIntegrationTest {
   @Autowired MockMvc mvc;
   @Autowired UsuarioService usuarios;
   @Autowired UsuarioRepository repositorio;
+  @Autowired org.springframework.jdbc.core.JdbcTemplate jdbc;
 
   record Contrato(String metodo, String ruta, List<Rol> roles) {}
 
@@ -33,6 +34,7 @@ class ContratosSeguridadIntegrationTest {
       String nombre = "matriz-" + rol;
       if (repositorio.findByUsername(nombre).isEmpty())
         usuarios.crear(new CrearUsuarioRequest(nombre, password, rol));
+      jdbc.update("update usuario set requiere_cambio_password=false where username=?", nombre);
       tokens.put(
           rol, (String) usuarios.login(new LoginRequest(nombre, password)).get("accessToken"));
     }
@@ -74,6 +76,12 @@ class ContratosSeguridadIntegrationTest {
         "/cortes-stock/inexistente",
         "/salud");
     agregar(contratos, "GET", List.of(Rol.ADMINISTRADOR), "/usuarios", "/evidencias");
+    agregar(contratos, "GET", todos, "/auth/me");
+    agregar(contratos, "POST", todos, "/auth/cambiar-password");
+    agregar(contratos, "GET", List.of(Rol.ADMINISTRADOR), "/usuarios/999999999/eventos");
+    agregar(contratos, "PUT", List.of(Rol.ADMINISTRADOR), "/usuarios/999999999");
+    agregar(
+        contratos, "POST", List.of(Rol.ADMINISTRADOR), "/usuarios/999999999/restablecer-password");
     agregar(contratos, "POST", List.of(Rol.ADMINISTRADOR), "/usuarios", "/productos", "/almacenes");
     agregar(
         contratos,
