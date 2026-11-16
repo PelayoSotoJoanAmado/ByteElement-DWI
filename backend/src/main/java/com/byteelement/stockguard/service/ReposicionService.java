@@ -58,26 +58,76 @@ public class ReposicionService {
             .setParameter("a", almacenId)
             .getSingleResult();
     Instant hasta = Instant.now(), desde = hasta.minus(ventana, java.time.temporal.ChronoUnit.DAYS);
-    return new PageImpl<>(
-        lista.stream().map(ps -> calcular(ps, desde, hasta)).toList(), page, total);
-  }
 
-  private Reposicion calcular(PoliticaStock ps, Instant desde, Instant hasta) {
-    long p = ps.getProducto().getId(), a = ps.getAlmacen().getId();
-    long stock =
-        existencias.findByProductoIdAndAlmacenId(p, a).map(Existencia::getCantidad).orElse(0L);
-    long consumo =
+    if (lista.isEmpty()) {
+      return new PageImpl<>(List.of(), page, total);
+    }
+
+    Set<Long> pIds =
+        lista.stream().map(ps -> ps.getProducto().getId()).collect(java.util.stream.Collectors.toSet());
+    Set<Long> aIds =
+        lista.stream().map(ps -> ps.getAlmacen().getId()).collect(java.util.stream.Collectors.toSet());
+
+    Map<String, Long> stockMap = new HashMap<>();
+    List<Object[]> existenciasRows =
         em.createQuery(
-                "select coalesce(sum(m.cantidad),0) from MovimientoPersistido m where"
-                    + " m.producto.id=:p and m.almacen.id=:a and m.tipo=:tipo and m.fecha>=:d and"
-                    + " m.fecha<:h",
-                Long.class)
-            .setParameter("p", p)
-            .setParameter("a", a)
+                "select e.producto.id, e.almacen.id, e.cantidad from Existencia e where e.producto.id in :pIds and e.almacen.id in :aIds",
+                Object[].class)
+            .setParameter("pIds", pIds)
+            .setParameter("aIds", aIds)
+            .getResultList();
+    for (Object[] row : existenciasRows) {
+      stockMap.put(row[0] + ":" + row[1], (Long) row[2]);
+    }
+
+    Map<String, Long> consumoMap = new HashMap<>();
+    List<Object[]> consumoRows =
+        em.createQuery(
+                "select m.producto.id, m.almacen.id, coalesce(sum(m.cantidad),0) from MovimientoPersistido m where"
+                    + " m.tipo=:tipo and m.fecha>=:d and m.fecha<:h and m.producto.id in :pIds and m.almacen.id in :aIds"
+                    + " group by m.producto.id, m.almacen.id",
+                Object[].class)
             .setParameter("tipo", TipoMovimiento.SALIDA)
             .setParameter("d", desde)
             .setParameter("h", hasta)
-            .getSingleResult();
+            .setParameter("pIds", pIds)
+            .setParameter("aIds", aIds)
+            .getResultList();
+    for (Object[] row : consumoRows) {
+      consumoMap.put(row[0] + ":" + row[1], (Long) row[2]);
+    }
+
+    Map<String, Long> pendientesMap = new HashMap<>();
+    List<Object[]> pendientesRows =
+        em.createQuery(
+                "select o.solicitud.producto.id, o.solicitud.almacen.id, coalesce(sum(o.solicitud.cantidad-o.cantidadRecibida),0) from OrdenCompra o where"
+                    + " o.estado=com.byteelement.stockguard.entity.EstadoOrdenCompra.EMITIDA and o.solicitud.producto.id in :pIds and o.solicitud.almacen.id in :aIds"
+                    + " group by o.solicitud.producto.id, o.solicitud.almacen.id",
+                Object[].class)
+            .setParameter("pIds", pIds)
+            .setParameter("aIds", aIds)
+            .getResultList();
+    for (Object[] row : pendientesRows) {
+      pendientesMap.put(row[0] + ":" + row[1], (Long) row[2]);
+    }
+
+    return new PageImpl<>(
+        lista.stream().map(ps -> calcular(ps, stockMap, consumoMap, pendientesMap, desde, hasta)).toList(),
+        page,
+        total);
+  }
+
+  private Reposicion calcular(
+      PoliticaStock ps,
+      Map<String, Long> stockMap,
+      Map<String, Long> consumoMap,
+      Map<String, Long> pendientesMap,
+      Instant desde,
+      Instant hasta) {
+    long p = ps.getProducto().getId(), a = ps.getAlmacen().getId();
+    String key = p + ":" + a;
+    long stock = stockMap.getOrDefault(key, 0L);
+    long consumo = consumoMap.getOrDefault(key, 0L);
     BigDecimal diario =
         BigDecimal.valueOf(consumo).divide(BigDecimal.valueOf(ventana), 8, RoundingMode.HALF_UP);
     long cobertura =
@@ -86,7 +136,7 @@ public class ReposicionService {
             .divide(BigDecimal.valueOf(ventana), 0, RoundingMode.CEILING)
             .longValueExact();
     long punto = Math.min(ps.getMaximo(), Math.max(ps.getMinimo(), cobertura));
-    long pendientes = ordenes.pendientes(p, a), posicion = Math.addExact(stock, pendientes);
+    long pendientes = pendientesMap.getOrDefault(key, 0L), posicion = Math.addExact(stock, pendientes);
     long sugerida = posicion <= punto ? Math.max(0, ps.getMaximo() - posicion) : 0;
     boolean urgente =
         stock == 0

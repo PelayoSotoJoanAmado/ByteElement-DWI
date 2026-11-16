@@ -42,12 +42,12 @@ export class AdminApi {
   list(resource: Resource): Observable<Row[]> {
     return resource === 'productos' ? this.products() : this.get<Row[]>(resource);
   }
-  products(): Observable<Product[]> {
-    // The API returns arrays without totals. Continue through every page, never silently truncate selectors or counts.
+  products(maxPages = 3): Observable<Product[]> {
+    // The API returns arrays without totals. Continue through pages up to maxPages, avoiding blocking indefinitely on large catalogs.
     return this.get<Product[]>('productos', { pagina: 0, tamanio: 100 }).pipe(
       map((rows) => ({ rows, page: 0 })),
       expand((batch) =>
-        batch.rows.length === 100
+        batch.rows.length === 100 && batch.page + 1 < maxPages
           ? this.get<Product[]>('productos', { pagina: batch.page + 1, tamanio: 100 }).pipe(
               map((rows) => ({ rows, page: batch.page + 1 })),
             )
@@ -56,10 +56,10 @@ export class AdminApi {
       reduce((all, batch) => [...all, ...batch.rows], [] as Product[]),
     );
   }
-  pageRows(path: string, params: Params = {}): Observable<Row[]> {
+  pageRows(path: string, params: Params = {}, maxPages = 3): Observable<Row[]> {
     return this.get<Page>(path, { ...params, pagina: 0, tamanio: 100 }).pipe(
       expand((page) =>
-        page.number + 1 < page.totalPages
+        page.number + 1 < page.totalPages && page.number + 1 < maxPages
           ? this.get<Page>(path, { ...params, pagina: page.number + 1, tamanio: 100 })
           : EMPTY,
       ),

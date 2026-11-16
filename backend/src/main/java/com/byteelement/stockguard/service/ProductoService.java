@@ -4,6 +4,7 @@ import com.byteelement.stockguard.dto.CrearProductoRequest;
 import com.byteelement.stockguard.entity.Producto;
 import com.byteelement.stockguard.exception.SkuDuplicadoException;
 import com.byteelement.stockguard.repository.ProductoRepository;
+import java.util.List;
 import java.util.Locale;
 import java.util.NoSuchElementException;
 import org.springframework.data.domain.Page;
@@ -70,8 +71,8 @@ public class ProductoService {
     return repository.saveAndFlush(producto);
   }
 
-  public Page<Producto> listar(int pagina, int tamanio) {
-    return repository.findAll(PageRequest.of(pagina, tamanio, Sort.by("id").ascending()));
+  public List<Producto> listar(int pagina, int tamanio) {
+    return repository.listarPaginado(PageRequest.of(pagina, tamanio));
   }
 
   public Producto obtenerBloqueado(Long id) {
