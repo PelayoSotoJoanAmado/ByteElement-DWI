@@ -129,7 +129,7 @@ historial sin claves, desactivacion/reactivacion y cambio voluntario desde Mi cu
 I05 marca quiebre porque el producto estuvo en cero antes de su primera entrada, aunque el
 saldo final sea positivo. Los conteos no coincidentes u obsoletos no se convierten en aciertos
 despues de ajustar el saldo. Una aprobacion de pocos segundos puede mostrar 0 dias por el
-redondeo a dos decimales; Ver calculo conserva numerador/denominador y la unidad correspondiente.
+redondeo a cuatro decimales de dia; Ver calculo conserva numerador/denominador y la unidad correspondiente.
 Son controles sinteticos de calculo, no resultados de mejora real del negocio.
 
 ![Indicadores consultados desde Angular](evidencias/indicadores.png)
