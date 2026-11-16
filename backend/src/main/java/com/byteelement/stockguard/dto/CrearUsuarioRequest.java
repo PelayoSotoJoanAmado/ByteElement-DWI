@@ -6,4 +6,9 @@ import jakarta.validation.constraints.*;
 public record CrearUsuarioRequest(
     @NotBlank @Pattern(regexp = "[a-zA-Z0-9._-]{3,80}") String username,
     @NotBlank @Size(min = 12, max = 72) String password,
-    @NotNull Rol rol) {}
+    @NotNull Rol rol) {
+  @Override
+  public String toString() {
+    return "CrearUsuarioRequest[credenciales omitidas]";
+  }
+}
