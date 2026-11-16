@@ -63,8 +63,17 @@ try {
         (Resultado 'RF06' @('jpqlFiltraSkuAlmacenPeriodoYPagina','rotacionUsaConsumoComercialYPromedioTemporal')),
         (Resultado 'RF07' @('conteoCalculaCoincidenciaDelSaldoAlCorteYAjusteEsTrazable')),
         (Resultado 'RF08' @('indicadoresNoDuplicanProductosYPreservanPoliticaAlCorte','RF08_I06_I08_I09FiltranPeriodoYDenominador')),
-        (Resultado 'RF09' @('RF09_contratosNuevosRechazanSinTokenYRolIndebido','todosLosContratosRestringidosRechazanTokenAusenteInvalidoYRolIndebido')),
+        (Resultado 'RF09' @('RF09_contratosNuevosRechazanSinTokenYRolIndebido','todosLosContratosRestringidosRechazanTokenAusenteInvalidoYRolIndebido','primerAccesoBloqueaTodosLosModulosPeroPermiteCambiarPassword','cambioPasswordInvalidaTodasLasSesionesYLaClaveAnterior','soloAdminConClaveDefinitivaPuedeGestionarCuentas')),
         (Resultado 'RF10-backend' @('RF10_flujoComprasHttpYDashboardConPermisos'))
+    )
+    $cuentas=@(
+        (Resultado 'instalacion-atomica' @('creaCincoCuentasDistintasSinDatosDemoYSinGuardarPasswordsEnClaro','configuracionIncompletaNoCreaCuentasParciales','nombresYClavesInicialesDuplicadasSonRechazados','errorDeAuditoriaRevierteTodaLaInstalacion')),
+        (Resultado 'instalacion-concurrente' @('dosInstanciasConcurrentesSoloInstalanUnaVez','reiniciarNoCambiaPasswordsNiReactivaCuentas','unaBaseYaInstaladaNoRecreaUsuariosBorradosNiExigeOtraVezLasClavesIniciales')),
+        (Resultado 'primer-acceso' @('unaCuentaPuedeConsultarSuEstadoYCambiarSuPasswordInicial','primerAccesoBloqueaTodosLosModulosPeroPermiteCambiarPassword')),
+        (Resultado 'password-y-revocacion' @('cambioPasswordValidaActualConfirmacionReutilizacionYBytesSinModificarCuenta','cambioPasswordInvalidaTodasLasSesionesYLaClaveAnterior')),
+        (Resultado 'gestion-y-auditoria' @('adminCreaCuentaConCambioObligatorioSinDevolverSecretos','adminEditaNombreRolYEstadoRevocandoTokens','resetObligaCambioRevocaSesionYConservaHistorialSinPassword','desactivacionBloqueaLoginYReactivacionNoReviveTokenViejo')),
+        (Resultado 'concurrencia-y-administrador' @('cambiosConcurrentesRespetanLaVersionDelFormulario','dosAdministradoresNoPuedenDesactivarseMutuamenteDejandoCeroActivos','adminNoPuedeDesactivarseCambiarSuRolNiRestablecersePorAdministracion')),
+        (Resultado 'migracion' @('migrarV7AV8ConservaCredencialesRolesYEstadosDeUsuariosExistentes'))
     )
     $contratos=@()
     if($casos['RF09_matrizDeTodosLosContratosProtegidos'] -and
@@ -85,13 +94,13 @@ try {
     $sha = [System.Security.Cryptography.SHA256]::Create()
     $huella = [BitConverter]::ToString($sha.ComputeHash([Text.Encoding]::UTF8.GetBytes(($huellas -join '')))).Replace('-','').ToLowerInvariant()
     $sha.Dispose()
-    $motor = if ($env:TEST_DB_URL -like 'jdbc:postgresql:*') { 'PostgreSQL (migraciones historicas tambien se prueban en H2)' } else { 'H2 en modo PostgreSQL' }
+    $motor = if ($env:TEST_DB_URL -like 'jdbc:postgresql:*') { 'PostgreSQL (migraciones historicas y perfil prod tambien se prueban en H2; ver INSTALACION_TEST_DB_URL para instalacion)' } else { 'H2 en modo PostgreSQL' }
     $salida = [ordered]@{
         sinDatos=($total -eq 0); generadoEn=[DateTime]::UtcNow.ToString('o')
         version=[ordered]@{ commit=$commit; cambiosSinCommit=([bool](& git status --porcelain)); fuentesSha256=$huella }
         alcance='Backend. F01-F05 Angular y despliegue requieren evidencia adicional; no se declara aprobacion final del proyecto.'
         motor=$motor; suite=[ordered]@{ pruebas=$total; noAprobadas=$fallidos; omitidas=$omitidos; exito=($codigo -eq 0 -and $total -gt 0) }
-        requisitos=$requisitos; reglas=$reglas; seguridad=$contratos; pruebasSeguridad=$seguridad; e2e=$flujos
+        requisitos=$requisitos; reglas=$reglas; seguridad=$contratos; pruebasSeguridad=$seguridad; e2e=$flujos; cuentas=$cuentas
         indicadoresTecnicos=@(
             (Metrica 'I01' $requisitos), (Metrica 'I02' $contratos),
             (Metrica 'I03' $flujos), (Metrica 'I04' $reglas)
