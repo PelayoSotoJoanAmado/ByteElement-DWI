@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "StockGuard APF3 - Backend",
-    "description": "Completar usuarios/passwords en variables locales de Postman. No exportar secretos. Coleccion de demostracion; no sustituye suite automatizada. Crear politica para cada par critico antes de consultar I10 sin filtro de almacen. Para probar reintentos, fijar la misma clave UUID manualmente.",
+    "description": "Completar usuarios/passwords en variables locales de Postman. No exportar secretos. V8: si requiereCambioPassword=true, completar primero POST /api/v1/auth/cambiar-password y reemplazar tokenAdmin/tokenCompras/tokenSupervisor/tokenAlmacen por el NUEVO token del rol antes de operar; contrato exacto en cuentas/CONTRATO-FRONTEND.md. Coleccion de demostracion; no sustituye suite automatizada. Crear politica para cada par critico antes de consultar I10 sin filtro de almacen. Para probar reintentos, fijar la misma clave UUID manualmente.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [

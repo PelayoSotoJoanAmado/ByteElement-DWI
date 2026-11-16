@@ -6,15 +6,14 @@ desde el navegador y corregir cualquier incidencia que aparezca al conectar amba
 
 ## Recibir el proyecto correcto
 
-La rama de trabajo es prueba. Recibir el commit de APF3 y actualizar esa rama antes de empezar;
-no trabajar solo con main, que conserva un corte anterior. El commit de entrega se identifica
-por su mensaje feat(apf3): completar backend y documentar integracion Angular.
+La rama actual es front. Recibir la entrega de backend con V8 y comprobar la version compartida
+antes de integrar. No usar solamente el corte anterior de prueba o main.
 No compartir application-local.properties, contrasenas, JWT_SECRET ni los archivos de target.
 Cada integrante configura su entorno local desde la plantilla.
 
 ## Leer en este orden
 
-1. HANDOVER_ESTADO_PROYECTO.md en la raiz: leer primero la actualizacion APF3; el corte APF2 inferior es historico.
+1. HANDOVER_ESTADO_PROYECTO.md en la raiz y [cuentas/CONTRATO-FRONTEND.md](cuentas/CONTRATO-FRONTEND.md): primer acceso y gestion de cuentas. Los cortes inferiores son historicos.
 2. [API-ANGULAR.md](API-ANGULAR.md): compras, reposicion, dashboard, permisos, errores, JWT e idempotencia.
 3. [APF2-MINIMO.md](../APF2/APF2-MINIMO.md): contratos conservados de productos, almacenes, movimientos,
    transferencias, politicas, conteos y cortes. Sus pendientes de compras ya fueron resueltos en APF3.
@@ -35,30 +34,24 @@ Crear/iniciar una base local. Desde backend, si aun no existe tu configuracion:
 Copy-Item application-local.properties.example application-local.properties
 ```
 
-Editar esa copia: URL/usuario/password de PostgreSQL, JWT_SECRET de al menos 32 bytes,
-primer administrador y contrasena de demostracion. No conservar los valores REEMPLAZAR.
-El primer administrador solo se crea cuando la base no tiene usuarios.
-Usar una base de desarrollo vacia para comenzar con el escenario pequeno:
+Editar esa copia: URL/usuario/password PostgreSQL, JWT_SECRET de al menos 32 bytes y cinco
+passwords iniciales distintos. No conservar los marcadores REEMPLAZAR. Configuracion exacta en
+[cuentas/README.md](cuentas/README.md). No sobreescribir un archivo privado existente.
+
+Desde backend, en una terminal sin el perfil demo heredado:
 
 ```powershell
-$env:SPRING_PROFILES_ACTIVE = 'local,demo'
-$env:DEBUG = 'false'
 .\mvnw.cmd spring-boot:run
 ```
 
-Flyway aplica V1-V7 y Hibernate valida. No crear tablas manualmente ni cambiar ddl-auto.
-El perfil demo crea dos productos, politicas y operaciones de control; no es la carga de 10000 productos.
-Los usuarios demo comparten la contrasena que configuraste en stockguard.demo.password:
+Flyway aplica V1-V8 y Hibernate valida. No crear tablas manualmente ni cambiar ddl-auto.
+En una instalacion vacia se crean administrador, almacen, compras, supervisor y consulta-comercial
+con los passwords privados configurados. Cada uno debe cambiarlos antes de acceder a sus modulos.
+Angular debe implementar esa pantalla comun ANTES de probar las cuentas nuevas.
+No se requieren productos demo para crear las cuentas. local,demo sigue siendo optativo para
+datos sinteticos y cuentas demo adicionales; no es el modo normal ni sobrescribe cuentas existentes.
+Si ya hay usuarios en tu base, se conservan: iniciar con las credenciales que ya tenias.
 
-| Usuario | Rol |
-|---|---|
-| demo-administrador | ADMINISTRADOR |
-| demo-almacen | ALMACEN |
-| demo-compras | COMPRAS |
-| demo-supervisor | SUPERVISOR |
-| demo-consulta_comercial | CONSULTA_COMERCIAL |
-
-Sin demo tambien puedes usar el administrador inicial y crear cuentas mediante POST /api/v1/usuarios.
 Las bases de volumen y los servidores temporales usados para validar no se entregan funcionando;
 los scripts y datos para recrearlos estan en esta carpeta. No necesitas la carga masiva para comenzar la interfaz.
 
@@ -74,7 +67,8 @@ los scripts y datos para recrearlos estan en esta carpeta. No necesitas la carga
 
 ## Orden de implementacion sugerido
 
-1. Sesion: login, usuario/rol, interceptor Bearer, expiracion/401 y guards.
+1. Sesion: login, GET /auth/me, cambio obligatorio/voluntario de password y reemplazo de token;
+   interceptor 401/403 especial, guards y luego gestion de cuentas segun el contrato de cuentas.
 2. Catalogo y consulta de saldo; mantenimiento por administrador y politicas por supervisor.
 3. Entradas, salidas y transferencias; kardex con filtros/paginacion.
 4. Reposicion: regla, consumo, pendientes, alertas y sugerencia. COMPRAS envia la solicitud.
@@ -110,6 +104,7 @@ Texto breve para una IA que ayude con el frontend:
 
 > Trabaja en StockGuard MYPE de ByteElement-DWI. Implementa el frontend Angular con SASS en frontend/.
 > Lee primero HANDOVER_ESTADO_PROYECTO.md y backend/docs/APF3/INICIO-COMPANERO-ANGULAR.md.
+> Implementa primero cuentas/CONTRATO-FRONTEND.md, con primer acceso y renovacion completa de sesion.
 > Consume la API REST existente siguiendo API-ANGULAR.md y los DTOs Java. El backend usa Spring Boot,
 > JPA/Hibernate, PostgreSQL y JWT con cinco roles. Respeta permisos, estados, idempotencia,
 > paginacion, fechas y errores. No reemplaces el backend ni accedas a PostgreSQL/InsForge desde Angular.

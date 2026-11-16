@@ -1,7 +1,11 @@
 # Contrato de API para Angular
 
+Ampliacion vigente de autenticacion/cuentas: [cuentas/CONTRATO-FRONTEND.md](cuentas/CONTRATO-FRONTEND.md).
+Incluye modelos completos, los cinco endpoints agregados, bloqueo por password pendiente,
+revocacion y manejo de errores. Aplicar ese contrato junto con los contratos de negocio de esta pagina.
+
 Base /api/v1; JSON; Authorization: Bearer accessToken. Login POST /auth/login devuelve
-accessToken, tokenType, expiresIn y usuario (id, username, rol, activo). Tokens duran 30 minutos.
+accessToken, tokenType, expiresIn y usuario (id, username, rol, activo, requiereCambioPassword, version). Tokens duran 30 minutos.
 Guardar JWT solo para la sesion; enviar mediante interceptor. Los guards de Angular complementan
 las restricciones del servidor. No enviar autor ni fechas para atribuir una mutacion.
 
@@ -70,7 +74,7 @@ Enviar fechas ISO-8601 con zona, por ejemplo 2026-11-09T05:00:00Z para medianoch
 Hasta es exclusivo. No enviar fechas locales sin zona.
 
 400: campos/periodo invalidos; 401: token ausente, invalido o expirado;
-403: rol indebido; 404: recurso inexistente; 409: estado incompatible, saldo insuficiente,
+403: rol indebido o cambio de password obligatorio (codigo CAMBIO_PASSWORD_REQUERIDO); 404: recurso inexistente; 409: estado incompatible, saldo insuficiente,
 conteo obsoleto o clave idempotente con otro contenido.
 Errores de negocio usan ProblemDetail: status, title, detail y errores[] de campo cuando aplica.
 Los rechazos de la cadena de seguridad pueden no incluir ProblemDetail; Angular debe usar el status.
