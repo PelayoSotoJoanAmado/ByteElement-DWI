@@ -1,0 +1,54 @@
+{
+  "fecha": "2026-11-16T22:22:25.114Z",
+  "base": "byteelement",
+  "tipo": "Navegador con API real; consultas y cambios de filtros, sin crear datos",
+  "casos": [
+    {
+      "caso": "existencias-administrador",
+      "aprobado": true,
+      "activos": 3,
+      "conInactivos": 6,
+      "etiquetasInactivo": 3,
+      "seleccionOcultaLimpiada": true
+    },
+    {
+      "caso": "solicitud-compra-solo-activos-aunque-historial-incluya-inactivos",
+      "aprobado": true
+    },
+    {
+      "caso": "politicas-solo-activos",
+      "aprobado": true
+    },
+    {
+      "caso": "conteos-supervisor",
+      "aprobado": true,
+      "activos": 3,
+      "conInactivos": 6,
+      "etiquetasInactivo": 3,
+      "seleccionOcultaLimpiada": true
+    },
+    {
+      "caso": "historial-almacen",
+      "aprobado": true,
+      "activos": 3,
+      "conInactivos": 6,
+      "etiquetasInactivo": 3,
+      "seleccionOcultaLimpiada": true
+    },
+    {
+      "caso": "incluir-inactivos-no-habilita-operar-con-ellos",
+      "aprobado": true
+    },
+    {
+      "caso": "transferencias-destino-solo-activo",
+      "aprobado": true
+    }
+  ],
+  "erroresJavascript": [],
+  "exito": true,
+  "version": {
+    "commitBase": "4ef548c9a1dc9a5fb7dbe1defc728418e542cd46",
+    "cambiosSinCommit": true,
+    "frontendFuentesSha256": "e6d871f99a5fb5ff27310ad9ea64edca1c5b275301c1406b0b08d5d85b59117c"
+  }
+}

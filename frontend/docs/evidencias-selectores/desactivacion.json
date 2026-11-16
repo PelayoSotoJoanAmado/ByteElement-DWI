@@ -1,0 +1,25 @@
+{
+  "fecha": "2026-11-16T22:21:13.514294+00:00",
+  "autorizacion": "Usuario solicito desactivar el almacen QA activo y corregir los selectores",
+  "accion": "PATCH /api/v1/almacenes/6/desactivar",
+  "cuentaActora": "administrador",
+  "antes": {
+    "id": 6,
+    "codigo": "QA-C3BD17E35F60",
+    "nombre": "Almacen RF01",
+    "activo": true
+  },
+  "despues": {
+    "id": 6,
+    "codigo": "QA-C3BD17E35F60",
+    "nombre": "Almacen RF01",
+    "activo": false
+  },
+  "almacenesActivos": [
+    "A01",
+    "A02",
+    "A03"
+  ],
+  "registrosEliminados": 0,
+  "otrosAlmacenesSinCambios": true
+}

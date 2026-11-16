@@ -1,0 +1,16 @@
+
+> stockguard-frontend@0.0.0 test
+> ng test --watch=false
+
+> Building...
+√ Building...
+Application bundle generation complete. [2.950 seconds] - 2026-11-16T22:20:04.298Z
+
+
+ RUN  v5.1.0 C:/Users/maste/Documents/UTP/Ciclo 07/Desarrollo Web Integrado 34953/ByteElement-DWI/frontend
+
+
+ Test Files  13 passed (13)
+      Tests  102 passed (102)
+   Start at  17:20:04
+   Duration  5.27s (environment 60%, setup 20%, tests 8%, transform 7%, import 4%)
