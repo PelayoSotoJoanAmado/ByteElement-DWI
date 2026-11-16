@@ -2,6 +2,7 @@
 
 Para clonar y arrancar por primera vez, seguir [GUIA-INICIO.md](GUIA-INICIO.md).
 Para conocer cada función y recorrer el sistema, consultar [GUIA-USO-SISTEMA.md](GUIA-USO-SISTEMA.md).
+Para explicar las fórmulas, la medición y su relación con el informe, consultar [GUIA-INDICADORES-Y-TRAZABILIDAD.md](GUIA-INDICADORES-Y-TRAZABILIDAD.md).
 
 Ultima correccion: [selectores de almacenes](frontend/docs/SELECTORES-ALMACENES.md), activos por defecto
 y consulta historica opcional. 102 pruebas Angular, build y siete comprobaciones reales aprobados.

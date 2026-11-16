@@ -1,5 +1,8 @@
 # Cambios necesarios en el informe
 
+Para actualizar Consistencia, Operacionalización, Trazabilidad y la comparación de resultados,
+seguir [GUIA-INDICADORES-Y-TRAZABILIDAD.md](../../../GUIA-INDICADORES-Y-TRAZABILIDAD.md).
+
 Complementar esta lista con [cuentas/CAMBIOS-INFORME.md](cuentas/CAMBIOS-INFORME.md),
 actualizada el 16/11: RF09, primer acceso, cuentas, V8, 49 contratos y cambios de diagramas/modelo.
 Los resultados de volumen anteriores conservan su fecha y alcance.

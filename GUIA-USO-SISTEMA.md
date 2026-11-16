@@ -303,6 +303,7 @@ inventario físico y se revisan indicadores con datos verificables».
 
 ## 12. Documentación para profundizar
 
+- [Indicadores, fórmulas y trazabilidad para el informe](GUIA-INDICADORES-Y-TRAZABILIDAD.md).
 - [Instalación y arranque](GUIA-INICIO.md).
 - [Reglas y fórmulas detalladas](backend/docs/APF3/REGLAS-Y-MODELO.md).
 - [Matriz de permisos y pestañas](frontend/docs/ROLES-PERMISOS-Y-PENDIENTES.md): la matriz sigue vigente; su diagnóstico inicial es histórico.
