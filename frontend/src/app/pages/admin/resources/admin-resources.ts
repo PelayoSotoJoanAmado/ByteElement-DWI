@@ -22,7 +22,7 @@ import {
 import { tap } from 'rxjs';
 import { AuthService } from '../../../core/auth/auth.service';
 import { ROLES } from '../../../core/auth/auth.models';
-import { AdminApi, Resource, Row } from '../shared/admin-api';
+import { AdminApi, Page, Resource, Row } from '../shared/admin-api';
 import { RemoteState } from '../shared/remote-state';
 import { Column, DataTable } from '../shared/data-table';
 import { RecordDetail } from '../shared/record-detail';
@@ -73,6 +73,7 @@ const COLUMNS: Record<Resource, Column[]> = {
     { key: 'username', label: 'Usuario' },
     { key: 'rol', label: 'Rol' },
     { key: 'activo', label: 'Estado', format: 'active' },
+    { key: 'requiereCambioPassword', label: 'Cambio pendiente' },
   ],
   productos: [
     { key: 'sku', label: 'SKU' },
@@ -100,6 +101,7 @@ export const passwordBytes: ValidatorFn = (control) =>
 })
 export class AdminResources {
   private readonly api = inject(AdminApi);
+  readonly auth = inject(AuthService);
   readonly canManage = inject(AuthService).user()?.rol === 'ADMINISTRADOR';
   private readonly changeDetector = inject(ChangeDetectorRef);
   private readonly destroy = inject(DestroyRef);
@@ -139,7 +141,42 @@ export class AdminResources {
           almacenes: 'Mantén tus ubicaciones organizadas.',
         }[this.kind()],
   );
-  readonly fields = computed(() => FIELDS[this.kind()]);
+  readonly editingRow = signal<Row | null>(null);
+  readonly resetting = signal(false);
+  readonly history = new RemoteState<Page>(this.destroy);
+  readonly historyPage = signal(0);
+  readonly fields = computed<Field[]>(() => {
+    if (this.kind() !== 'usuarios') return FIELDS[this.kind()];
+    if (this.resetting())
+      return [
+        {
+          key: 'passwordTemporal',
+          label: 'Contraseña temporal',
+          max: 72,
+          min: 12,
+          type: 'password',
+        },
+        {
+          key: 'confirmacionPassword',
+          label: 'Confirmar contraseña temporal',
+          max: 72,
+          type: 'password',
+        },
+        { key: 'motivo', label: 'Motivo', max: 300, type: 'textarea' },
+      ];
+    if (this.editingId())
+      return [
+        FIELDS.usuarios[0],
+        FIELDS.usuarios[3],
+        { key: 'activo', label: 'Cuenta activa', max: 1, type: 'checkbox' },
+        { key: 'motivo', label: 'Motivo', max: 300, type: 'textarea' },
+      ];
+    return FIELDS.usuarios;
+  });
+  isOwn(row: Row): boolean {
+    return this.kind() === 'usuarios' && Number(row['id']) === this.auth.user()?.id;
+  }
+
   readonly columns = computed(() => COLUMNS[this.kind()]);
   readonly filtered = computed(() =>
     (this.records.data() ?? []).filter((row) => {
@@ -181,8 +218,10 @@ export class AdminResources {
     this[key].set((event.target as HTMLInputElement).value);
     this.page.set(0);
   }
-  openEditor(row?: Row): void {
-    if (!this.canManage) return;
+  openEditor(row?: Row, reset = false): void {
+    if (!this.canManage || (row && this.isOwn(row))) return;
+    this.resetting.set(reset);
+    this.editingRow.set(row ? { ...row } : null);
     this.mutation.clear();
     this.showPassword.set(false);
     this.editingId.set(row ? Number(row['id']) : undefined);
@@ -194,7 +233,7 @@ export class AdminResources {
           : [Validators.required, Validators.maxLength(field.max), Validators.pattern(/\S/)];
       if (field.min) validators.push(Validators.minLength(field.min));
       if (field.key === 'username') validators.push(Validators.pattern(/^[a-zA-Z0-9._-]{3,80}$/));
-      if (field.key === 'password') validators.push(passwordBytes);
+      if (field.type === 'password') validators.push(passwordBytes);
       controls[field.key] = new FormControl<string | boolean>(
         (row?.[field.key] as string | boolean) ?? (field.type === 'checkbox' ? false : ''),
         { nonNullable: true, validators },
@@ -202,9 +241,10 @@ export class AdminResources {
     }
     this.form = new FormGroup(controls, {
       validators:
-        this.kind() === 'usuarios'
+        this.kind() === 'usuarios' && (!this.editingId() || this.resetting())
           ? (group) =>
-              group.get('password')?.value === group.get('confirm')?.value
+              group.get(this.resetting() ? 'passwordTemporal' : 'password')?.value ===
+              group.get(this.resetting() ? 'confirmacionPassword' : 'confirm')?.value
                 ? null
                 : { mismatch: true }
           : null,
@@ -227,7 +267,7 @@ export class AdminResources {
     return !!c?.touched && !!c.invalid;
   }
   save(): void {
-    if (!this.canManage) return;
+    if (!this.canManage || (this.editingRow() && this.isOwn(this.editingRow()!))) return;
     if (this.mutation.loading()) return;
     this.form.markAllAsTouched();
     if (this.form.invalid) return;
@@ -238,10 +278,22 @@ export class AdminResources {
       if (field.key !== 'confirm') {
         const value = this.form.controls[field.key].value;
         payload[field.key] =
-          typeof value === 'string' && field.key !== 'password' ? value.trim() : value;
+          typeof value === 'string' && field.type !== 'password' ? value.trim() : value;
       }
+    if (kind === 'usuarios' && id) {
+      payload['version'] = this.editingRow()!['version'];
+      if (
+        this.editingRow()!['activo'] === true &&
+        payload['activo'] === false &&
+        !window.confirm('¿Confirmas desactivar esta cuenta? Sus sesiones serán revocadas.')
+      )
+        return;
+    }
+    const request = this.resetting()
+      ? this.api.post(`usuarios/${id}/restablecer-password`, payload)
+      : this.api.save(kind, payload, id);
     this.mutation.load(
-      this.api.save(kind, payload, id).pipe(
+      request.pipe(
         tap(() => {
           this.form.reset();
           this.editor().nativeElement.close();
@@ -259,8 +311,21 @@ export class AdminResources {
     );
   }
   inspect(row: Row): void {
+    this.history.clear();
     this.selected.set(row);
     this.detailDialog().nativeElement.showModal();
+  }
+  loadHistory(page = 0): void {
+    const id = this.selected()?.['id'];
+    if (!id || this.kind() !== 'usuarios') return;
+    this.historyPage.set(page);
+    this.history.load(this.api.get<Page>(`usuarios/${id}/eventos`, { pagina: page, tamanio: 20 }));
+  }
+  editSelected(reset = false): void {
+    const row = this.selected();
+    if (!row || this.isOwn(row)) return;
+    this.detailDialog().nativeElement.close();
+    this.openEditor(row, reset);
   }
   askDeactivate(row: Row): void {
     if (!this.canManage) return;

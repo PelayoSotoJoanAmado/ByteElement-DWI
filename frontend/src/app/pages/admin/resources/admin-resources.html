@@ -84,7 +84,10 @@
 }
 <dialog #editor class="ap-dialog ap-editor" (cancel)="closeEditor($event)">
   <div class="ap-dialog-header">
-    <h2>{{ editingId() ? 'Editar' : 'Crear' }} {{ singular() }}</h2>
+    <h2>
+      {{ resetting() ? 'Restablecer contraseña' : editingId() ? 'Editar' : 'Crear' }}
+      {{ singular() }}
+    </h2>
     <button
       class="ap-close"
       aria-label="Cerrar formulario"
@@ -94,6 +97,11 @@
       ×
     </button>
   </div>
+  @if (kind() === 'usuarios' && (!editingId() || resetting())) {
+    <p class="ap-help">
+      Esta clave es temporal. Comunícala en privado al titular; deberá cambiarla al ingresar.
+    </p>
+  }
   <form [formGroup]="form" (ngSubmit)="save()" novalidate [attr.aria-busy]="mutation.loading()">
     @for (field of fields(); track field.key) {
       @if (form.contains(field.key)) {
@@ -163,11 +171,19 @@
         </div>
       }
     }
-    @if (form.hasError('mismatch') && form.get('confirm')?.touched) {
+    @if (
+      form.hasError('mismatch') &&
+      (form.get('confirm')?.touched || form.get('confirmacionPassword')?.touched)
+    ) {
       <p class="ap-invalid" role="alert">Las contraseñas deben coincidir.</p>
     }
     @if (mutation.error()) {
-      <p class="ap-notice ap-error" role="alert">{{ mutation.error() }}</p>
+      <p class="ap-notice ap-error" role="alert">
+        {{ mutation.error() }}
+        @if (kind() === 'usuarios') {
+          Cierra y actualiza el listado antes de volver a editar si otra persona cambió la cuenta.
+        }
+      </p>
     }
     <div class="ap-actions">
       <button
@@ -191,6 +207,54 @@
   </div>
   @if (selected(); as row) {
     <app-record-detail [record]="row" />
+    @if (kind() === 'usuarios' && canManage) {
+      @if (isOwn(row)) {
+        <p class="ap-help">Es tu propia cuenta. Cambia tu contraseña desde Mi cuenta.</p>
+      } @else {
+        <div class="ap-actions">
+          <button class="ap-button" (click)="editSelected()">Editar cuenta, rol y estado</button>
+          <button class="ap-button" (click)="editSelected(true)">
+            Restablecer contraseña temporal
+          </button>
+        </div>
+      }
+      <button class="ap-button" (click)="loadHistory()">Historial</button>
+      @if (history.loading()) {
+        <p role="status">Cargando historial…</p>
+      }
+      @if (history.error()) {
+        <p class="ap-notice ap-error" role="alert">{{ history.error() }}</p>
+      }
+      @if (history.data(); as events) {
+        <app-data-table
+          [rows]="events.content"
+          [columns]="[
+            { key: 'fecha', label: 'Fecha (Lima)', format: 'date' },
+            { key: 'actorUsername', label: 'Actor' },
+            { key: 'tipo', label: 'Tipo' },
+            { key: 'detalle', label: 'Detalle' },
+          ]"
+          caption="Historial de cuenta"
+        />
+        <div class="ap-pager">
+          <button
+            class="ap-button"
+            [disabled]="historyPage() === 0 || history.loading()"
+            (click)="loadHistory(historyPage() - 1)"
+          >
+            Anterior
+          </button>
+          <span>Página {{ historyPage() + 1 }} · {{ events.totalElements }} eventos</span>
+          <button
+            class="ap-button"
+            [disabled]="historyPage() + 1 >= events.totalPages || history.loading()"
+            (click)="loadHistory(historyPage() + 1)"
+          >
+            Siguiente
+          </button>
+        </div>
+      }
+    }
   }
 </dialog>
 <dialog
@@ -207,7 +271,12 @@
       conservará su historial.
     </p>
     @if (mutation.error()) {
-      <p class="ap-notice ap-error" role="alert">{{ mutation.error() }}</p>
+      <p class="ap-notice ap-error" role="alert">
+        {{ mutation.error() }}
+        @if (kind() === 'usuarios') {
+          Cierra y actualiza el listado antes de volver a editar si otra persona cambió la cuenta.
+        }
+      </p>
     }
     <div class="ap-actions">
       <button class="ap-button" [disabled]="mutation.loading()" (click)="confirmation.close()">

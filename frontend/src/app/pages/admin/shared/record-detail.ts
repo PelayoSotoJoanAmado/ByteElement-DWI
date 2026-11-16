@@ -14,6 +14,7 @@ const TITLES: Record<string, string> = {
   confirmado: 'Confirmado',
   confirmadoPor: 'Confirmado por',
   confirmadoEn: 'Fecha de confirmación',
+  requiereCambioPassword: 'Cambio de contraseña pendiente',
   username: 'Usuario',
   rol: 'Rol',
   activo: 'Activo',
@@ -111,7 +112,10 @@ const TITLES: Record<string, string> = {
 export class RecordDetail {
   readonly record = input.required<Row>();
   entries(): [string, unknown][] {
-    return Object.entries(this.record());
+    return Object.entries(this.record()).filter(
+      ([key]) =>
+        !['version', 'password', 'passwordHash', 'passwordTemporal', 'accessToken'].includes(key),
+    );
   }
   title(key: string): string {
     return TITLES[key] ?? key;
