@@ -1,5 +1,10 @@
 # ByteElement-DWI - StockGuard MYPE
 
+Actualizacion de cuentas (16/11): [instalacion normal de cinco roles](backend/docs/APF3/cuentas/README.md),
+[contrato detallado para Angular](backend/docs/APF3/cuentas/CONTRATO-FRONTEND.md) y
+[cambios al informe](backend/docs/APF3/cuentas/CAMBIOS-INFORME.md).
+Las cuentas nuevas deben cambiar su password antes de operar; Angular necesita implementar ese flujo.
+
 Backend Java 21 / Spring Boot / JPA-Hibernate / PostgreSQL para inventario y reposicion.
 APF3 completa compras, recepciones, reglas de reposicion, I05-I10, evidencias de backend y CORS para Angular.
 La carpeta `frontend/` contiene la base Angular con SCSS, la presentación pública, el inicio de sesión y el panel de administrador protegido de StockGuard.
@@ -17,10 +22,10 @@ Desde backend: `./mvnw.cmd test` o `./docs/APF3/Verificar-APF3.ps1`.
 Para arrancar: configurar secretos con application-local.properties.example y ejecutar
 `./mvnw.cmd spring-boot:run`. El perfil local ya no activa demo automaticamente.
 Prod no importa secretos locales; usar SPRING_PROFILES_ACTIVE=prod y variables de entorno.
-Las migraciones V1-V7 se aplican con Flyway; Hibernate valida el esquema.
+Las migraciones V1-V8 se aplican con Flyway; Hibernate valida el esquema.
 InsForge puede incorporarse despues como PostgreSQL por JDBC, conservando el backend.
 
-Se mantiene la rama prueba. Las evidencias APF1/APF2 son historicas y no describen el alcance actual.
+El trabajo actual de integracion esta en la rama front. Las evidencias APF1/APF2 son historicas y no describen el alcance actual.
 
 ## Frontend Angular
 

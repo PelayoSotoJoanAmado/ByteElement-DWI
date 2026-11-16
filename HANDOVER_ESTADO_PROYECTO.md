@@ -1,3 +1,33 @@
+# Actualizacion vigente - cuentas y roles - 16 de noviembre de 2026
+
+Rama actual: front. Backend ampliado; no se cambiaron los permisos operativos de los cinco roles.
+No se agrega SUPERADMIN. Administrador gestiona cuentas; Compras solicita/emite; Supervisor
+decide; Almacen recibe/mueve; Consulta comercial consulta los recursos autorizados.
+
+- Flyway V8 agrega ciclo de vida de cuentas, revocacion de sesiones y auditoria.
+- Instalacion nueva: cinco cuentas iniciales, passwords privados distintos y cambio obligatorio;
+  arranque normal sin activar demo. No se agregan productos ni operaciones de prueba.
+- Bases existentes: conserva nombres, hashes, roles y estado. No recrea ni resetea cuentas.
+- Todos los roles tienen Mi cuenta y cambio de password. Administrador gestiona otras cuentas,
+  con version, motivo e historial. No puede desactivarse/cambiar su rol a si mismo.
+- La base local del usuario no fue migrada ni modificada durante esta implementacion.
+  V8 se aplicara cuando el equipo arranque esta version contra su base; antes, hacer backup.
+- La interfaz actual tiene areas de Administrador y Almacen; Compras, Supervisor y Consulta
+  necesitan completarse. Primer acceso y nuevas acciones de cuentas tampoco estan implementados en Angular.
+- Los JWT de la version anterior requieren iniciar sesion nuevamente.
+
+Lectura para continuar:
+1. [Instalacion y operacion de cuentas](backend/docs/APF3/cuentas/README.md).
+2. [Contrato exacto Angular](backend/docs/APF3/cuentas/CONTRATO-FRONTEND.md).
+3. [Matriz de pestanas/acciones por rol](frontend/docs/ROLES-PERMISOS-Y-PENDIENTES.md).
+4. [Cambios al informe](backend/docs/APF3/cuentas/CAMBIOS-INFORME.md).
+5. [Validacion de esta ampliacion](backend/docs/APF3/cuentas/VALIDACION.md).
+
+Las cifras y descripciones que siguen corresponden a cortes historicos. Para cuentas prevalece
+esta seccion y la carpeta cuentas. Las mediciones de volumen del 13/11 se conservan como historial.
+
+---
+
 # Estado actualizado para APF3 - 13 de noviembre de 2026
 
 La documentacion vigente esta en [backend/docs/APF3](backend/docs/APF3/README.md).

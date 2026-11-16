@@ -1,5 +1,9 @@
 # Backend de StockGuard para APF3
 
+Actualizacion 16/11: leer primero [cuentas/README.md](cuentas/README.md) y
+[el contrato Angular de cuentas](cuentas/CONTRATO-FRONTEND.md). Esta ampliacion agrega V8,
+primer acceso, edicion/reset/auditoria y cinco cuentas iniciales sin demo; conserva los roles de negocio.
+
 Esta etapa completa los contratos de inventario y compras para que Angular pueda consumirlos.
 InsForge es opcional: la aplicacion sigue usando PostgreSQL mediante JDBC, JPA/Hibernate y Flyway.
 La evidencia de este directorio distingue backend probado de interfaz Angular y despliegue pendientes.
@@ -26,7 +30,8 @@ Desde backend:
 ```
 
 La suite predeterminada usa H2. Para verificar PostgreSQL, definir TEST_DB_URL, TEST_DB_USER,
-TEST_DB_PASSWORD y DEMO_TEST_DB_URL hacia dos bases de pruebas dedicadas antes de ejecutar.
+TEST_DB_PASSWORD, DEMO_TEST_DB_URL e INSTALACION_TEST_DB_URL hacia tres bases de pruebas dedicadas antes de ejecutar.
+La tercera debe contener test o prueba en su nombre: la suite de instalacion limpia solo sus propias cuentas inst-*.
 Las pruebas agregan registros; las claves son unicas por escenario. No apuntar a datos de operacion.
 UsuarioMigrationTest y PerfilProduccionIntegrationTest conservan escenarios H2 incluso al seleccionar PostgreSQL.
 No publicar logs DEBUG: pueden contener cuerpos HTTP y credenciales de pruebas.
@@ -35,7 +40,7 @@ El reporte registra commit, cambios sin commit, huella SHA-256 de fuentes, motor
 por requisito/regla/flujo. El alcance I01-I04 de este reporte es backend. La aceptacion completa
 del curso requiere comprobar F01-F05 desde Angular en el entorno desplegado.
 
-I02 se obtiene de la matriz de 44 contratos protegidos: token ausente/invalido, cada rol permitido
+I02 se obtiene de la matriz de 49 contratos protegidos: token ausente/invalido, cada rol permitido
 y cada rol denegado. El caso de acceso permitido usa cuerpos incompletos o IDs inexistentes,
 por lo que 400/404 prueban que la autorizacion permitio llegar al controlador. El funcionamiento
 de negocio se verifica por separado en las pruebas de integracion y el flujo HTTP.
