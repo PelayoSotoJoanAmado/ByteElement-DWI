@@ -1,4 +1,4 @@
-import { Component, DestroyRef, inject, signal } from '@angular/core';
+import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -34,7 +34,7 @@ import { daysBefore, periodParams, todayLima } from '../admin/shared/presentatio
           <label
             >Producto<select class="ap-select" formControlName="productoId">
               <option value="">Selecciona producto</option>
-              @for (p of products.data() ?? []; track p.id) {
+              @for (p of activeProducts(); track p.id) {
                 <option [value]="p.id">{{ p.sku }} · {{ p.modelo }}</option>
               }
             </select></label
@@ -42,7 +42,7 @@ import { daysBefore, periodParams, todayLima } from '../admin/shared/presentatio
           <label
             >Almacén<select class="ap-select" formControlName="almacenId">
               <option value="">Selecciona almacén</option>
-              @for (w of warehouses.data() ?? []; track w.id) {
+              @for (w of activeWarehouses(); track w.id) {
                 <option [value]="w.id">{{ w.codigo }}</option>
               }
             </select></label
@@ -91,11 +91,19 @@ import { daysBefore, periodParams, todayLima } from '../admin/shared/presentatio
           ><label
             >Almacén<select class="ap-select" formControlName="almacenId">
               <option value="">Todos</option>
-              @for (w of warehouses.data() ?? []; track w.id) {
-                <option [value]="w.id">{{ w.codigo }}</option>
+              @for (w of queryWarehouses(); track w.id) {
+                <option [value]="w.id">{{ w.codigo }}{{ w.activo ? '' : ' (inactivo)' }}</option>
               }
             </select></label
           >
+          <label class="ap-check">
+            <input
+              type="checkbox"
+              [checked]="includeInactiveWarehouses()"
+              (change)="setIncludeInactiveWarehouses($any($event.target).checked)"
+            />
+            Incluir inactivos
+          </label>
           <label
             >Estado<select class="ap-select" formControlName="confirmado">
               <option value="">Todos</option>
@@ -165,6 +173,14 @@ export class SupervisorControl {
   readonly notice = signal('');
   readonly products = new RemoteState<Product[]>(this.destroy);
   readonly warehouses = new RemoteState<Warehouse[]>(this.destroy);
+  readonly includeInactiveWarehouses = signal(false);
+  readonly activeWarehouses = computed(() =>
+    (this.warehouses.data() ?? []).filter((w) => w.activo),
+  );
+  readonly activeProducts = computed(() => (this.products.data() ?? []).filter((p) => p.activo));
+  readonly queryWarehouses = computed(() =>
+    this.includeInactiveWarehouses() ? (this.warehouses.data() ?? []) : this.activeWarehouses(),
+  );
   readonly counts = new RemoteState<Page>(this.destroy);
   readonly cutRows = signal<Row[]>([]);
   readonly countColumns = [
@@ -220,6 +236,15 @@ export class SupervisorControl {
   loadOptions(): void {
     this.warehouses.load(this.api.get<Warehouse[]>('almacenes'));
     if (this.kind() === 'politicas') this.products.load(this.api.products());
+  }
+  setIncludeInactiveWarehouses(include: boolean): void {
+    this.includeInactiveWarehouses.set(include);
+    const selected = this.filters.controls.almacenId.value;
+    if (!include && this.warehouses.data()?.some((w) => String(w.id) === selected && !w.activo)) {
+      this.filters.controls.almacenId.setValue('');
+      this.counts.clear();
+      this.selected.set(null);
+    }
   }
   private policyPath(): string | null {
     const v = this.policy.getRawValue();

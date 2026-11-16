@@ -35,6 +35,38 @@ function setup(query: QueryKind) {
   return { fixture, component: fixture.componentInstance, api };
 }
 describe('Read-only administrator queries', () => {
+  it('shows active warehouses by default and clears an inactive selection when hidden again', () => {
+    const { component, fixture, api } = setup('existencias');
+    component.warehouses.data.set([
+      { id: 1, codigo: 'A01', nombre: 'Tienda', activo: true },
+      { id: 2, codigo: 'ANTIGUO', nombre: 'Cerrado', activo: false },
+      { id: 4, codigo: 'A04', nombre: 'Nuevo local', activo: true },
+    ]);
+    fixture.detectChanges();
+    const select = fixture.nativeElement.querySelector(
+      'select[formcontrolname="almacenId"]',
+    ) as HTMLSelectElement;
+    const toggle = fixture.nativeElement.querySelector(
+      'input[type="checkbox"]',
+    ) as HTMLInputElement;
+    const ids = () => [...select.options].map((option) => option.value);
+    expect(ids()).toEqual(['', '1', '4']);
+    toggle.click();
+    fixture.detectChanges();
+    expect(ids()).toEqual(['', '1', '2', '4']);
+    expect(select.options[2].textContent).toContain('(inactivo)');
+    select.value = '2';
+    select.dispatchEvent(new Event('change'));
+    component.form.controls.productoId.setValue('1');
+    component.query();
+    expect(api.get).toHaveBeenLastCalledWith('existencias', { productoId: '1', almacenId: '2' });
+    toggle.click();
+    fixture.detectChanges();
+    expect(component.form.controls.almacenId.value).toBe('');
+    expect(component.stock.data()).toBeNull();
+    expect(ids()).toEqual(['', '1', '4']);
+  });
+
   it('requires both product and warehouse to query existence and keeps zero stock as zero', () => {
     const { component, api } = setup('existencias');
     component.query();

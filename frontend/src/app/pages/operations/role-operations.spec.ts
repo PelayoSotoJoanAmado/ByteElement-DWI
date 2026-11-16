@@ -44,6 +44,93 @@ describe('Purchase and supervision role actions (simulated API)', () => {
     vi.spyOn(window, 'confirm').mockReturnValue(true);
   });
   afterEach(() => vi.restoreAllMocks());
+  const warehouses = [
+    { id: 1, codigo: 'A01', nombre: 'Activo', activo: true },
+    { id: 2, codigo: 'ANTIGUO', nombre: 'Inactivo', activo: false },
+    { id: 4, codigo: 'A04', nombre: 'Nuevo', activo: true },
+  ];
+  const products = [
+    {
+      id: 1,
+      sku: 'ACTIVO',
+      categoria: 'RAM',
+      marca: 'Demo',
+      modelo: 'A',
+      especificacion: 'A',
+      critico: false,
+      activo: true,
+    },
+    {
+      id: 2,
+      sku: 'INACTIVO',
+      categoria: 'RAM',
+      marca: 'Demo',
+      modelo: 'B',
+      especificacion: 'B',
+      critico: false,
+      activo: false,
+    },
+  ];
+  it('keeps inactive warehouses and products out of the purchase form even when history includes them', () => {
+    const { c, fixture } = setup('COMPRAS');
+    const q = c as AdminQueries;
+    q.warehouses.data.set(warehouses);
+    q.products.data.set(products);
+    q.setIncludeInactiveWarehouses(true);
+    q.prepare();
+    fixture.detectChanges();
+    const form = fixture.nativeElement
+      .querySelector('[formcontrolname="montoEstimado"]')
+      .closest('form');
+    const values = (key: string) =>
+      [...form.querySelectorAll(`select[formcontrolname="${key}"] option`)].map(
+        (option) => (option as HTMLOptionElement).value,
+      );
+    expect(values('almacenId')).toEqual(['', '1', '4']);
+    expect(values('productoId')).toEqual(['', '1']);
+  });
+  it('offers only active records when configuring stock policies', () => {
+    const { c, fixture } = setup('SUPERVISOR', 'politicas');
+    const q = c as SupervisorControl;
+    q.warehouses.data.set(warehouses);
+    q.products.data.set(products);
+    fixture.detectChanges();
+    const values = (key: string) =>
+      [...fixture.nativeElement.querySelectorAll(`select[formcontrolname="${key}"] option`)].map(
+        (option) => (option as HTMLOptionElement).value,
+      );
+    expect(values('almacenId')).toEqual(['', '1', '4']);
+    expect(values('productoId')).toEqual(['', '1']);
+  });
+  it('allows historical count lookup in inactive warehouses and resets that selection when excluded', () => {
+    const { c, fixture, api } = setup('SUPERVISOR', 'conteos');
+    const q = c as SupervisorControl;
+    q.warehouses.data.set(warehouses);
+    fixture.detectChanges();
+    const select = fixture.nativeElement.querySelector(
+      'select[formcontrolname="almacenId"]',
+    ) as HTMLSelectElement;
+    const toggle = fixture.nativeElement.querySelector(
+      'input[type="checkbox"]',
+    ) as HTMLInputElement;
+    expect([...select.options].map((o) => o.value)).toEqual(['', '1', '4']);
+    toggle.click();
+    fixture.detectChanges();
+    expect(select.options[2].textContent).toContain('(inactivo)');
+    select.value = '2';
+    select.dispatchEvent(new Event('change'));
+    q.loadCounts();
+    expect(api.get).toHaveBeenLastCalledWith(
+      'conteos',
+      expect.objectContaining({ almacenId: '2' }),
+    );
+    q.selected.set({ id: 99 });
+    toggle.click();
+    fixture.detectChanges();
+    expect(q.filters.controls.almacenId.value).toBe('');
+    expect(q.counts.data()).toBeNull();
+    expect(q.selected()).toBeNull();
+  });
   it('prepares a suggested request without sending anything', () => {
     const { c, api } = setup('COMPRAS');
     const q = c as AdminQueries;

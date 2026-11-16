@@ -44,6 +44,14 @@ export class AdminQueries {
   readonly receptions = new RemoteState<Page>(this.destroy);
   readonly warehouses = new RemoteState<Warehouse[]>(this.destroy);
   readonly products = new RemoteState<Product[]>(this.destroy);
+  readonly includeInactiveWarehouses = signal(false);
+  readonly activeWarehouses = computed(() =>
+    (this.warehouses.data() ?? []).filter((w) => w.activo),
+  );
+  readonly activeProducts = computed(() => (this.products.data() ?? []).filter((p) => p.activo));
+  readonly queryWarehouses = computed(() =>
+    this.includeInactiveWarehouses() ? (this.warehouses.data() ?? []) : this.activeWarehouses(),
+  );
   readonly error = signal('');
   readonly page = signal(0);
   readonly receptionPage = signal(0);
@@ -110,6 +118,13 @@ export class AdminQueries {
     this.warehouses.load(this.api.get<Warehouse[]>('almacenes'));
     if (this.kind() === 'existencias' || this.role === 'COMPRAS')
       this.products.load(this.api.products());
+  }
+  setIncludeInactiveWarehouses(include: boolean): void {
+    this.includeInactiveWarehouses.set(include);
+    const selected = this.form.controls.almacenId.value;
+    if (!include && this.warehouses.data()?.some((w) => String(w.id) === selected && !w.activo)) {
+      this.form.controls.almacenId.setValue('');
+    }
   }
   changeTab(tab: PurchaseTab): void {
     this.tab.set(tab);
