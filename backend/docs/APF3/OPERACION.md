@@ -1,5 +1,8 @@
 # Operacion y conexion futura
 
+Vigente desde V8: [cuentas/README.md](cuentas/README.md) detalla las cinco cuentas iniciales,
+los secretos necesarios, las bases existentes y la gestion posterior sin activar demo.
+
 ## Arranque local
 
 Requiere Java 21 y PostgreSQL. Mantener secretos en backend/application-local.properties
@@ -7,7 +10,8 @@ Requiere Java 21 y PostgreSQL. Mantener secretos en backend/application-local.pr
 El perfil predeterminado es local y ya no activa demo automaticamente.
 Para exponer el escenario pequeno anterior, definir SPRING_PROFILES_ACTIVE=local,demo y DEMO_PASSWORD.
 Para compartir, definir DB_URL, DB_USER, DB_PASSWORD, JWT_SECRET, BOOTSTRAP_USER,
-BOOTSTRAP_PASSWORD, SPRING_PROFILES_ACTIVE=prod y CORS_ORIGINS.
+BOOTSTRAP_PASSWORD, las cuatro parejas BOOTSTRAP_*_USER/PASSWORD operativas (ver guia de cuentas),
+SPRING_PROFILES_ACTIVE=prod y CORS_ORIGINS.
 El perfil prod no importa application-local.properties. Solo el perfil local habilita esa importacion.
 Definir DEBUG=false en ambientes compartidos; una variable DEBUG del equipo puede activar
 trazas de Spring aunque el codigo no las habilite.
@@ -16,8 +20,9 @@ La aplicacion es un monolito Spring Boot; el navegador solo consume /api/v1.
 
 ## Datos de volumen
 
-Usar una base dedicada y migrada a V7. Crear usuarios activos de Almacen, Compras y Supervisor
-desde un administrador por POST /usuarios (o usar demo en una base de exposicion).
+Usar una base dedicada y migrada a V8. Crear usuarios activos de Almacen, Compras y Supervisor
+desde un administrador por POST /usuarios (o usar las cinco cuentas iniciales de una base nueva).
+Completar el cambio obligatorio antes de usar tokens en pruebas HTTP. Nunca cargar volumen sobre datos de operacion.
 Ejecutar Cargar-Volumen.ps1 con nombre de base, usuario, puerto y ubicacion del cliente PostgreSQL.
 PGPASSWORD o pgpass.conf suministran la credencial. No guardarla en scripts ni capturas.
 
@@ -76,7 +81,7 @@ No hace falta InsForge para desarrollar. Cuando el equipo decida usarlo:
 2. Usar formato JDBC: jdbc:postgresql://HOST:5432/BASE?sslmode=require.
    Usuario/password por DB_USER/DB_PASSWORD, nunca en Angular.
 3. Configurar DB_URL y secretos en el alojamiento del backend Java.
-4. Flyway aplica V1-V7 al iniciar. Si ya existen tablas importadas, revisar su historial;
+4. Flyway aplica V1-V8 al iniciar. Si ya existen tablas importadas, revisar su historial;
    no ejecutar baseline ni ignorar checksums para ocultar diferencias.
 5. Trasladar datos con pg_dump/pg_restore conservando flyway_schema_history; ensayar antes.
 6. Conservar JWT/RBAC de Spring. Evitar acceso alternativo publico a tablas mediante REST/SDK

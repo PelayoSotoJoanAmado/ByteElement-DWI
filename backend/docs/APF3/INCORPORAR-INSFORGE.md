@@ -76,11 +76,16 @@ $env:JWT_SECRET = [Convert]::ToBase64String($bytes)
 
 $env:BOOTSTRAP_USER = 'administrador'
 $env:BOOTSTRAP_PASSWORD = [System.Net.NetworkCredential]::new('', (Read-Host 'Password del primer administrador' -AsSecureString)).Password
+$env:BOOTSTRAP_ALMACEN_PASSWORD = [System.Net.NetworkCredential]::new('', (Read-Host 'Password inicial Almacen' -AsSecureString)).Password
+$env:BOOTSTRAP_COMPRAS_PASSWORD = [System.Net.NetworkCredential]::new('', (Read-Host 'Password inicial Compras' -AsSecureString)).Password
+$env:BOOTSTRAP_SUPERVISOR_PASSWORD = [System.Net.NetworkCredential]::new('', (Read-Host 'Password inicial Supervisor' -AsSecureString)).Password
+$env:BOOTSTRAP_CONSULTA_PASSWORD = [System.Net.NetworkCredential]::new('', (Read-Host 'Password inicial Consulta' -AsSecureString)).Password
 $env:CORS_ORIGINS = 'http://localhost:4200'
 ```
 
-El password del administrador debe tener al menos 12 caracteres y como maximo 72 bytes.
-BOOTSTRAP_USER/PASSWORD solo crean el primer administrador si la base no tiene usuarios.
+Los cinco passwords deben ser privados, distintos, de al menos 12 caracteres y como maximo 72 bytes UTF-8.
+En una base nueva se crean cinco cuentas, una por rol, con cambio obligatorio. No se requiere demo.
+Ver nombres y configuracion en [cuentas/README.md](cuentas/README.md).
 Si restauraste cuentas, se conservan sus passwords y roles; esas variables no cambian cuentas existentes.
 Al restaurar datos conviene conservar el JWT_SECRET del backend original o decidir renovar las sesiones.
 Con varias instancias de la misma API, compartir su clave de firma mediante secretos del alojamiento.
@@ -100,16 +105,17 @@ Con el proyecto destino correcto y sin tablas StockGuard existentes:
 .\mvnw.cmd spring-boot:run
 ```
 
-Comprobar en consola la URL de destino sin publicar passwords. Flyway aplica V1-V7 y Hibernate
-valida las entidades. Se crean los tres almacenes y el primer administrador, sin activar demo.
-Crear las otras cuentas desde POST /api/v1/usuarios usando el administrador.
+Comprobar en consola la URL de destino sin publicar passwords. Flyway aplica V1-V8 y Hibernate
+valida las entidades. Se crean los tres almacenes y las cinco cuentas iniciales, sin activar demo.
+Completar el cambio de password de cada una antes de operar. Las cuentas adicionales se crean
+con POST /api/v1/usuarios usando un administrador con password definitivo.
 
 Un proyecto del proveedor puede contener objetos propios. Si Flyway informa que public no esta
 vacio pero no tiene historial, detenerse y revisar que objetos existen. No activar baselineOnMigrate
 con su version predeterminada: podria omitir V1. La adopcion de un esquema no vacio requiere un
 procedimiento revisado; no borrar tablas del proveedor ni crear flyway_schema_history a mano.
 
-Flyway sigue siendo la autoridad del esquema StockGuard. No aplicar V1-V7 tambien desde otro
+Flyway sigue siendo la autoridad del esquema StockGuard. No aplicar V1-V8 tambien desde otro
 gestor de migraciones ni editar las migraciones ya aplicadas.
 
 ## 4B Conservar los datos actuales
@@ -128,6 +134,7 @@ y definir PGPASSWORD para el origen o usar pgpass.conf antes de ejecutar:
 $tablas = @(
     'producto','almacen','politica_stock','usuario','existencia','movimiento',
     'conteo','corte_stock','solicitud_compra','orden_compra','recepcion_compra',
+    'control_cuentas','evento_usuario',
     'flyway_schema_history'
 )
 $argumentos = @('-h','HOST_ORIGEN','-p','PUERTO_ORIGEN','-U','USUARIO_ORIGEN','-d','BASE_ORIGEN','-Fc','-f','stockguard.dump')
@@ -136,7 +143,9 @@ pg_dump @argumentos
 if ($LASTEXITCODE -ne 0) { throw 'La exportacion fallo' }
 ```
 
-Para versiones anteriores a V6, recepcion_compra no existe: adaptar la lista al esquema real.
+Para versiones anteriores a V6, recepcion_compra no existe; antes de V8 tampoco existen
+control_cuentas y evento_usuario: adaptar la lista al esquema real. Al restaurar una base V7,
+Flyway aplicara V8 conservando credenciales y estados existentes.
 Usar clientes compatibles con la version origen/destino. Un pg_dump mas antiguo que el servidor
 origen no sirve para exportarlo. Una restauracion hacia un PostgreSQL mas antiguo requiere revisar compatibilidad.
 
@@ -159,7 +168,8 @@ no usar repair ni baseline para ocultarla.
 ## 5 Comprobar antes de dar la conexion por terminada
 
 1. Confirmar host/base en el log de arranque, migraciones correctas y ausencia de errores de validacion.
-2. Login con un usuario existente o con el administrador inicial.
+2. Login con un usuario existente o con una cuenta inicial. Si requiereCambioPassword=true,
+   completar POST /api/v1/auth/cambiar-password y usar el token NUEVO antes de consultar modulos.
 3. Consultar GET /api/v1/salud con Supervisor o Administrador.
 4. Consultar productos y existencias; comprobar conteos y saldos contra el origen si hubo traslado.
 5. Probar una operacion nueva en datos de control: verifica tambien que los IDs/secuencias siguen avanzando.
@@ -167,8 +177,9 @@ no usar repair ni baseline para ocultarla.
 7. Comprobar conteo/ajuste, dashboard con periodo/corte conocidos y denegacion por rol.
 8. Medir latencias desde donde correra el backend, no solo desde el editor SQL del proveedor.
 
-No apuntar TEST_DB_URL ni DEMO_TEST_DB_URL a la base compartida. La suite agrega registros de
-prueba; usar bases dedicadas. Tampoco ejecutar Cargar-Volumen.ps1 en una base de operacion.
+No apuntar TEST_DB_URL, DEMO_TEST_DB_URL ni INSTALACION_TEST_DB_URL a la base compartida.
+La suite usa tres bases dedicadas; la de instalacion limpia sus propias cuentas entre casos.
+Tampoco ejecutar Cargar-Volumen.ps1 en una base de operacion.
 
 ## 6 Acceso y capacidad
 
