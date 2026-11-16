@@ -81,6 +81,10 @@ export class WarehouseOperations {
   readonly activeWarehouses = computed(() =>
     (this.warehouses.data() ?? []).filter((w) => w.activo),
   );
+  readonly includeInactiveWarehouses = signal(false);
+  readonly queryWarehouses = computed(() =>
+    this.includeInactiveWarehouses() ? (this.warehouses.data() ?? []) : this.activeWarehouses(),
+  );
   readonly columns = computed(() =>
     this.kind() === 'conteos'
       ? COUNT_COLUMNS
@@ -178,6 +182,13 @@ export class WarehouseOperations {
     this.results.load(
       this.api.get<Page>(this.kind() === 'recepciones' ? 'ordenes-compra' : this.kind(), params),
     );
+  }
+  setIncludeInactiveWarehouses(include: boolean): void {
+    this.includeInactiveWarehouses.set(include);
+    const selected = this.filters.controls.almacenId.value;
+    if (!include && this.warehouses.data()?.some((w) => String(w.id) === selected && !w.activo)) {
+      this.filters.controls.almacenId.setValue('');
+    }
   }
   inspect(row: Row): void {
     this.selected.set(row);

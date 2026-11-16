@@ -257,11 +257,21 @@
         ><span class="ap-label">Almacén</span
         ><select class="ap-select" formControlName="almacenId">
           <option value="">Todos los almacenes</option>
-          @for (w of warehouses.data() ?? []; track w.id) {
-            <option [value]="w.id">{{ w.codigo }} · {{ w.nombre }}</option>
+          @for (w of queryWarehouses(); track w.id) {
+            <option [value]="w.id">
+              {{ w.codigo }} · {{ w.nombre }}{{ w.activo ? '' : ' (inactivo)' }}
+            </option>
           }
         </select></label
       >
+      <label class="ap-check">
+        <input
+          type="checkbox"
+          [checked]="includeInactiveWarehouses()"
+          (change)="setIncludeInactiveWarehouses($any($event.target).checked)"
+        />
+        Incluir inactivos
+      </label>
       <label
         ><span class="ap-label">Desde</span
         ><input class="ap-input" type="date" formControlName="desde" /></label
