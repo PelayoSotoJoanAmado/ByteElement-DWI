@@ -1,0 +1,9 @@
+{
+  "base": "http://localhost:4200",
+  "baseDatos": "stockguard_flujos_test",
+  "confirmarBaseAislada": true,
+  "adminExistente": {
+    "username": "administrador",
+    "password": "REEMPLAZAR_CON_CLAVE_PRIVADA_DEL_ADMINISTRADOR_DE_PRUEBAS"
+  }
+}
