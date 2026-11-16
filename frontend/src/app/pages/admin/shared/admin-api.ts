@@ -40,7 +40,9 @@ export class AdminApi {
     return this.http.get<T>(`/api/v1/${path}`, { params });
   }
   list(resource: Resource): Observable<Row[]> {
-    return resource === 'productos' ? this.products() : this.get<Row[]>(resource);
+    return resource === 'productos'
+      ? this.get<Row[]>('productos', { pagina: 0, tamanio: 10000 })
+      : this.get<Row[]>(resource);
   }
   products(maxPages = 3): Observable<Product[]> {
     // The API returns arrays without totals. Continue through pages up to maxPages, avoiding blocking indefinitely on large catalogs.
