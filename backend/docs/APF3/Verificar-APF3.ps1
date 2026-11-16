@@ -70,7 +70,7 @@ try {
         (Resultado 'instalacion-atomica' @('creaCincoCuentasDistintasSinDatosDemoYSinGuardarPasswordsEnClaro','configuracionIncompletaNoCreaCuentasParciales','nombresYClavesInicialesDuplicadasSonRechazados','errorDeAuditoriaRevierteTodaLaInstalacion')),
         (Resultado 'instalacion-concurrente' @('dosInstanciasConcurrentesSoloInstalanUnaVez','reiniciarNoCambiaPasswordsNiReactivaCuentas','unaBaseYaInstaladaNoRecreaUsuariosBorradosNiExigeOtraVezLasClavesIniciales')),
         (Resultado 'primer-acceso' @('unaCuentaPuedeConsultarSuEstadoYCambiarSuPasswordInicial','primerAccesoBloqueaTodosLosModulosPeroPermiteCambiarPassword')),
-        (Resultado 'password-y-revocacion' @('cambioPasswordValidaActualConfirmacionReutilizacionYBytesSinModificarCuenta','cambioPasswordInvalidaTodasLasSesionesYLaClaveAnterior')),
+        (Resultado 'password-y-revocacion' @('cambioPasswordValidaActualConfirmacionReutilizacionYBytesSinModificarCuenta','cambioPasswordInvalidaTodasLasSesionesYLaClaveAnterior','tokenAnteriorAV8ConFirmaYRolValidosNoPermiteAccesoSinIdentidadYVersion','reutilizarNombreNoPermiteQueUnTokenAnteriorSuplanteOtraCuenta')),
         (Resultado 'gestion-y-auditoria' @('adminCreaCuentaConCambioObligatorioSinDevolverSecretos','adminEditaNombreRolYEstadoRevocandoTokens','resetObligaCambioRevocaSesionYConservaHistorialSinPassword','desactivacionBloqueaLoginYReactivacionNoReviveTokenViejo')),
         (Resultado 'concurrencia-y-administrador' @('cambiosConcurrentesRespetanLaVersionDelFormulario','dosAdministradoresNoPuedenDesactivarseMutuamenteDejandoCeroActivos','adminNoPuedeDesactivarseCambiarSuRolNiRestablecersePorAdministracion')),
         (Resultado 'migracion' @('migrarV7AV8ConservaCredencialesRolesYEstadosDeUsuariosExistentes'))

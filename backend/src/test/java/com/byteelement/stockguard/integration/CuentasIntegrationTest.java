@@ -26,6 +26,7 @@ class CuentasIntegrationTest {
   @Autowired UsuarioService usuarios;
   @Autowired JdbcTemplate jdbc;
   @Autowired ObjectMapper json;
+  @Autowired org.springframework.security.oauth2.jwt.JwtEncoder encoder;
   static final String INICIAL = "InicialDePrueba123!", DEFINITIVA = "DefinitivaDePrueba456!";
 
   record Cuenta(long id, String nombre, String token, long version) {}
@@ -77,6 +78,84 @@ class CuentasIntegrationTest {
 
   String body(Object v) {
     return json.writeValueAsString(v);
+  }
+
+  @Test
+  void tokenAnteriorAV8ConFirmaYRolValidosNoPermiteAccesoSinIdentidadYVersion() throws Exception {
+    var u = cuenta(Rol.ALMACEN, true);
+    var ahora = java.time.Instant.now();
+    var claims =
+        org.springframework.security.oauth2.jwt.JwtClaimsSet.builder()
+            .issuer("stockguard")
+            .subject(u.nombre())
+            .issuedAt(ahora)
+            .expiresAt(ahora.plusSeconds(300))
+            .claim("rol", Rol.ALMACEN.name())
+            .build();
+    var token =
+        encoder
+            .encode(
+                org.springframework.security.oauth2.jwt.JwtEncoderParameters.from(
+                    org.springframework.security.oauth2.jwt.JwsHeader.with(
+                            org.springframework.security.oauth2.jose.jws.MacAlgorithm.HS256)
+                        .build(),
+                    claims))
+            .getTokenValue();
+    mvc.perform(get("/api/v1/auth/me").header("Authorization", "Bearer " + token))
+        .andExpect(status().isUnauthorized());
+    mvc.perform(get("/api/v1/auth/me").header("Authorization", "Bearer " + u.token()))
+        .andExpect(status().isOk());
+  }
+
+  @Test
+  void reutilizarNombreNoPermiteQueUnTokenAnteriorSuplanteOtraCuenta() throws Exception {
+    var admin = cuenta(Rol.ADMINISTRADOR, true);
+    var anterior = cuenta(Rol.ALMACEN, true);
+    mvc.perform(
+            put("/api/v1/usuarios/" + anterior.id())
+                .header("Authorization", "Bearer " + admin.token())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    body(editar(anterior, anterior.nombre() + "-renombrado", Rol.ALMACEN, true))))
+        .andExpect(status().isOk());
+    var alta =
+        mvc.perform(
+                post("/api/v1/usuarios")
+                    .header("Authorization", "Bearer " + admin.token())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        body(new CrearUsuarioRequest(anterior.nombre(), INICIAL, Rol.ALMACEN))))
+            .andExpect(status().isCreated())
+            .andReturn()
+            .getResponse();
+    long nuevoId = json.readTree(alta.getContentAsString()).get("id").asLong();
+    assertNotEquals(anterior.id(), nuevoId);
+    String inicial =
+        (String) usuarios.login(new LoginRequest(anterior.nombre(), INICIAL)).get("accessToken");
+    var cambio =
+        mvc.perform(
+                post("/api/v1/auth/cambiar-password")
+                    .header("Authorization", "Bearer " + inicial)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        body(
+                            Map.of(
+                                "passwordActual", INICIAL,
+                                "passwordNueva", DEFINITIVA,
+                                "confirmacionPassword", DEFINITIVA))))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse();
+    String nuevoToken = json.readTree(cambio.getContentAsString()).get("accessToken").asString();
+    // Mismo nombre, rol y version de sesion que el token original: el uid debe distinguirlos.
+    assertEquals(
+        1L,
+        jdbc.queryForObject("select version_sesion from usuario where id=?", Long.class, nuevoId));
+    mvc.perform(get("/api/v1/auth/me").header("Authorization", "Bearer " + anterior.token()))
+        .andExpect(status().isUnauthorized());
+    mvc.perform(get("/api/v1/auth/me").header("Authorization", "Bearer " + nuevoToken))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.id").value(nuevoId));
   }
 
   @Test
