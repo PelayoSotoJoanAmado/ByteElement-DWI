@@ -1,0 +1,21 @@
+{
+  "origen": "byteelement V7, solo lectura",
+  "destino": "stockguard_revision_copia_test_20261116, puerto 55432",
+  "migracion": "V7 -> V8",
+  "usuariosConservados": 6,
+  "hashesNombresRolesYEstadosConservados": true,
+  "datosNegocioConservados": true,
+  "sinDuplicarCuentas": true,
+  "sinCambioForzadoRetroactivo": true,
+  "instalacionMarcadaCompleta": true,
+  "secretosInicialesNoNecesariosEnBaseExistente": true,
+  "conteos": {
+    "producto": 22,
+    "almacen": 6,
+    "existencia": 17,
+    "movimiento": 32,
+    "solicitud_compra": 0,
+    "orden_compra": 0,
+    "conteo": 9
+  }
+}

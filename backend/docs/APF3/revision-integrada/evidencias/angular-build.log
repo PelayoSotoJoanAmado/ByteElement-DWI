@@ -1,0 +1,31 @@
+> Building...
+√ Building...
+Initial chunk files | Names                |  Raw size | Estimated transfer size
+chunk-CuLYY_C8.js   | -                    | 272.39 kB |                74.02 kB
+styles-MZLSU5PU.css | styles               |  15.81 kB |                 3.76 kB
+main-24SLY2TG.js    | main                 |   9.41 kB |                 2.45 kB
+chunk-B23d-x2E.js   | -                    |   2.56 kB |                 1.05 kB
+
+                    | Initial total        | 300.17 kB |                81.29 kB
+
+Lazy chunk files    | Names                |  Raw size | Estimated transfer size
+chunk-2klqfY0y.js   | -                    |  48.61 kB |                10.32 kB
+chunk-CzY3M_5V.js   | admin-queries        |  26.20 kB |                 7.14 kB
+chunk-D0pB4-6w.js   | warehouse-operations |  25.96 kB |                 7.08 kB
+chunk-BaF2ca3B.js   | -                    |  20.21 kB |                 5.76 kB
+chunk-C-zb6aPt.js   | login                |  14.21 kB |                 3.97 kB
+chunk-C3Ln-dHE.js   | supervisor-control   |  11.58 kB |                 3.49 kB
+chunk-VkYdjgTO.js   | admin-dashboard      |  11.49 kB |                 3.31 kB
+chunk-BpCjoJH-.js   | admin-layout         |  11.40 kB |                 3.47 kB
+chunk-D9AuQqdZ.js   | warehouse-dashboard  |  11.29 kB |                 3.27 kB
+chunk-BG7NFP3E.js   | admin-system         |   7.18 kB |                 2.63 kB
+chunk-DlvDZ1Wn.js   | home                 |   5.84 kB |                 2.04 kB
+chunk-0ZDUotzf.js   | change-password      |   4.62 kB |                 1.79 kB
+chunk-mwbeTZgE.js   | -                    |   4.25 kB |                 1.50 kB
+chunk-Bj6jn0OU.js   | -                    |   3.54 kB |                 1.51 kB
+chunk-CVI-RimE.js   | -                    |   3.27 kB |                 1.21 kB
+...and 5 more lazy chunks files. Use "--verbose" to show all the files.
+
+Application bundle generation complete. [5.037 seconds] - 2026-11-16T20:33:39.376Z
+
+Output location: [REPOSITORIO]\frontend\dist\frontend

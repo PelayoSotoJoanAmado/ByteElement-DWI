@@ -1,0 +1,12 @@
+> Building...
+√ Building...
+Application bundle generation complete. [3.753 seconds] - 2026-11-16T20:33:39.462Z
+
+
+ RUN  v5.1.0 C:/Users/maste/Documents/UTP/Ciclo 07/Desarrollo Web Integrado 34953/ByteElement-DWI/frontend
+
+
+ Test Files  12 passed (12)
+      Tests  97 passed (97)
+   Start at  15:33:40
+   Duration  8.45s (environment 75%, setup 12%, tests 6%, transform 4%, import 2%)

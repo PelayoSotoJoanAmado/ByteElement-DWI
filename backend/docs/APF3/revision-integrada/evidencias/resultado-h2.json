@@ -1,0 +1,1121 @@
+﻿{
+    "sinDatos":  false,
+    "generadoEn":  "2026-11-16T20:49:02.2858311Z",
+    "version":  {
+                    "commit":  "4ef548c9a1dc9a5fb7dbe1defc728418e542cd46",
+                    "cambiosSinCommit":  true,
+                    "fuentesSha256":  "447380d674536fcc7a3a486fd7e17dab978f9bf4dadb69c76bc46619e366ff66"
+                },
+    "alcance":  "Backend. F01-F05 Angular y despliegue requieren evidencia adicional; no se declara aprobacion final del proyecto.",
+    "motor":  "H2 en modo PostgreSQL",
+    "suite":  {
+                  "pruebas":  94,
+                  "noAprobadas":  0,
+                  "omitidas":  0,
+                  "exito":  true
+              },
+    "requisitos":  [
+                       {
+                           "id":  "RF01",
+                           "aprobado":  true,
+                           "pruebas":  [
+                                           "registraProductoConSkuNormalizado",
+                                           "rechazaSkuDuplicadoSinGuardar",
+                                           "aceptaMinimoCeroYMaximoMayor"
+                                       ]
+                       },
+                       {
+                           "id":  "RF02",
+                           "aprobado":  true,
+                           "pruebas":  [
+                                           "transferenciaConfirmaAmbosSaldosYComparteReferencia",
+                                           "salidasConcurrentesNuncaDejanSaldoNegativo"
+                                       ]
+                       },
+                       {
+                           "id":  "RF03",
+                           "aprobado":  true,
+                           "pruebas":  [
+                                           "RF03_minMaxConsumoYPendientesConResultadoConocido"
+                                       ]
+                       },
+                       {
+                           "id":  "RF04",
+                           "aprobado":  true,
+                           "pruebas":  [
+                                           "RF04_idempotenciaYSemejanzaNoSonDuplicidadConfirmada"
+                                       ]
+                       },
+                       {
+                           "id":  "RF05",
+                           "aprobado":  true,
+                           "pruebas":  [
+                                           "RF05_montoUrgenciaYUnaSolaDecision",
+                                           "RF05_emisionesConcurrentesCreanUnaOrden"
+                                       ]
+                       },
+                       {
+                           "id":  "RF06",
+                           "aprobado":  true,
+                           "pruebas":  [
+                                           "jpqlFiltraSkuAlmacenPeriodoYPagina",
+                                           "rotacionUsaConsumoComercialYPromedioTemporal"
+                                       ]
+                       },
+                       {
+                           "id":  "RF07",
+                           "aprobado":  true,
+                           "pruebas":  [
+                                           "conteoCalculaCoincidenciaDelSaldoAlCorteYAjusteEsTrazable"
+                                       ]
+                       },
+                       {
+                           "id":  "RF08",
+                           "aprobado":  true,
+                           "pruebas":  [
+                                           "indicadoresNoDuplicanProductosYPreservanPoliticaAlCorte",
+                                           "RF08_I06_I08_I09FiltranPeriodoYDenominador"
+                                       ]
+                       },
+                       {
+                           "id":  "RF09",
+                           "aprobado":  true,
+                           "pruebas":  [
+                                           "RF09_contratosNuevosRechazanSinTokenYRolIndebido",
+                                           "todosLosContratosRestringidosRechazanTokenAusenteInvalidoYRolIndebido",
+                                           "primerAccesoBloqueaTodosLosModulosPeroPermiteCambiarPassword",
+                                           "cambioPasswordInvalidaTodasLasSesionesYLaClaveAnterior",
+                                           "soloAdminConClaveDefinitivaPuedeGestionarCuentas"
+                                       ]
+                       },
+                       {
+                           "id":  "RF10-backend",
+                           "aprobado":  true,
+                           "pruebas":  [
+                                           "RF10_flujoComprasHttpYDashboardConPermisos"
+                                       ]
+                       }
+                   ],
+    "reglas":  [
+                   {
+                       "id":  "RN01",
+                       "aprobado":  true,
+                       "pruebas":  [
+                                       "salidasConcurrentesNuncaDejanSaldoNegativo",
+                                       "salidaInsuficienteNoDejaCambios"
+                                   ]
+                   },
+                   {
+                       "id":  "RN02",
+                       "aprobado":  true,
+                       "pruebas":  [
+                                       "transferenciaConfirmaAmbosSaldosYComparteReferencia",
+                                       "falloDespuesDeGuardarPrimeraMitadRevierteTodaTransferencia"
+                                   ]
+                   },
+                   {
+                       "id":  "RN03",
+                       "aprobado":  true,
+                       "pruebas":  [
+                                       "aceptaMinimoCeroYMaximoMayor",
+                                       "rechazaMaximoIgualOMenorSinGuardar"
+                                   ]
+                   },
+                   {
+                       "id":  "RN04",
+                       "aprobado":  true,
+                       "pruebas":  [
+                                       "RF04_idempotenciaYSemejanzaNoSonDuplicidadConfirmada"
+                                   ]
+                   },
+                   {
+                       "id":  "RN05",
+                       "aprobado":  true,
+                       "pruebas":  [
+                                       "RF05_montoUrgenciaYUnaSolaDecision",
+                                       "RF05_emisionesConcurrentesCreanUnaOrden"
+                                   ]
+                   },
+                   {
+                       "id":  "RN06",
+                       "aprobado":  true,
+                       "pruebas":  [
+                                       "RF03_minMaxConsumoYPendientesConResultadoConocido",
+                                       "RF05_cancelarNoRevierteLoYaRecibido"
+                                   ]
+                   },
+                   {
+                       "id":  "RN07",
+                       "aprobado":  true,
+                       "pruebas":  [
+                                       "conteoCalculaCoincidenciaDelSaldoAlCorteYAjusteEsTrazable",
+                                       "conteoObsoletoRechazaInclusoSiSaldoVuelveAlMismoValor"
+                                   ]
+                   },
+                   {
+                       "id":  "RN08",
+                       "aprobado":  true,
+                       "pruebas":  [
+                                       "RF05_recepcionesConcurrentesNoSuperanLoOrdenado",
+                                       "RF02_RF05_recepcionParcialIdempotenteYSinExceso"
+                                   ]
+                   }
+               ],
+    "seguridad":  [
+                      {
+                          "tokenAusente":  401,
+                          "tokenInvalido":  401,
+                          "ruta":  "/api/v1/productos",
+                          "rolesPermitidos":  {
+                                                  "ALMACEN":  200,
+                                                  "COMPRAS":  200,
+                                                  "SUPERVISOR":  200,
+                                                  "CONSULTA_COMERCIAL":  200,
+                                                  "ADMINISTRADOR":  200
+                                              },
+                          "aprobado":  true,
+                          "rolesDenegados":  {
+
+                                             },
+                          "metodo":  "GET"
+                      },
+                      {
+                          "tokenAusente":  401,
+                          "tokenInvalido":  401,
+                          "ruta":  "/api/v1/productos/999999999",
+                          "rolesPermitidos":  {
+                                                  "ALMACEN":  404,
+                                                  "COMPRAS":  404,
+                                                  "SUPERVISOR":  404,
+                                                  "CONSULTA_COMERCIAL":  404,
+                                                  "ADMINISTRADOR":  404
+                                              },
+                          "aprobado":  true,
+                          "rolesDenegados":  {
+
+                                             },
+                          "metodo":  "GET"
+                      },
+                      {
+                          "tokenAusente":  401,
+                          "tokenInvalido":  401,
+                          "ruta":  "/api/v1/almacenes",
+                          "rolesPermitidos":  {
+                                                  "ALMACEN":  200,
+                                                  "COMPRAS":  200,
+                                                  "SUPERVISOR":  200,
+                                                  "CONSULTA_COMERCIAL":  200,
+                                                  "ADMINISTRADOR":  200
+                                              },
+                          "aprobado":  true,
+                          "rolesDenegados":  {
+
+                                             },
+                          "metodo":  "GET"
+                      },
+                      {
+                          "tokenAusente":  401,
+                          "tokenInvalido":  401,
+                          "ruta":  "/api/v1/almacenes/999999999",
+                          "rolesPermitidos":  {
+                                                  "ALMACEN":  404,
+                                                  "COMPRAS":  404,
+                                                  "SUPERVISOR":  404,
+                                                  "CONSULTA_COMERCIAL":  404,
+                                                  "ADMINISTRADOR":  404
+                                              },
+                          "aprobado":  true,
+                          "rolesDenegados":  {
+
+                                             },
+                          "metodo":  "GET"
+                      },
+                      {
+                          "tokenAusente":  401,
+                          "tokenInvalido":  401,
+                          "ruta":  "/api/v1/productos/999999999/almacenes/999999999/politica-stock",
+                          "rolesPermitidos":  {
+                                                  "ALMACEN":  404,
+                                                  "COMPRAS":  404,
+                                                  "SUPERVISOR":  404,
+                                                  "CONSULTA_COMERCIAL":  404,
+                                                  "ADMINISTRADOR":  404
+                                              },
+                          "aprobado":  true,
+                          "rolesDenegados":  {
+
+                                             },
+                          "metodo":  "GET"
+                      },
+                      {
+                          "tokenAusente":  401,
+                          "tokenInvalido":  401,
+                          "ruta":  "/api/v1/existencias",
+                          "rolesPermitidos":  {
+                                                  "ALMACEN":  400,
+                                                  "COMPRAS":  400,
+                                                  "SUPERVISOR":  400,
+                                                  "CONSULTA_COMERCIAL":  400,
+                                                  "ADMINISTRADOR":  400
+                                              },
+                          "aprobado":  true,
+                          "rolesDenegados":  {
+
+                                             },
+                          "metodo":  "GET"
+                      },
+                      {
+                          "tokenAusente":  401,
+                          "tokenInvalido":  401,
+                          "ruta":  "/api/v1/movimientos",
+                          "rolesPermitidos":  {
+                                                  "ALMACEN":  200,
+                                                  "COMPRAS":  200,
+                                                  "SUPERVISOR":  200,
+                                                  "CONSULTA_COMERCIAL":  200,
+                                                  "ADMINISTRADOR":  200
+                                              },
+                          "aprobado":  true,
+                          "rolesDenegados":  {
+
+                                             },
+                          "metodo":  "GET"
+                      },
+                      {
+                          "tokenAusente":  401,
+                          "tokenInvalido":  401,
+                          "ruta":  "/api/v1/movimientos/999999999",
+                          "rolesPermitidos":  {
+                                                  "ALMACEN":  404,
+                                                  "COMPRAS":  404,
+                                                  "SUPERVISOR":  404,
+                                                  "CONSULTA_COMERCIAL":  404,
+                                                  "ADMINISTRADOR":  404
+                                              },
+                          "aprobado":  true,
+                          "rolesDenegados":  {
+
+                                             },
+                          "metodo":  "GET"
+                      },
+                      {
+                          "tokenAusente":  401,
+                          "tokenInvalido":  401,
+                          "ruta":  "/api/v1/reportes/rotacion",
+                          "rolesPermitidos":  {
+                                                  "ALMACEN":  400,
+                                                  "COMPRAS":  400,
+                                                  "SUPERVISOR":  400,
+                                                  "CONSULTA_COMERCIAL":  400,
+                                                  "ADMINISTRADOR":  400
+                                              },
+                          "aprobado":  true,
+                          "rolesDenegados":  {
+
+                                             },
+                          "metodo":  "GET"
+                      },
+                      {
+                          "tokenAusente":  401,
+                          "tokenInvalido":  401,
+                          "ruta":  "/api/v1/reportes/stock-critico",
+                          "rolesPermitidos":  {
+                                                  "ALMACEN":  400,
+                                                  "COMPRAS":  400,
+                                                  "SUPERVISOR":  400,
+                                                  "CONSULTA_COMERCIAL":  400,
+                                                  "ADMINISTRADOR":  400
+                                              },
+                          "aprobado":  true,
+                          "rolesDenegados":  {
+
+                                             },
+                          "metodo":  "GET"
+                      },
+                      {
+                          "tokenAusente":  401,
+                          "tokenInvalido":  401,
+                          "ruta":  "/api/v1/reposicion",
+                          "rolesPermitidos":  {
+                                                  "ALMACEN":  200,
+                                                  "COMPRAS":  200,
+                                                  "SUPERVISOR":  200,
+                                                  "ADMINISTRADOR":  200
+                                              },
+                          "aprobado":  true,
+                          "rolesDenegados":  {
+                                                 "CONSULTA_COMERCIAL":  403
+                                             },
+                          "metodo":  "GET"
+                      },
+                      {
+                          "tokenAusente":  401,
+                          "tokenInvalido":  401,
+                          "ruta":  "/api/v1/solicitudes-compra",
+                          "rolesPermitidos":  {
+                                                  "ALMACEN":  200,
+                                                  "COMPRAS":  200,
+                                                  "SUPERVISOR":  200,
+                                                  "ADMINISTRADOR":  200
+                                              },
+                          "aprobado":  true,
+                          "rolesDenegados":  {
+                                                 "CONSULTA_COMERCIAL":  403
+                                             },
+                          "metodo":  "GET"
+                      },
+                      {
+                          "tokenAusente":  401,
+                          "tokenInvalido":  401,
+                          "ruta":  "/api/v1/solicitudes-compra/999999999",
+                          "rolesPermitidos":  {
+                                                  "ALMACEN":  404,
+                                                  "COMPRAS":  404,
+                                                  "SUPERVISOR":  404,
+                                                  "ADMINISTRADOR":  404
+                                              },
+                          "aprobado":  true,
+                          "rolesDenegados":  {
+                                                 "CONSULTA_COMERCIAL":  403
+                                             },
+                          "metodo":  "GET"
+                      },
+                      {
+                          "tokenAusente":  401,
+                          "tokenInvalido":  401,
+                          "ruta":  "/api/v1/ordenes-compra",
+                          "rolesPermitidos":  {
+                                                  "ALMACEN":  200,
+                                                  "COMPRAS":  200,
+                                                  "SUPERVISOR":  200,
+                                                  "ADMINISTRADOR":  200
+                                              },
+                          "aprobado":  true,
+                          "rolesDenegados":  {
+                                                 "CONSULTA_COMERCIAL":  403
+                                             },
+                          "metodo":  "GET"
+                      },
+                      {
+                          "tokenAusente":  401,
+                          "tokenInvalido":  401,
+                          "ruta":  "/api/v1/ordenes-compra/999999999",
+                          "rolesPermitidos":  {
+                                                  "ALMACEN":  404,
+                                                  "COMPRAS":  404,
+                                                  "SUPERVISOR":  404,
+                                                  "ADMINISTRADOR":  404
+                                              },
+                          "aprobado":  true,
+                          "rolesDenegados":  {
+                                                 "CONSULTA_COMERCIAL":  403
+                                             },
+                          "metodo":  "GET"
+                      },
+                      {
+                          "tokenAusente":  401,
+                          "tokenInvalido":  401,
+                          "ruta":  "/api/v1/ordenes-compra/999999999/recepciones",
+                          "rolesPermitidos":  {
+                                                  "ALMACEN":  404,
+                                                  "COMPRAS":  404,
+                                                  "SUPERVISOR":  404,
+                                                  "ADMINISTRADOR":  404
+                                              },
+                          "aprobado":  true,
+                          "rolesDenegados":  {
+                                                 "CONSULTA_COMERCIAL":  403
+                                             },
+                          "metodo":  "GET"
+                      },
+                      {
+                          "tokenAusente":  401,
+                          "tokenInvalido":  401,
+                          "ruta":  "/api/v1/conteos",
+                          "rolesPermitidos":  {
+                                                  "ALMACEN":  200,
+                                                  "SUPERVISOR":  200
+                                              },
+                          "aprobado":  true,
+                          "rolesDenegados":  {
+                                                 "COMPRAS":  403,
+                                                 "CONSULTA_COMERCIAL":  403,
+                                                 "ADMINISTRADOR":  403
+                                             },
+                          "metodo":  "GET"
+                      },
+                      {
+                          "tokenAusente":  401,
+                          "tokenInvalido":  401,
+                          "ruta":  "/api/v1/conteos/999999999",
+                          "rolesPermitidos":  {
+                                                  "ALMACEN":  404,
+                                                  "SUPERVISOR":  404
+                                              },
+                          "aprobado":  true,
+                          "rolesDenegados":  {
+                                                 "COMPRAS":  403,
+                                                 "CONSULTA_COMERCIAL":  403,
+                                                 "ADMINISTRADOR":  403
+                                             },
+                          "metodo":  "GET"
+                      },
+                      {
+                          "tokenAusente":  401,
+                          "tokenInvalido":  401,
+                          "ruta":  "/api/v1/indicadores",
+                          "rolesPermitidos":  {
+                                                  "SUPERVISOR":  400,
+                                                  "ADMINISTRADOR":  400
+                                              },
+                          "aprobado":  true,
+                          "rolesDenegados":  {
+                                                 "ALMACEN":  403,
+                                                 "COMPRAS":  403,
+                                                 "CONSULTA_COMERCIAL":  403
+                                             },
+                          "metodo":  "GET"
+                      },
+                      {
+                          "tokenAusente":  401,
+                          "tokenInvalido":  401,
+                          "ruta":  "/api/v1/dashboard",
+                          "rolesPermitidos":  {
+                                                  "SUPERVISOR":  400,
+                                                  "ADMINISTRADOR":  400
+                                              },
+                          "aprobado":  true,
+                          "rolesDenegados":  {
+                                                 "ALMACEN":  403,
+                                                 "COMPRAS":  403,
+                                                 "CONSULTA_COMERCIAL":  403
+                                             },
+                          "metodo":  "GET"
+                      },
+                      {
+                          "tokenAusente":  401,
+                          "tokenInvalido":  401,
+                          "ruta":  "/api/v1/cortes-stock/inexistente",
+                          "rolesPermitidos":  {
+                                                  "SUPERVISOR":  200,
+                                                  "ADMINISTRADOR":  200
+                                              },
+                          "aprobado":  true,
+                          "rolesDenegados":  {
+                                                 "ALMACEN":  403,
+                                                 "COMPRAS":  403,
+                                                 "CONSULTA_COMERCIAL":  403
+                                             },
+                          "metodo":  "GET"
+                      },
+                      {
+                          "tokenAusente":  401,
+                          "tokenInvalido":  401,
+                          "ruta":  "/api/v1/salud",
+                          "rolesPermitidos":  {
+                                                  "SUPERVISOR":  200,
+                                                  "ADMINISTRADOR":  200
+                                              },
+                          "aprobado":  true,
+                          "rolesDenegados":  {
+                                                 "ALMACEN":  403,
+                                                 "COMPRAS":  403,
+                                                 "CONSULTA_COMERCIAL":  403
+                                             },
+                          "metodo":  "GET"
+                      },
+                      {
+                          "tokenAusente":  401,
+                          "tokenInvalido":  401,
+                          "ruta":  "/api/v1/usuarios",
+                          "rolesPermitidos":  {
+                                                  "ADMINISTRADOR":  200
+                                              },
+                          "aprobado":  true,
+                          "rolesDenegados":  {
+                                                 "ALMACEN":  403,
+                                                 "COMPRAS":  403,
+                                                 "SUPERVISOR":  403,
+                                                 "CONSULTA_COMERCIAL":  403
+                                             },
+                          "metodo":  "GET"
+                      },
+                      {
+                          "tokenAusente":  401,
+                          "tokenInvalido":  401,
+                          "ruta":  "/api/v1/evidencias",
+                          "rolesPermitidos":  {
+                                                  "ADMINISTRADOR":  200
+                                              },
+                          "aprobado":  true,
+                          "rolesDenegados":  {
+                                                 "ALMACEN":  403,
+                                                 "COMPRAS":  403,
+                                                 "SUPERVISOR":  403,
+                                                 "CONSULTA_COMERCIAL":  403
+                                             },
+                          "metodo":  "GET"
+                      },
+                      {
+                          "tokenAusente":  401,
+                          "tokenInvalido":  401,
+                          "ruta":  "/api/v1/auth/me",
+                          "rolesPermitidos":  {
+                                                  "ALMACEN":  200,
+                                                  "COMPRAS":  200,
+                                                  "SUPERVISOR":  200,
+                                                  "CONSULTA_COMERCIAL":  200,
+                                                  "ADMINISTRADOR":  200
+                                              },
+                          "aprobado":  true,
+                          "rolesDenegados":  {
+
+                                             },
+                          "metodo":  "GET"
+                      },
+                      {
+                          "tokenAusente":  401,
+                          "tokenInvalido":  401,
+                          "ruta":  "/api/v1/auth/cambiar-password",
+                          "rolesPermitidos":  {
+                                                  "ALMACEN":  400,
+                                                  "COMPRAS":  400,
+                                                  "SUPERVISOR":  400,
+                                                  "CONSULTA_COMERCIAL":  400,
+                                                  "ADMINISTRADOR":  400
+                                              },
+                          "aprobado":  true,
+                          "rolesDenegados":  {
+
+                                             },
+                          "metodo":  "POST"
+                      },
+                      {
+                          "tokenAusente":  401,
+                          "tokenInvalido":  401,
+                          "ruta":  "/api/v1/usuarios/999999999/eventos",
+                          "rolesPermitidos":  {
+                                                  "ADMINISTRADOR":  404
+                                              },
+                          "aprobado":  true,
+                          "rolesDenegados":  {
+                                                 "ALMACEN":  403,
+                                                 "COMPRAS":  403,
+                                                 "SUPERVISOR":  403,
+                                                 "CONSULTA_COMERCIAL":  403
+                                             },
+                          "metodo":  "GET"
+                      },
+                      {
+                          "tokenAusente":  401,
+                          "tokenInvalido":  401,
+                          "ruta":  "/api/v1/usuarios/999999999",
+                          "rolesPermitidos":  {
+                                                  "ADMINISTRADOR":  400
+                                              },
+                          "aprobado":  true,
+                          "rolesDenegados":  {
+                                                 "ALMACEN":  403,
+                                                 "COMPRAS":  403,
+                                                 "SUPERVISOR":  403,
+                                                 "CONSULTA_COMERCIAL":  403
+                                             },
+                          "metodo":  "PUT"
+                      },
+                      {
+                          "tokenAusente":  401,
+                          "tokenInvalido":  401,
+                          "ruta":  "/api/v1/usuarios/999999999/restablecer-password",
+                          "rolesPermitidos":  {
+                                                  "ADMINISTRADOR":  400
+                                              },
+                          "aprobado":  true,
+                          "rolesDenegados":  {
+                                                 "ALMACEN":  403,
+                                                 "COMPRAS":  403,
+                                                 "SUPERVISOR":  403,
+                                                 "CONSULTA_COMERCIAL":  403
+                                             },
+                          "metodo":  "POST"
+                      },
+                      {
+                          "tokenAusente":  401,
+                          "tokenInvalido":  401,
+                          "ruta":  "/api/v1/usuarios",
+                          "rolesPermitidos":  {
+                                                  "ADMINISTRADOR":  400
+                                              },
+                          "aprobado":  true,
+                          "rolesDenegados":  {
+                                                 "ALMACEN":  403,
+                                                 "COMPRAS":  403,
+                                                 "SUPERVISOR":  403,
+                                                 "CONSULTA_COMERCIAL":  403
+                                             },
+                          "metodo":  "POST"
+                      },
+                      {
+                          "tokenAusente":  401,
+                          "tokenInvalido":  401,
+                          "ruta":  "/api/v1/productos",
+                          "rolesPermitidos":  {
+                                                  "ADMINISTRADOR":  400
+                                              },
+                          "aprobado":  true,
+                          "rolesDenegados":  {
+                                                 "ALMACEN":  403,
+                                                 "COMPRAS":  403,
+                                                 "SUPERVISOR":  403,
+                                                 "CONSULTA_COMERCIAL":  403
+                                             },
+                          "metodo":  "POST"
+                      },
+                      {
+                          "tokenAusente":  401,
+                          "tokenInvalido":  401,
+                          "ruta":  "/api/v1/almacenes",
+                          "rolesPermitidos":  {
+                                                  "ADMINISTRADOR":  400
+                                              },
+                          "aprobado":  true,
+                          "rolesDenegados":  {
+                                                 "ALMACEN":  403,
+                                                 "COMPRAS":  403,
+                                                 "SUPERVISOR":  403,
+                                                 "CONSULTA_COMERCIAL":  403
+                                             },
+                          "metodo":  "POST"
+                      },
+                      {
+                          "tokenAusente":  401,
+                          "tokenInvalido":  401,
+                          "ruta":  "/api/v1/productos/999999999",
+                          "rolesPermitidos":  {
+                                                  "ADMINISTRADOR":  400
+                                              },
+                          "aprobado":  true,
+                          "rolesDenegados":  {
+                                                 "ALMACEN":  403,
+                                                 "COMPRAS":  403,
+                                                 "SUPERVISOR":  403,
+                                                 "CONSULTA_COMERCIAL":  403
+                                             },
+                          "metodo":  "PUT"
+                      },
+                      {
+                          "tokenAusente":  401,
+                          "tokenInvalido":  401,
+                          "ruta":  "/api/v1/almacenes/999999999",
+                          "rolesPermitidos":  {
+                                                  "ADMINISTRADOR":  400
+                                              },
+                          "aprobado":  true,
+                          "rolesDenegados":  {
+                                                 "ALMACEN":  403,
+                                                 "COMPRAS":  403,
+                                                 "SUPERVISOR":  403,
+                                                 "CONSULTA_COMERCIAL":  403
+                                             },
+                          "metodo":  "PUT"
+                      },
+                      {
+                          "tokenAusente":  401,
+                          "tokenInvalido":  401,
+                          "ruta":  "/api/v1/productos/999999999/desactivar",
+                          "rolesPermitidos":  {
+                                                  "ADMINISTRADOR":  404
+                                              },
+                          "aprobado":  true,
+                          "rolesDenegados":  {
+                                                 "ALMACEN":  403,
+                                                 "COMPRAS":  403,
+                                                 "SUPERVISOR":  403,
+                                                 "CONSULTA_COMERCIAL":  403
+                                             },
+                          "metodo":  "PATCH"
+                      },
+                      {
+                          "tokenAusente":  401,
+                          "tokenInvalido":  401,
+                          "ruta":  "/api/v1/almacenes/999999999/desactivar",
+                          "rolesPermitidos":  {
+                                                  "ADMINISTRADOR":  404
+                                              },
+                          "aprobado":  true,
+                          "rolesDenegados":  {
+                                                 "ALMACEN":  403,
+                                                 "COMPRAS":  403,
+                                                 "SUPERVISOR":  403,
+                                                 "CONSULTA_COMERCIAL":  403
+                                             },
+                          "metodo":  "PATCH"
+                      },
+                      {
+                          "tokenAusente":  401,
+                          "tokenInvalido":  401,
+                          "ruta":  "/api/v1/productos/999999999/almacenes/999999999/politica-stock",
+                          "rolesPermitidos":  {
+                                                  "SUPERVISOR":  400
+                                              },
+                          "aprobado":  true,
+                          "rolesDenegados":  {
+                                                 "ALMACEN":  403,
+                                                 "COMPRAS":  403,
+                                                 "CONSULTA_COMERCIAL":  403,
+                                                 "ADMINISTRADOR":  403
+                                             },
+                          "metodo":  "PUT"
+                      },
+                      {
+                          "tokenAusente":  401,
+                          "tokenInvalido":  401,
+                          "ruta":  "/api/v1/movimientos",
+                          "rolesPermitidos":  {
+                                                  "ALMACEN":  400
+                                              },
+                          "aprobado":  true,
+                          "rolesDenegados":  {
+                                                 "COMPRAS":  403,
+                                                 "SUPERVISOR":  403,
+                                                 "CONSULTA_COMERCIAL":  403,
+                                                 "ADMINISTRADOR":  403
+                                             },
+                          "metodo":  "POST"
+                      },
+                      {
+                          "tokenAusente":  401,
+                          "tokenInvalido":  401,
+                          "ruta":  "/api/v1/transferencias",
+                          "rolesPermitidos":  {
+                                                  "ALMACEN":  400
+                                              },
+                          "aprobado":  true,
+                          "rolesDenegados":  {
+                                                 "COMPRAS":  403,
+                                                 "SUPERVISOR":  403,
+                                                 "CONSULTA_COMERCIAL":  403,
+                                                 "ADMINISTRADOR":  403
+                                             },
+                          "metodo":  "POST"
+                      },
+                      {
+                          "tokenAusente":  401,
+                          "tokenInvalido":  401,
+                          "ruta":  "/api/v1/conteos",
+                          "rolesPermitidos":  {
+                                                  "ALMACEN":  400
+                                              },
+                          "aprobado":  true,
+                          "rolesDenegados":  {
+                                                 "COMPRAS":  403,
+                                                 "SUPERVISOR":  403,
+                                                 "CONSULTA_COMERCIAL":  403,
+                                                 "ADMINISTRADOR":  403
+                                             },
+                          "metodo":  "POST"
+                      },
+                      {
+                          "tokenAusente":  401,
+                          "tokenInvalido":  401,
+                          "ruta":  "/api/v1/ordenes-compra/999999999/recepciones",
+                          "rolesPermitidos":  {
+                                                  "ALMACEN":  400
+                                              },
+                          "aprobado":  true,
+                          "rolesDenegados":  {
+                                                 "COMPRAS":  403,
+                                                 "SUPERVISOR":  403,
+                                                 "CONSULTA_COMERCIAL":  403,
+                                                 "ADMINISTRADOR":  403
+                                             },
+                          "metodo":  "POST"
+                      },
+                      {
+                          "tokenAusente":  401,
+                          "tokenInvalido":  401,
+                          "ruta":  "/api/v1/conteos/999999999/confirmar",
+                          "rolesPermitidos":  {
+                                                  "SUPERVISOR":  404
+                                              },
+                          "aprobado":  true,
+                          "rolesDenegados":  {
+                                                 "ALMACEN":  403,
+                                                 "COMPRAS":  403,
+                                                 "CONSULTA_COMERCIAL":  403,
+                                                 "ADMINISTRADOR":  403
+                                             },
+                          "metodo":  "POST"
+                      },
+                      {
+                          "tokenAusente":  401,
+                          "tokenInvalido":  401,
+                          "ruta":  "/api/v1/cortes-stock",
+                          "rolesPermitidos":  {
+                                                  "SUPERVISOR":  200
+                                              },
+                          "aprobado":  true,
+                          "rolesDenegados":  {
+                                                 "ALMACEN":  403,
+                                                 "COMPRAS":  403,
+                                                 "CONSULTA_COMERCIAL":  403,
+                                                 "ADMINISTRADOR":  403
+                                             },
+                          "metodo":  "POST"
+                      },
+                      {
+                          "tokenAusente":  401,
+                          "tokenInvalido":  401,
+                          "ruta":  "/api/v1/solicitudes-compra/999999999/aprobar",
+                          "rolesPermitidos":  {
+                                                  "SUPERVISOR":  404
+                                              },
+                          "aprobado":  true,
+                          "rolesDenegados":  {
+                                                 "ALMACEN":  403,
+                                                 "COMPRAS":  403,
+                                                 "CONSULTA_COMERCIAL":  403,
+                                                 "ADMINISTRADOR":  403
+                                             },
+                          "metodo":  "POST"
+                      },
+                      {
+                          "tokenAusente":  401,
+                          "tokenInvalido":  401,
+                          "ruta":  "/api/v1/solicitudes-compra/999999999/rechazar",
+                          "rolesPermitidos":  {
+                                                  "SUPERVISOR":  400
+                                              },
+                          "aprobado":  true,
+                          "rolesDenegados":  {
+                                                 "ALMACEN":  403,
+                                                 "COMPRAS":  403,
+                                                 "CONSULTA_COMERCIAL":  403,
+                                                 "ADMINISTRADOR":  403
+                                             },
+                          "metodo":  "POST"
+                      },
+                      {
+                          "tokenAusente":  401,
+                          "tokenInvalido":  401,
+                          "ruta":  "/api/v1/solicitudes-compra/999999999/confirmar-duplicidad",
+                          "rolesPermitidos":  {
+                                                  "SUPERVISOR":  400
+                                              },
+                          "aprobado":  true,
+                          "rolesDenegados":  {
+                                                 "ALMACEN":  403,
+                                                 "COMPRAS":  403,
+                                                 "CONSULTA_COMERCIAL":  403,
+                                                 "ADMINISTRADOR":  403
+                                             },
+                          "metodo":  "POST"
+                      },
+                      {
+                          "tokenAusente":  401,
+                          "tokenInvalido":  401,
+                          "ruta":  "/api/v1/ordenes-compra/999999999/cancelar",
+                          "rolesPermitidos":  {
+                                                  "SUPERVISOR":  400
+                                              },
+                          "aprobado":  true,
+                          "rolesDenegados":  {
+                                                 "ALMACEN":  403,
+                                                 "COMPRAS":  403,
+                                                 "CONSULTA_COMERCIAL":  403,
+                                                 "ADMINISTRADOR":  403
+                                             },
+                          "metodo":  "POST"
+                      },
+                      {
+                          "tokenAusente":  401,
+                          "tokenInvalido":  401,
+                          "ruta":  "/api/v1/solicitudes-compra",
+                          "rolesPermitidos":  {
+                                                  "COMPRAS":  400
+                                              },
+                          "aprobado":  true,
+                          "rolesDenegados":  {
+                                                 "ALMACEN":  403,
+                                                 "SUPERVISOR":  403,
+                                                 "CONSULTA_COMERCIAL":  403,
+                                                 "ADMINISTRADOR":  403
+                                             },
+                          "metodo":  "POST"
+                      },
+                      {
+                          "tokenAusente":  401,
+                          "tokenInvalido":  401,
+                          "ruta":  "/api/v1/solicitudes-compra/999999999/emitir-orden",
+                          "rolesPermitidos":  {
+                                                  "COMPRAS":  404
+                                              },
+                          "aprobado":  true,
+                          "rolesDenegados":  {
+                                                 "ALMACEN":  403,
+                                                 "SUPERVISOR":  403,
+                                                 "CONSULTA_COMERCIAL":  403,
+                                                 "ADMINISTRADOR":  403
+                                             },
+                          "metodo":  "POST"
+                      }
+                  ],
+    "pruebasSeguridad":  [
+                             {
+                                 "id":  "contratos-APF2",
+                                 "aprobado":  true,
+                                 "pruebas":  [
+                                                 "todosLosContratosRestringidosRechazanTokenAusenteInvalidoYRolIndebido",
+                                                 "loginRealYTokenAusenteInvalidoExpiradoSonRechazados"
+                                             ]
+                             },
+                             {
+                                 "id":  "contratos-APF3",
+                                 "aprobado":  true,
+                                 "pruebas":  [
+                                                 "RF09_contratosNuevosRechazanSinTokenYRolIndebido",
+                                                 "RF10_flujoComprasHttpYDashboardConPermisos"
+                                             ]
+                             }
+                         ],
+    "e2e":  [
+                {
+                    "id":  "F01-backend",
+                    "aprobado":  true,
+                    "pruebas":  [
+                                    "movimientosPersistenYAutorProvieneDeSesion",
+                                    "salidaInsuficienteNoDejaCambios"
+                                ]
+                },
+                {
+                    "id":  "F02-backend",
+                    "aprobado":  true,
+                    "pruebas":  [
+                                    "transferenciaConfirmaAmbosSaldosYComparteReferencia",
+                                    "falloDespuesDeGuardarPrimeraMitadRevierteTodaTransferencia"
+                                ]
+                },
+                {
+                    "id":  "F03-backend",
+                    "aprobado":  true,
+                    "pruebas":  [
+                                    "RF10_flujoComprasHttpYDashboardConPermisos",
+                                    "RF03_minMaxConsumoYPendientesConResultadoConocido"
+                                ]
+                },
+                {
+                    "id":  "F04-backend",
+                    "aprobado":  true,
+                    "pruebas":  [
+                                    "conteoCalculaCoincidenciaDelSaldoAlCorteYAjusteEsTrazable",
+                                    "conteoObsoletoRechazaInclusoSiSaldoVuelveAlMismoValor"
+                                ]
+                },
+                {
+                    "id":  "F05-backend",
+                    "aprobado":  true,
+                    "pruebas":  [
+                                    "RF10_flujoComprasHttpYDashboardConPermisos",
+                                    "RF08_I06_I08_I09FiltranPeriodoYDenominador"
+                                ]
+                }
+            ],
+    "cuentas":  [
+                    {
+                        "id":  "instalacion-atomica",
+                        "aprobado":  true,
+                        "pruebas":  [
+                                        "creaCincoCuentasDistintasSinDatosDemoYSinGuardarPasswordsEnClaro",
+                                        "configuracionIncompletaNoCreaCuentasParciales",
+                                        "nombresYClavesInicialesDuplicadasSonRechazados",
+                                        "errorDeAuditoriaRevierteTodaLaInstalacion"
+                                    ]
+                    },
+                    {
+                        "id":  "instalacion-concurrente",
+                        "aprobado":  true,
+                        "pruebas":  [
+                                        "dosInstanciasConcurrentesSoloInstalanUnaVez",
+                                        "reiniciarNoCambiaPasswordsNiReactivaCuentas",
+                                        "unaBaseYaInstaladaNoRecreaUsuariosBorradosNiExigeOtraVezLasClavesIniciales"
+                                    ]
+                    },
+                    {
+                        "id":  "primer-acceso",
+                        "aprobado":  true,
+                        "pruebas":  [
+                                        "unaCuentaPuedeConsultarSuEstadoYCambiarSuPasswordInicial",
+                                        "primerAccesoBloqueaTodosLosModulosPeroPermiteCambiarPassword"
+                                    ]
+                    },
+                    {
+                        "id":  "password-y-revocacion",
+                        "aprobado":  true,
+                        "pruebas":  [
+                                        "cambioPasswordValidaActualConfirmacionReutilizacionYBytesSinModificarCuenta",
+                                        "cambioPasswordInvalidaTodasLasSesionesYLaClaveAnterior",
+                                        "tokenAnteriorAV8ConFirmaYRolValidosNoPermiteAccesoSinIdentidadYVersion",
+                                        "reutilizarNombreNoPermiteQueUnTokenAnteriorSuplanteOtraCuenta"
+                                    ]
+                    },
+                    {
+                        "id":  "gestion-y-auditoria",
+                        "aprobado":  true,
+                        "pruebas":  [
+                                        "adminCreaCuentaConCambioObligatorioSinDevolverSecretos",
+                                        "adminEditaNombreRolYEstadoRevocandoTokens",
+                                        "resetObligaCambioRevocaSesionYConservaHistorialSinPassword",
+                                        "desactivacionBloqueaLoginYReactivacionNoReviveTokenViejo"
+                                    ]
+                    },
+                    {
+                        "id":  "concurrencia-y-administrador",
+                        "aprobado":  true,
+                        "pruebas":  [
+                                        "cambiosConcurrentesRespetanLaVersionDelFormulario",
+                                        "dosAdministradoresNoPuedenDesactivarseMutuamenteDejandoCeroActivos",
+                                        "adminNoPuedeDesactivarseCambiarSuRolNiRestablecersePorAdministracion"
+                                    ]
+                    },
+                    {
+                        "id":  "migracion",
+                        "aprobado":  true,
+                        "pruebas":  [
+                                        "migrarV7AV8ConservaCredencialesRolesYEstadosDeUsuariosExistentes"
+                                    ]
+                    }
+                ],
+    "indicadoresTecnicos":  [
+                                {
+                                    "codigo":  "I01",
+                                    "numerador":  10,
+                                    "denominador":  10,
+                                    "valor":  100,
+                                    "sinDatos":  false,
+                                    "alcance":  "backend"
+                                },
+                                {
+                                    "codigo":  "I02",
+                                    "numerador":  49,
+                                    "denominador":  49,
+                                    "valor":  100,
+                                    "sinDatos":  false,
+                                    "alcance":  "backend"
+                                },
+                                {
+                                    "codigo":  "I03",
+                                    "numerador":  5,
+                                    "denominador":  5,
+                                    "valor":  100,
+                                    "sinDatos":  false,
+                                    "alcance":  "backend"
+                                },
+                                {
+                                    "codigo":  "I04",
+                                    "numerador":  8,
+                                    "denominador":  8,
+                                    "valor":  100,
+                                    "sinDatos":  false,
+                                    "alcance":  "backend"
+                                }
+                            ]
+}

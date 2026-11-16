@@ -1,0 +1,23 @@
+{
+  "comprobadoEn": "2026-11-16T20:55:32.690883+00:00",
+  "base": "byteelement",
+  "puerto": 5432,
+  "soloLectura": true,
+  "migracionAntesYDespues": "V7",
+  "cuentas": 6,
+  "cuentasHashesRolesEstadosConservados": true,
+  "conteosAntesYDespuesIguales": true,
+  "conteos": {
+    "producto": 22,
+    "almacen": 6,
+    "existencia": 17,
+    "movimiento": 32,
+    "solicitud_compra": 0,
+    "orden_compra": 0,
+    "conteo": 9
+  },
+  "observaciones": [
+    "No se arranco el backend de revision contra byteelement.",
+    "V8 y los recorridos se probaron en una copia separada en el puerto 55432."
+  ]
+}

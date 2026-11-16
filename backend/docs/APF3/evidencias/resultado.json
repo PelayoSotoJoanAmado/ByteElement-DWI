@@ -1,15 +1,15 @@
 ﻿{
     "sinDatos":  false,
-    "generadoEn":  "2026-11-16T19:10:25.8111502Z",
+    "generadoEn":  "2026-11-16T20:51:41.3988351Z",
     "version":  {
-                    "commit":  "36791b245dfcb3726f8828fb1d7c0f1e934acb9d",
+                    "commit":  "4ef548c9a1dc9a5fb7dbe1defc728418e542cd46",
                     "cambiosSinCommit":  true,
-                    "fuentesSha256":  "54c252280e49bcba1ab09f2cb6966e96c768624a8074fbeb9bef76b245a73f34"
+                    "fuentesSha256":  "447380d674536fcc7a3a486fd7e17dab978f9bf4dadb69c76bc46619e366ff66"
                 },
     "alcance":  "Backend. F01-F05 Angular y despliegue requieren evidencia adicional; no se declara aprobacion final del proyecto.",
     "motor":  "PostgreSQL (migraciones historicas y perfil prod tambien se prueban en H2; ver INSTALACION_TEST_DB_URL para instalacion)",
     "suite":  {
-                  "pruebas":  92,
+                  "pruebas":  94,
                   "noAprobadas":  0,
                   "omitidas":  0,
                   "exito":  true
@@ -1052,7 +1052,9 @@
                         "aprobado":  true,
                         "pruebas":  [
                                         "cambioPasswordValidaActualConfirmacionReutilizacionYBytesSinModificarCuenta",
-                                        "cambioPasswordInvalidaTodasLasSesionesYLaClaveAnterior"
+                                        "cambioPasswordInvalidaTodasLasSesionesYLaClaveAnterior",
+                                        "tokenAnteriorAV8ConFirmaYRolValidosNoPermiteAccesoSinIdentidadYVersion",
+                                        "reutilizarNombreNoPermiteQueUnTokenAnteriorSuplanteOtraCuenta"
                                     ]
                     },
                     {

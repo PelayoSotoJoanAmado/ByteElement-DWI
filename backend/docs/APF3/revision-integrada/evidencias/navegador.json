@@ -1,0 +1,226 @@
+{
+  "fecha": "2026-11-16T20:53:57.063Z",
+  "base": "stockguard_revision_copia_test_20261116",
+  "navegador": "156.0.8078.4",
+  "simulacionesHttp": false,
+  "casos": [
+    {
+      "caso": "login-administrador-existente-y-creacion-cinco-roles",
+      "aprobado": true,
+      "cuentasCreadas": 5,
+      "rolesDistintos": 5
+    },
+    {
+      "caso": "primer-acceso-y-permisos-ADMINISTRADOR",
+      "aprobado": true,
+      "sinPeticionesOperativasAntesDelCambio": true,
+      "tokenAnterior": 401,
+      "cambio": 200,
+      "guardPorRol": true
+    },
+    {
+      "caso": "primer-acceso-y-permisos-ALMACEN",
+      "aprobado": true,
+      "sinPeticionesOperativasAntesDelCambio": true,
+      "tokenAnterior": 401,
+      "cambio": 200,
+      "guardPorRol": true
+    },
+    {
+      "caso": "primer-acceso-y-permisos-COMPRAS",
+      "aprobado": true,
+      "sinPeticionesOperativasAntesDelCambio": true,
+      "tokenAnterior": 401,
+      "cambio": 200,
+      "guardPorRol": true
+    },
+    {
+      "caso": "primer-acceso-y-permisos-SUPERVISOR",
+      "aprobado": true,
+      "sinPeticionesOperativasAntesDelCambio": true,
+      "tokenAnterior": 401,
+      "cambio": 200,
+      "guardPorRol": true
+    },
+    {
+      "caso": "primer-acceso-y-permisos-CONSULTA_COMERCIAL",
+      "aprobado": true,
+      "sinPeticionesOperativasAntesDelCambio": true,
+      "tokenAnterior": 401,
+      "cambio": 200,
+      "guardPorRol": true
+    },
+    {
+      "caso": "catalogo-y-politicas-minimo-maximo",
+      "aprobado": true,
+      "productoId": 31,
+      "sku": "REV-FLUJO-MWJQR3YF-F9DD08",
+      "minimo": 5,
+      "maximo": 20
+    },
+    {
+      "caso": "F01-entrada-salida-y-rechazo-saldo-insuficiente",
+      "aprobado": true,
+      "entrada": 10,
+      "salida": 3,
+      "saldo": 7,
+      "salidaInsuficiente": 409,
+      "sinEscrituraParcial": true
+    },
+    {
+      "caso": "F02-transferencia-y-dos-saldos-trazables",
+      "aprobado": true,
+      "origen": 5,
+      "destino": 2,
+      "movimientoSalida": 77,
+      "movimientoEntrada": 78,
+      "autorYCantidadCoinciden": true
+    },
+    {
+      "caso": "F03-solicitudes-urgentes-y-advertencia-de-similitud",
+      "aprobado": true,
+      "solicitud": 12,
+      "adicional": 13,
+      "urgente": true,
+      "similitudDetectada": true
+    },
+    {
+      "caso": "F03-confirmar-duplicidad-y-validar-umbral-de-aprobacion",
+      "aprobado": true,
+      "duplicidadConfirmada": true,
+      "umbralSinJustificacion": 400,
+      "aprobacionJustificada": 200
+    },
+    {
+      "caso": "F03-emision-y-recepciones-parcial-completa-sin-exceso",
+      "aprobado": true,
+      "orden": 6,
+      "parcial": 4,
+      "completa": 6,
+      "estado": "ATENDIDA",
+      "saldo": 15,
+      "reintentoIdempotente": true,
+      "excesoBloqueadoSinEnvio": true
+    },
+    {
+      "caso": "F04-conteo-obsoleto-rechazado-y-ajuste-fisico-confirmado",
+      "aprobado": true,
+      "conteoObsoleto": 409,
+      "saldoTrasRechazo": 16,
+      "saldoFisicoConfirmado": 13,
+      "conteosDelEscenario": 3
+    },
+    {
+      "caso": "F05-corte-indicadores-periodo-y-numeradores-verificables",
+      "aprobado": true,
+      "lote": "3e4ab1f8-ac78-4f23-b7a0-85b554f67881",
+      "indicadores": [
+        {
+          "codigo": "I05",
+          "numerador": 1,
+          "denominador": 1,
+          "valor": 100,
+          "unidad": "%"
+        },
+        {
+          "codigo": "I06",
+          "numerador": 1,
+          "denominador": 1,
+          "valor": 100,
+          "unidad": "%"
+        },
+        {
+          "codigo": "I07",
+          "numerador": 1,
+          "denominador": 3,
+          "valor": 33.33,
+          "unidad": "%"
+        },
+        {
+          "codigo": "I08",
+          "numerador": 0,
+          "denominador": 1,
+          "valor": 0,
+          "unidad": "dias"
+        },
+        {
+          "codigo": "I09",
+          "numerador": 1,
+          "denominador": 2,
+          "valor": 50,
+          "unidad": "%"
+        },
+        {
+          "codigo": "I10",
+          "numerador": 0,
+          "denominador": 1,
+          "valor": 0,
+          "unidad": "%"
+        }
+      ]
+    },
+    {
+      "caso": "consulta-comercial-ve-saldo-sin-acciones-operativas",
+      "aprobado": true,
+      "saldo": 13,
+      "compras": 403,
+      "administracionDenegada": true
+    },
+    {
+      "caso": "edicion-concurrente-409-y-revocacion-por-cambio-de-nombre",
+      "aprobado": true,
+      "primeraEdicion": 200,
+      "formularioObsoleto": 409,
+      "tokenAnterior": 401
+    },
+    {
+      "caso": "restablecimiento-temporal-primer-acceso-e-historial",
+      "aprobado": true,
+      "reset": 200,
+      "cambioObligatorio": true,
+      "auditoriaSinClave": true
+    },
+    {
+      "caso": "desactivacion-reactivacion-y-proteccion-del-administrador-propio",
+      "aprobado": true,
+      "loginInactiva": 401,
+      "tokenNoRevive": 401,
+      "cuentaPropiaProtegida": true
+    },
+    {
+      "caso": "cambio-voluntario-desde-mi-cuenta-y-sesion-reemplazada",
+      "aprobado": true,
+      "cambioVoluntario": 200,
+      "tokenPrevio": 401,
+      "retornoAlPanel": true
+    },
+    {
+      "caso": "cancelacion-del-pendiente-conserva-la-recepcion-registrada",
+      "aprobado": true,
+      "recibidoConservado": 3,
+      "pendienteCancelado": 7,
+      "recepcionPosterior": 409
+    }
+  ],
+  "erroresNavegador": [],
+  "capturas": [
+    "indicadores.png"
+  ],
+  "exito": true,
+  "producto": {
+    "id": 31,
+    "sku": "REV-FLUJO-MWJQR3YF-F9DD08"
+  },
+  "controlesSql": {
+    "referenciaTransferenciaCompartida": true,
+    "saldosNegativos": 0,
+    "ordenesConExcesoRecibido": 0,
+    "solicitudesConOrdenDuplicada": 0
+  },
+  "version": {
+    "commit": "4ef548c9a1dc9a5fb7dbe1defc728418e542cd46",
+    "cambiosSinCommit": true,
+    "frontendFuentesSha256": "5ea1c889ea46471859d8ed3c074bece7e2ea0b854d9cd37ed5af3f1583f5349e"
+  },
+  "verificacionesAdicionales": "Los formularios y botones recorren HTTP real; las comprobaciones complementarias consultan API/SQL de la copia y repiten una recepcion con la misma clave para verificar idempotencia. No hay respuestas HTTP simuladas."
+}
