@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { HttpClient, provideHttpClient, withInterceptors } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { Router } from '@angular/router';
 import { AuthService } from './auth.service';
 import { authInterceptor } from './auth.interceptor';
 
@@ -13,7 +14,14 @@ describe('Bearer boundary', () => {
       JSON.stringify({
         accessToken: 'old-token',
         expiresAt: Date.now() + 1800000,
-        usuario: { id: 1, username: 'admin.test', rol: 'ADMINISTRADOR', activo: true },
+        usuario: {
+          id: 1,
+          username: 'admin.test',
+          rol: 'ADMINISTRADOR',
+          activo: true,
+          requiereCambioPassword: false,
+          version: 0,
+        },
       }),
     );
     TestBed.configureTestingModule({
@@ -22,6 +30,8 @@ describe('Bearer boundary', () => {
         provideHttpClientTesting(),
       ],
     });
+    vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
     http = TestBed.inject(HttpTestingController);
     client = TestBed.inject(HttpClient);
   });
@@ -59,14 +69,19 @@ describe('Bearer boundary', () => {
     client.get('/api/v1/usuarios').subscribe({ error: () => {} });
     const old = http.expectOne('/api/v1/usuarios');
     TestBed.inject(AuthService).login({ username: 'test', password: 'test' }).subscribe();
-    http
-      .expectOne('/api/v1/auth/login')
-      .flush({
-        accessToken: 'new-token',
-        tokenType: 'Bearer',
-        expiresIn: 1800,
-        usuario: { id: 2, username: 'admin.new', rol: 'ADMINISTRADOR', activo: true },
-      });
+    http.expectOne('/api/v1/auth/login').flush({
+      accessToken: 'new-token',
+      tokenType: 'Bearer',
+      expiresIn: 1800,
+      usuario: {
+        id: 2,
+        username: 'admin.new',
+        rol: 'ADMINISTRADOR',
+        activo: true,
+        requiereCambioPassword: false,
+        version: 0,
+      },
+    });
     old.flush(null, { status: 401, statusText: 'Unauthorized' });
     expect(TestBed.inject(AuthService).session()?.accessToken).toBe('new-token');
   });

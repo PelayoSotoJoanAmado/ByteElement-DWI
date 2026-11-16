@@ -11,6 +11,8 @@ export interface User {
   username: string;
   rol: Role;
   activo: boolean;
+  requiereCambioPassword: boolean;
+  version: number;
 }
 export interface LoginCredentials {
   username: string;
@@ -26,4 +28,20 @@ export interface Session {
   accessToken: string;
   expiresAt: number;
   usuario: User;
+}
+
+export interface ChangePassword {
+  passwordActual: string;
+  passwordNueva: string;
+  confirmacionPassword: string;
+}
+export interface UserEvent {
+  id: number;
+  usuarioId: number;
+  actorId: number | null;
+  actorUsername: string;
+  usuarioUsername: string;
+  tipo: string;
+  fecha: string;
+  detalle: string;
 }

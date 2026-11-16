@@ -21,7 +21,14 @@ describe('Session boundary', () => {
       JSON.stringify({
         accessToken: 'expired',
         expiresAt: Date.now() - 1,
-        usuario: { id: 1, username: 'test', rol: 'ADMINISTRADOR', activo: true },
+        usuario: {
+          id: 1,
+          username: 'test',
+          rol: 'ADMINISTRADOR',
+          activo: true,
+          requiereCambioPassword: false,
+          version: 0,
+        },
       }),
     );
     expect(TestBed.inject(AuthService).session()).toBeNull();
@@ -41,7 +48,14 @@ describe('Session boundary', () => {
         accessToken: 'invalid',
         tokenType: 'Bearer',
         expiresIn: 1800,
-        usuario: { id: 1, username: 'test', rol: 'UNKNOWN', activo: false },
+        usuario: {
+          id: 1,
+          username: 'test',
+          rol: 'UNKNOWN',
+          activo: false,
+          requiereCambioPassword: false,
+          version: 0,
+        },
       });
     expect(rejected).toBe(true);
     expect(service.session()).toBeNull();
@@ -57,7 +71,14 @@ describe('Session boundary', () => {
         accessToken: 'active',
         tokenType: 'Bearer',
         expiresIn: 1,
-        usuario: { id: 1, username: 'test', rol: 'COMPRAS', activo: true },
+        usuario: {
+          id: 1,
+          username: 'test',
+          rol: 'COMPRAS',
+          activo: true,
+          requiereCambioPassword: false,
+          version: 0,
+        },
       });
     now.mockReturnValue(clock + 1001);
     expect(service.session()).toBeNull();

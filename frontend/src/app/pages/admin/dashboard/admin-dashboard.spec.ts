@@ -17,8 +17,8 @@ it('counts actual active records and alerts without turning a failed query into 
               ? throwError(() => new HttpErrorResponse({ status: 503 }))
               : of(
                   kind === 'usuarios'
-                    ? [{ activo: true }, { activo: true }, { activo: false }]
-                    : [{ activo: true }],
+                    ? [{ activo: true, requiereCambioPassword: false, version: 0 }, { activo: true, requiereCambioPassword: false, version: 0 }, { activo: false, requiereCambioPassword: false, version: 0 }]
+                    : [{ activo: true, requiereCambioPassword: false, version: 0 }],
                 ),
           pageRows: () =>
             of([{ estado: 'NORMAL' }, { estado: 'QUIEBRE' }, { estado: 'SOBRE_MAXIMO' }]),

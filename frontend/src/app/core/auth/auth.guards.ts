@@ -1,34 +1,48 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
+import { map } from 'rxjs';
 import { AuthService } from './auth.service';
-import { Role } from './auth.models';
-
+import { Role, User } from './auth.models';
+export const PASSWORD_PATH = '/cuenta/cambiar-password';
 export function landingPath(role: Role): string {
-  return role === 'ADMINISTRADOR' ? '/admin' : role === 'ALMACEN' ? '/almacen' : '/';
+  return {
+    ADMINISTRADOR: '/admin',
+    ALMACEN: '/almacen',
+    COMPRAS: '/compras',
+    SUPERVISOR: '/supervisor',
+    CONSULTA_COMERCIAL: '/consulta',
+  }[role];
 }
-
-export const adminGuard: CanActivateFn = () => {
-  const session = inject(AuthService).session();
+export function accountPath(user: User): string {
+  return user.requiereCambioPassword ? PASSWORD_PATH : landingPath(user.rol);
+}
+export function roleGuard(role?: Role): CanActivateFn {
+  return () => {
+    const router = inject(Router);
+    return inject(AuthService)
+      .ensureSession()
+      .pipe(
+        map((session) => {
+          if (!session) return router.createUrlTree(['/login']);
+          if (session.usuario.requiereCambioPassword) return router.createUrlTree([PASSWORD_PATH]);
+          return (
+            !role || session.usuario.rol === role || router.createUrlTree(['/acceso-denegado'])
+          );
+        }),
+      );
+  };
+}
+export const adminGuard = roleGuard('ADMINISTRADOR');
+export const warehouseGuard = roleGuard('ALMACEN');
+export const accountGuard: CanActivateFn = () => {
   const router = inject(Router);
-  if (!session) return router.createUrlTree(['/login']);
-  return (
-    session.usuario.rol === 'ADMINISTRADOR' ||
-    router.createUrlTree(['/login'], { queryParams: { motivo: 'sin-permiso' } })
-  );
+  return inject(AuthService)
+    .ensureSession()
+    .pipe(map((s) => !!s || router.createUrlTree(['/login'])));
 };
-
-export const warehouseGuard: CanActivateFn = () => {
-  const session = inject(AuthService).session();
-  const router = inject(Router);
-  if (!session) return router.createUrlTree(['/login']);
-  return (
-    session.usuario.rol === 'ALMACEN' || router.createUrlTree([landingPath(session.usuario.rol)])
-  );
-};
-
 export const guestGuard: CanActivateFn = () => {
-  const session = inject(AuthService).session();
-  return session && landingPath(session.usuario.rol) !== '/'
-    ? inject(Router).createUrlTree([landingPath(session.usuario.rol)])
-    : true;
+  const router = inject(Router);
+  return inject(AuthService)
+    .ensureSession()
+    .pipe(map((s) => (s ? router.createUrlTree([accountPath(s.usuario)]) : true)));
 };

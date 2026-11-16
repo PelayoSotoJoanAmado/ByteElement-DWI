@@ -1,6 +1,8 @@
 import { Routes } from '@angular/router';
-import { adminGuard, guestGuard, warehouseGuard } from './core/auth/auth.guards';
+import { accountGuard, adminGuard, guestGuard, warehouseGuard } from './core/auth/auth.guards';
 export const routes: Routes = [
+  { path: 'cuenta/cambiar-password', canActivate: [accountGuard], title: 'Mi cuenta | StockGuard', loadComponent: () => import('./pages/account/change-password').then(m => m.ChangePassword) },
+  { path: 'acceso-denegado', canActivate: [accountGuard], title: 'Acceso denegado | StockGuard', loadComponent: () => import('./pages/account/change-password').then(m => m.AccessDenied) },
   {
     path: '',
     pathMatch: 'full',

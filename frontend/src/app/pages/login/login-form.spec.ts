@@ -3,6 +3,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideRouter, Router } from '@angular/router';
 import { LoginForm } from './login-form';
+import { ROLES } from '../../core/auth/auth.models';
 import { AuthService } from '../../core/auth/auth.service';
 
 describe('Login', () => {
@@ -66,7 +67,14 @@ describe('Login', () => {
       accessToken: 'test-session-token',
       tokenType: 'Bearer',
       expiresIn: 1800,
-      usuario: { id: 1, username: 'almacen.test', rol: 'ALMACEN', activo: true },
+      usuario: {
+        id: 1,
+        username: 'almacen.test',
+        rol: 'ALMACEN',
+        activo: true,
+        requiereCambioPassword: false,
+        version: 0,
+      },
     });
     expect(TestBed.inject(AuthService).session()?.usuario.rol).toBe('ALMACEN');
     expect(fixture.componentInstance.form.controls.password.value).toBe('');
@@ -82,7 +90,14 @@ describe('Login', () => {
       accessToken: 'admin-token',
       tokenType: 'Bearer',
       expiresIn: 1800,
-      usuario: { id: 1, username: 'admin.test', rol: 'ADMINISTRADOR', activo: true },
+      usuario: {
+        id: 1,
+        username: 'admin.test',
+        rol: 'ADMINISTRADOR',
+        activo: true,
+        requiereCambioPassword: false,
+        version: 0,
+      },
     });
     expect(navigate).toHaveBeenCalledWith('/admin');
   });
@@ -117,5 +132,29 @@ describe('Login', () => {
     expect(fixture.componentInstance.error()).toContain('Inténtalo de nuevo');
     expect(fixture.componentInstance.submitting()).toBe(false);
     expect(TestBed.inject(AuthService).session()).toBeNull();
+  });
+  it.each(ROLES)('sends a pending %s directly to password change after login', (role) => {
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
+    const fixture = TestBed.createComponent(LoginForm);
+    fixture.componentInstance.form.setValue({
+      username: 'account.test',
+      password: 'Temporary password!',
+    });
+    fixture.componentInstance.submit();
+    http.expectOne('/api/v1/auth/login').flush({
+      accessToken: 'limited',
+      tokenType: 'Bearer',
+      expiresIn: 1800,
+      usuario: {
+        id: 2,
+        username: 'account.test',
+        rol: role,
+        activo: true,
+        requiereCambioPassword: true,
+        version: 0,
+      },
+    });
+    expect(navigate).toHaveBeenCalledWith('/cuenta/cambiar-password');
+    http.expectNone('/api/v1/productos');
   });
 });

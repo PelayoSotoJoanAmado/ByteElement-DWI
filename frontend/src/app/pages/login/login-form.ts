@@ -5,7 +5,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { finalize, timeout } from 'rxjs';
 import { AuthService } from '../../core/auth/auth.service';
-import { landingPath } from '../../core/auth/auth.guards';
+import { accountPath } from '../../core/auth/auth.guards';
 import { Icon } from '../../shared/icon';
 
 @Component({
@@ -58,7 +58,7 @@ export class LoginForm {
       .subscribe({
         next: (session) => {
           this.form.reset();
-          void this.router.navigateByUrl(landingPath(session.usuario.rol));
+          void this.router.navigateByUrl(accountPath(session.usuario));
         },
         error: (error: unknown) => {
           this.showPassword.set(false);

@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { provideHttpClient } from '@angular/common/http';
+import { HttpResponse, provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideRouter, Router } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { routes } from '../../app.routes';
@@ -15,7 +15,14 @@ function storedSession(role: Role, expiresAt = Date.now() + 1800000): void {
     JSON.stringify({
       accessToken: 'test-token',
       expiresAt,
-      usuario: { id: 1, username: 'admin.test', rol: role, activo: true },
+      usuario: {
+        id: 1,
+        username: 'admin.test',
+        rol: role,
+        activo: true,
+        requiereCambioPassword: false,
+        version: 0,
+      },
     }),
   );
 }
@@ -25,7 +32,19 @@ describe('Administrator route protection', () => {
     TestBed.configureTestingModule({
       providers: [
         provideRouter(routes),
-        provideHttpClient(),
+        provideHttpClient(
+          withInterceptors([
+            (req, next) =>
+              req.url === '/api/v1/auth/me'
+                ? of(
+                    new HttpResponse({
+                      body: JSON.parse(sessionStorage.getItem('stockguard.session') ?? 'null')
+                        ?.usuario,
+                    }),
+                  )
+                : next(req),
+          ]),
+        ),
         {
           provide: AdminApi,
           useValue: {
@@ -61,15 +80,15 @@ describe('Administrator route protection', () => {
     async (role) => {
       storedSession(role);
       const harness = await RouterTestingHarness.create('/admin');
-      expect(TestBed.inject(Router).url).toContain('/login?motivo=sin-permiso');
+      expect(TestBed.inject(Router).url).toBe('/acceso-denegado');
       expect(harness.routeNativeElement?.textContent).toContain('Tu cuenta no tiene permiso');
       expect(harness.routeNativeElement?.querySelector('app-admin-layout')).toBeNull();
     },
   );
-  it('keeps the warehouse role in its own panel when an administrator URL is requested', async () => {
+  it('denies an administrator URL to the warehouse role without ending the session', async () => {
     storedSession('ALMACEN');
     await RouterTestingHarness.create('/admin');
-    expect(TestBed.inject(Router).url).toBe('/almacen');
+    expect(TestBed.inject(Router).url).toBe('/acceso-denegado');
   });
   it('opens the panel for an administrator and shows no invented metrics', async () => {
     storedSession('ADMINISTRADOR');

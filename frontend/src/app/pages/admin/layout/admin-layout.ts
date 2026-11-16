@@ -6,7 +6,7 @@ import {
   inject,
   signal,
 } from '@angular/core';
-import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
+import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { filter } from 'rxjs';
 import { AuthService } from '../../../core/auth/auth.service';
@@ -16,7 +16,7 @@ import { WAREHOUSE_NAVIGATION } from '../../warehouse/warehouse.navigation';
 import { AdminSidebar } from '../sidebar/admin-sidebar';
 @Component({
   selector: 'app-admin-layout',
-  imports: [RouterOutlet, AdminSidebar, Icon],
+  imports: [RouterLink, RouterOutlet, AdminSidebar, Icon],
   templateUrl: './admin-layout.html',
   styleUrl: './admin-layout.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
