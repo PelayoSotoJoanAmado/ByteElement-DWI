@@ -1,3 +1,17 @@
+# Integración Angular implementada — 16 de noviembre de 2026
+
+Se implementaron cuentas V8 y las áreas de Compras, Supervisor y Consulta Comercial sobre
+la rama front. Pruebas Angular: 97 aprobadas; compilación de producción y TypeScript correctos.
+Backend/PostgreSQL y revisión visual bloqueados por el entorno: los doce escenarios reales de
+cuentas y F01–F05 siguen pendientes E2E. No se modificó el backend ni ninguna base de datos.
+Detalle y evidencias: [INTEGRACION-FRONT-RESULTADOS.md](frontend/docs/INTEGRACION-FRONT-RESULTADOS.md).
+El usuario autorizó organizar la entrega en cuatro commits y publicarla en la rama front.
+
+Las secciones siguientes conservan el diagnóstico previo; el estado de implementación Angular
+vigente para esta revisión es el del informe enlazado. La matriz de permisos no cambia.
+
+---
+
 # Actualizacion vigente - cuentas y roles - 16 de noviembre de 2026
 
 Rama actual: front. Backend ampliado; no se cambiaron los permisos operativos de los cinco roles.

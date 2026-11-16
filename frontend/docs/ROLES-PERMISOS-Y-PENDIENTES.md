@@ -1,3 +1,8 @@
+> Actualización del 16/11/2026: se implementaron las pantallas y acciones descritas como
+> pendientes en el diagnóstico histórico que sigue. La matriz se conserva sin ampliaciones.
+> Resultados: 97 pruebas Angular y build correctos; contrato de cuentas y F01–F05 todavía
+> pendientes de validación real con backend/PostgreSQL. Ver [informe de integración](INTEGRACION-FRONT-RESULTADOS.md).
+
 # Roles, permisos y pendientes de integracion
 
 Revision del 16 de noviembre de 2026, rama front, commit observado 36791b2.
