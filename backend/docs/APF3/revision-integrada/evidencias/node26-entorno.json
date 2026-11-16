@@ -1,0 +1,13 @@
+{
+  "node": "v26.13.1",
+  "npm": "11.20.0",
+  "angularCliAceptaVersion": true,
+  "pruebasAngular": {
+    "archivos": 12,
+    "aprobadas": 97,
+    "fallidas": 0
+  },
+  "buildProduccion": true,
+  "cambioCodigoProductivo": false,
+  "baseModificada": false
+}
