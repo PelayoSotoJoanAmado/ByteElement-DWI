@@ -1,3 +1,4 @@
+import { landingPath } from '../../../core/auth/auth.guards';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -8,10 +9,10 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
-import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { catchError, forkJoin, of } from 'rxjs';
+import { catchError, finalize, timeout, forkJoin, of } from 'rxjs';
 import { AdminApi, Page, Params, Product, Row, Warehouse } from '../shared/admin-api';
 import { RemoteState, errorMessage } from '../shared/remote-state';
 import { DataTable } from '../shared/data-table';
@@ -29,6 +30,10 @@ export class AdminQueries {
   private readonly api = inject(AdminApi);
   private readonly destroy = inject(DestroyRef);
   private readonly route = inject(ActivatedRoute);
+  readonly auth = inject(AuthService);
+  readonly router = inject(Router);
+  readonly role = this.auth.user()!.rol;
+  readonly home = landingPath(this.role);
   readonly warehouse = inject(AuthService).user()?.rol === 'ALMACEN';
   readonly kind = signal<QueryKind>('movimientos');
   readonly tab = signal<PurchaseTab>('reposicion');
@@ -55,7 +60,15 @@ export class AdminQueries {
     estado: '',
     tipo: 'rotacion',
   });
-  readonly title = computed(() => QUERY_TITLES[this.kind()]);
+  readonly title = computed(() =>
+    this.kind() === 'compras'
+      ? {
+          reposicion: 'Reposición',
+          solicitudes: 'Solicitudes de compra',
+          ordenes: 'Órdenes y recepciones',
+        }[this.tab()]
+      : QUERY_TITLES[this.kind()],
+  );
   readonly needsDates = computed(
     () =>
       this.kind() !== 'existencias' && !(this.kind() === 'compras' && this.tab() === 'reposicion'),
@@ -95,7 +108,8 @@ export class AdminQueries {
   }
   loadOptions(): void {
     this.warehouses.load(this.api.get<Warehouse[]>('almacenes'));
-    if (this.kind() === 'existencias') this.products.load(this.api.products());
+    if (this.kind() === 'existencias' || this.role === 'COMPRAS')
+      this.products.load(this.api.products());
   }
   changeTab(tab: PurchaseTab): void {
     this.tab.set(tab);
@@ -178,6 +192,7 @@ export class AdminQueries {
     this.results.load(this.api.get<Page>(path, params));
   }
   inspect(row: Row): void {
+    this.actionError.set('');
     this.selected.set(row);
     this.receptions.clear();
     this.detailDialog().nativeElement.showModal();
@@ -194,6 +209,148 @@ export class AdminQueries {
   closeDetail(): void {
     this.receptions.clear();
     this.detailDialog().nativeElement.close();
+  }
+  readonly actionBusy = signal(false);
+  readonly actionError = signal('');
+  readonly actionNotice = signal('');
+  private readonly fb = inject(FormBuilder);
+  readonly requestForm = this.fb.nonNullable.group({
+    productoId: ['', Validators.required],
+    almacenId: ['', Validators.required],
+    cantidad: [1, [Validators.required, Validators.min(1), Validators.pattern(/^\d+$/)]],
+    montoEstimado: [
+      0.01,
+      [Validators.required, Validators.min(0.01), Validators.pattern(/^\d+(\.\d{1,2})?$/)],
+    ],
+    motivo: ['', [Validators.required, Validators.maxLength(255), Validators.pattern(/\S/)]],
+    urgente: false,
+    motivoUrgencia: ['', Validators.maxLength(255)],
+  });
+  readonly decisionForm = this.fb.nonNullable.group({
+    justificacion: ['', Validators.maxLength(500)],
+    motivo: ['', Validators.maxLength(500)],
+    originalId: '',
+  });
+  private requestKey = crypto.randomUUID();
+  private requestSnapshot: string | null = null;
+  readonly requestOpen = signal(false);
+  prepare(row?: Row): void {
+    if (this.role !== 'COMPRAS' || this.actionBusy()) return;
+    if (
+      this.requestOpen() &&
+      !window.confirm('¿Descartar el borrador y preparar una nueva solicitud?')
+    )
+      return;
+    this.requestForm.reset({
+      productoId: row ? String(row['productoId']) : '',
+      almacenId: row ? String(row['almacenId']) : '',
+      cantidad: row ? Number(row['cantidadSugerida']) : 1,
+      montoEstimado: 0.01,
+      motivo: '',
+      urgente: !!row?.['urgenciaSugerida'],
+      motivoUrgencia: '',
+    });
+    this.requestKey = crypto.randomUUID();
+    this.requestSnapshot = null;
+    this.actionError.set('');
+    this.requestOpen.set(true);
+    this.detailDialog().nativeElement.close();
+    this.changeTab('solicitudes');
+  }
+  sendRequest(): void {
+    if (this.role !== 'COMPRAS' || this.actionBusy()) return;
+    this.requestForm.markAllAsTouched();
+    const v = this.requestForm.getRawValue();
+    if (this.requestForm.invalid || (v.urgente && !v.motivoUrgencia.trim())) {
+      this.actionError.set(
+        'Revisa producto, almacén, cantidad, monto, motivo y motivo de urgencia.',
+      );
+      return;
+    }
+    const payload = {
+      ...v,
+      productoId: Number(v.productoId),
+      almacenId: Number(v.almacenId),
+      claveIdempotencia: this.requestKey,
+    };
+    const snapshot = JSON.stringify(payload);
+    if (this.requestSnapshot && this.requestSnapshot !== snapshot) {
+      this.actionError.set(
+        'La solicitud anterior pudo haber sido recibida. Reintenta con los mismos datos o consulta el listado antes de preparar una nueva necesidad.',
+      );
+      return;
+    }
+    this.requestSnapshot = snapshot;
+    this.perform(this.api.post('solicitudes-compra', payload), (row) => {
+      this.requestOpen.set(false);
+      this.requestForm.reset();
+      this.requestKey = crypto.randomUUID();
+      this.requestSnapshot = null;
+      this.inspect(row);
+      this.query();
+    });
+  }
+  openSimilar(id: unknown): void {
+    if (!Number.isSafeInteger(Number(id)) || Number(id) <= 0) return;
+    this.perform(this.api.get<Row>(`solicitudes-compra/${Number(id)}`), (row) =>
+      this.selected.set(row),
+    );
+  }
+  decide(
+    action: 'aprobar' | 'rechazar' | 'confirmar-duplicidad' | 'emitir-orden' | 'cancelar',
+  ): void {
+    const row = this.selected();
+    if (!row || this.actionBusy()) return;
+    const emit = action === 'emitir-orden';
+    if ((emit && this.role !== 'COMPRAS') || (!emit && this.role !== 'SUPERVISOR')) return;
+    const v = this.decisionForm.getRawValue();
+    if (
+      this.decisionForm.invalid ||
+      (['rechazar', 'confirmar-duplicidad', 'cancelar'].includes(action) && !v.motivo.trim()) ||
+      (action === 'confirmar-duplicidad' &&
+        (!Number.isSafeInteger(Number(v.originalId)) || Number(v.originalId) <= 0))
+    ) {
+      this.actionError.set(
+        'Completa un motivo válido y, para duplicidad, el ID de la solicitud original.',
+      );
+      return;
+    }
+    if (!window.confirm('¿Confirmas esta operación? Se registrará con tu cuenta.')) return;
+    const payload: Row | null =
+      action === 'aprobar'
+        ? { justificacion: v.justificacion || null }
+        : emit
+          ? null
+          : action === 'confirmar-duplicidad'
+            ? { originalId: Number(v.originalId), motivo: v.motivo }
+            : { motivo: v.motivo };
+    const path = `${action === 'cancelar' ? 'ordenes' : 'solicitudes'}-compra/${Number(row['id'])}/${action}`;
+    this.perform(this.api.post(path, payload), (updated) => {
+      this.selected.set(updated);
+      this.decisionForm.reset();
+      if (emit) {
+        this.closeDetail();
+        this.changeTab('ordenes');
+      } else this.query(this.page());
+    });
+  }
+  private perform(request: import('rxjs').Observable<Row>, success: (row: Row) => void): void {
+    this.actionBusy.set(true);
+    this.actionError.set('');
+    this.actionNotice.set('');
+    request
+      .pipe(
+        timeout(30000),
+        takeUntilDestroyed(this.destroy),
+        finalize(() => this.actionBusy.set(false)),
+      )
+      .subscribe({
+        next: (row) => {
+          this.actionNotice.set('Operación completada.');
+          success(row);
+        },
+        error: (error) => this.actionError.set(errorMessage(error)),
+      });
   }
   productName(id: unknown): string {
     const p = this.products.data()?.find((p) => p.id === id);

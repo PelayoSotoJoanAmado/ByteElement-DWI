@@ -37,6 +37,72 @@
     sus roles autorizados.
   </p>
 }
+@if (actionNotice()) {
+  <p class="ap-notice" role="status">{{ actionNotice() }}</p>
+}
+@if (kind() === 'compras' && role === 'COMPRAS') {
+  <button class="ap-button ap-primary" (click)="prepare()" [disabled]="actionBusy()">
+    Nueva solicitud
+  </button>
+  @if (requestOpen()) {
+    <section class="ap-panel">
+      <h2>Preparar solicitud</h2>
+      <form [formGroup]="requestForm" (ngSubmit)="sendRequest()" class="ap-form-grid">
+        <label
+          >Producto<select class="ap-select" formControlName="productoId">
+            <option value="">Selecciona producto</option>
+            @for (p of products.data() ?? []; track p.id) {
+              <option [value]="p.id">{{ p.sku }} · {{ p.modelo }}</option>
+            }
+          </select></label
+        >
+        <label
+          >Almacén<select class="ap-select" formControlName="almacenId">
+            <option value="">Selecciona almacén</option>
+            @for (w of warehouses.data() ?? []; track w.id) {
+              <option [value]="w.id">{{ w.codigo }}</option>
+            }
+          </select></label
+        >
+        <label
+          >Cantidad<input
+            class="ap-input"
+            type="number"
+            min="1"
+            step="1"
+            formControlName="cantidad"
+        /></label>
+        <label
+          >Monto estimado (S/)<input
+            class="ap-input"
+            type="number"
+            min="0.01"
+            step="0.01"
+            formControlName="montoEstimado"
+        /></label>
+        <label
+          >Motivo<textarea class="ap-textarea" formControlName="motivo" maxlength="255"></textarea>
+        </label>
+        <label><input type="checkbox" formControlName="urgente" />Compra urgente</label>
+        <label
+          >Motivo de urgencia<textarea
+            class="ap-textarea"
+            formControlName="motivoUrgencia"
+            maxlength="255"
+          ></textarea>
+        </label>
+        @if (actionError()) {
+          <p class="ap-notice ap-error" role="alert">{{ actionError() }}</p>
+        }
+        <button class="ap-button ap-primary" [disabled]="actionBusy()">Enviar solicitud</button>
+      </form>
+      <p class="ap-help">
+        Un reintento conserva la misma clave y los mismos datos. Consultar una sugerencia no envía
+        una solicitud.
+      </p>
+    </section>
+  }
+}
 <section class="ap-panel">
   <form [formGroup]="form" (ngSubmit)="query()" class="ap-toolbar" novalidate>
     @if (kind() === 'existencias') {
@@ -186,7 +252,7 @@
   </p>
   <section class="ap-panel" style="margin-top: 20px">
     <h2>Reportes disponibles</h2>
-    <a routerLink="/admin/reportes">Consultar rotación de inventario y stock crítico →</a>
+    <a [routerLink]="home + '/reportes'">Consultar rotación de inventario y stock crítico →</a>
   </section>
 }
 @if (results.data(); as result) {
@@ -232,6 +298,111 @@
   </div>
   @if (selected(); as row) {
     <app-record-detail [record]="row" />
+    @if (kind() === 'compras') {
+      @if (actionError()) {
+        <p class="ap-notice ap-error" role="alert">{{ actionError() }}</p>
+      }
+      @if (tab() === 'reposicion' && role === 'COMPRAS') {
+        <button class="ap-button ap-primary" (click)="prepare(row)">Preparar solicitud</button>
+      }
+      @if (tab() === 'solicitudes') {
+        @if ($any(row['similaresAbiertas'])?.length) {
+          <p class="ap-notice">
+            Advertencia: existen solicitudes abiertas similares. Revisa su detalle antes de decidir.
+          </p>
+          @for (id of $any(row['similaresAbiertas']); track id) {
+            <button class="ap-button" (click)="openSimilar(id)" [disabled]="actionBusy()">
+              Ver solicitud {{ id }}
+            </button>
+          }
+        }
+        @if (role === 'COMPRAS' && row['estado'] === 'APROBADA') {
+          <button
+            class="ap-button ap-primary"
+            [disabled]="actionBusy()"
+            (click)="decide('emitir-orden')"
+          >
+            Emitir orden
+          </button>
+        }
+        @if (role === 'SUPERVISOR') {
+          <form [formGroup]="decisionForm">
+            @if (row['estado'] === 'PENDIENTE') {
+              <label
+                >Justificación de aprobación (obligatoria si supera el umbral)<textarea
+                  class="ap-textarea"
+                  formControlName="justificacion"
+                  maxlength="500"
+                ></textarea>
+              </label>
+              <button
+                type="button"
+                class="ap-button ap-primary"
+                [disabled]="actionBusy()"
+                (click)="decide('aprobar')"
+              >
+                Aprobar
+              </button>
+            }
+            <label
+              >Motivo<textarea
+                class="ap-textarea"
+                formControlName="motivo"
+                maxlength="500"
+              ></textarea>
+            </label>
+            @if (row['estado'] === 'PENDIENTE') {
+              <button
+                type="button"
+                class="ap-button"
+                [disabled]="actionBusy()"
+                (click)="decide('rechazar')"
+              >
+                Rechazar
+              </button>
+            }
+            <label
+              >ID de solicitud original<input
+                class="ap-input"
+                type="number"
+                min="1"
+                formControlName="originalId"
+            /></label>
+            <button
+              type="button"
+              class="ap-button"
+              [disabled]="actionBusy() || !!row['duplicadaDeId'] || row['estado'] !== 'PENDIENTE'"
+              (click)="decide('confirmar-duplicidad')"
+            >
+              Confirmar duplicidad
+            </button>
+          </form>
+        }
+      }
+      @if (
+        tab() === 'ordenes' &&
+        role === 'SUPERVISOR' &&
+        row['estado'] === 'EMITIDA' &&
+        +$any(row['cantidadPendiente']) > 0
+      ) {
+        <form [formGroup]="decisionForm">
+          <label
+            >Motivo de cancelación<textarea
+              class="ap-textarea"
+              formControlName="motivo"
+              maxlength="500"
+            ></textarea></label
+          ><button
+            type="button"
+            class="ap-button ap-danger"
+            [disabled]="actionBusy()"
+            (click)="decide('cancelar')"
+          >
+            Cancelar pendiente
+          </button>
+        </form>
+      }
+    }
   }
   @if (kind() === 'compras' && tab() === 'ordenes') {
     @if (

@@ -66,7 +66,13 @@ export class AdminApi {
       reduce((all, page) => [...all, ...page.content], [] as Row[]),
     );
   }
-  post(path: string, payload: Row): Observable<Row> {
+  put<T>(path: string, payload: Row): Observable<T> {
+    return this.http.put<T>(`/api/v1/${path}`, payload);
+  }
+  postRows(path: string, payload: Row | null): Observable<Row[]> {
+    return this.http.post<Row[]>(`/api/v1/${path}`, payload);
+  }
+  post(path: string, payload: Row | null): Observable<Row> {
     return this.http.post<Row>(`/api/v1/${path}`, payload);
   }
   save(resource: Resource, payload: Row, id?: number): Observable<Row> {

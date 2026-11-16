@@ -1,8 +1,27 @@
+import { ROLE_TABS, TAB_LABELS } from './core/auth/role-navigation';
+import { Role } from './core/auth/auth.models';
 import { Routes } from '@angular/router';
-import { accountGuard, adminGuard, guestGuard, warehouseGuard } from './core/auth/auth.guards';
+import {
+  accountGuard,
+  adminGuard,
+  guestGuard,
+  roleGuard,
+  warehouseGuard,
+} from './core/auth/auth.guards';
 export const routes: Routes = [
-  { path: 'cuenta/cambiar-password', canActivate: [accountGuard], title: 'Mi cuenta | StockGuard', loadComponent: () => import('./pages/account/change-password').then(m => m.ChangePassword) },
-  { path: 'acceso-denegado', canActivate: [accountGuard], title: 'Acceso denegado | StockGuard', loadComponent: () => import('./pages/account/change-password').then(m => m.AccessDenied) },
+  {
+    path: 'cuenta/cambiar-password',
+    canActivate: [accountGuard],
+    title: 'Mi cuenta | StockGuard',
+    loadComponent: () => import('./pages/account/change-password').then((m) => m.ChangePassword),
+  },
+  {
+    path: 'acceso-denegado',
+    canActivate: [accountGuard],
+    title: 'Acceso denegado | StockGuard',
+    loadComponent: () => import('./pages/account/change-password').then((m) => m.AccessDenied),
+  },
+
   {
     path: '',
     pathMatch: 'full',
@@ -21,6 +40,12 @@ export const routes: Routes = [
     canActivateChild: [adminGuard],
     loadComponent: () => import('./pages/admin/layout/admin-layout').then((m) => m.AdminLayout),
     children: [
+      {
+        path: 'cortes',
+        data: { label: 'Cortes de stock', control: 'cortes' },
+        loadComponent: () =>
+          import('./pages/operations/supervisor-control').then((m) => m.SupervisorControl),
+      },
       {
         path: '',
         pathMatch: 'full',
@@ -114,5 +139,63 @@ export const routes: Routes = [
       { path: '**', redirectTo: '' },
     ],
   },
+  ...(['COMPRAS', 'SUPERVISOR', 'CONSULTA_COMERCIAL'] as Role[]).map((role) => ({
+    path: {
+      COMPRAS: 'compras',
+      SUPERVISOR: 'supervisor',
+      CONSULTA_COMERCIAL: 'consulta',
+      ADMINISTRADOR: 'admin',
+      ALMACEN: 'almacen',
+    }[role],
+    canActivate: [roleGuard(role)],
+    canActivateChild: [roleGuard(role)],
+    loadComponent: () => import('./pages/admin/layout/admin-layout').then((m) => m.AdminLayout),
+    children: [
+      {
+        path: '',
+        pathMatch: 'full' as const,
+        redirectTo:
+          role === 'COMPRAS'
+            ? 'solicitudes'
+            : role === 'SUPERVISOR'
+              ? 'indicadores'
+              : 'existencias',
+      },
+      ...ROLE_TABS[role].map((tab) => {
+        const common = { path: tab, title: `${TAB_LABELS[tab]} | StockGuard` };
+        if (tab === 'productos' || tab === 'almacenes')
+          return {
+            ...common,
+            data: { label: TAB_LABELS[tab], resource: tab },
+            loadComponent: () =>
+              import('./pages/admin/resources/admin-resources').then((m) => m.AdminResources),
+          };
+        if (['politicas', 'conteos', 'cortes'].includes(tab))
+          return {
+            ...common,
+            data: { label: TAB_LABELS[tab], control: tab },
+            loadComponent: () =>
+              import('./pages/operations/supervisor-control').then((m) => m.SupervisorControl),
+          };
+        if (tab === 'estado')
+          return {
+            ...common,
+            data: { label: TAB_LABELS[tab], system: tab },
+            loadComponent: () =>
+              import('./pages/admin/system/admin-system').then((m) => m.AdminSystem),
+          };
+        return {
+          ...common,
+          data: {
+            label: TAB_LABELS[tab],
+            query: ['reposicion', 'solicitudes', 'ordenes'].includes(tab) ? 'compras' : tab,
+            initialTab: tab,
+          },
+          loadComponent: () =>
+            import('./pages/admin/queries/admin-queries').then((m) => m.AdminQueries),
+        };
+      }),
+    ],
+  })),
   { path: '**', redirectTo: '' },
 ];

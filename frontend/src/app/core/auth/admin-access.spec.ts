@@ -157,4 +157,38 @@ describe('Administrator route protection', () => {
     await harness.navigateByUrl('/admin/productos');
     expect(harness.routeNativeElement?.querySelector('.ap-title')?.textContent).toBe('Productos');
   });
+  it.each<[Role, string, string]>([
+    ['COMPRAS', '/compras/solicitudes', 'Solicitudes de compra'],
+    ['SUPERVISOR', '/supervisor/indicadores', 'Indicadores'],
+    ['CONSULTA_COMERCIAL', '/consulta/existencias', 'Existencias'],
+  ])('opens the authorized area for %s with its own menu', async (role, path, label) => {
+    storedSession(role);
+    const harness = await RouterTestingHarness.create(path.split('/').slice(0, 2).join('/'));
+    expect(TestBed.inject(Router).url).toBe(path);
+    expect(harness.routeNativeElement?.querySelector('.ap-title')?.textContent).toContain(label);
+    expect(harness.routeNativeElement?.querySelector('.role-badge')?.textContent).toContain(
+      role === 'CONSULTA_COMERCIAL' ? 'CONSULTA COMERCIAL' : role,
+    );
+    expect(harness.routeNativeElement?.querySelector('a[href="/admin/usuarios"]')).toBeNull();
+    if (role === 'CONSULTA_COMERCIAL') {
+      expect(harness.routeNativeElement?.textContent).not.toContain('Solicitudes de compra');
+      expect(harness.routeNativeElement?.textContent).not.toContain('Indicadores I05');
+    }
+  });
+  it.each<Role>(['COMPRAS', 'SUPERVISOR', 'CONSULTA_COMERCIAL'])(
+    'reuses the read-only catalog for %s',
+    async (role) => {
+      storedSession(role);
+      const base = {
+        COMPRAS: '/compras',
+        SUPERVISOR: '/supervisor',
+        CONSULTA_COMERCIAL: '/consulta',
+        ALMACEN: '/almacen',
+        ADMINISTRADOR: '/admin',
+      }[role];
+      const harness = await RouterTestingHarness.create(base + '/productos');
+      expect(harness.routeNativeElement?.querySelector('.ap-title')?.textContent).toBe('Productos');
+      expect(harness.routeNativeElement?.textContent).not.toContain('+ Nuevo');
+    },
+  );
 });
