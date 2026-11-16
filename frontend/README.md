@@ -64,6 +64,9 @@ Cada recepción conserva su clave de idempotencia y contenido al reintentar, inc
 
 ## Permisos y sesión
 
+La matriz completa, las tres areas pendientes y su efecto sobre el informe estan en
+[Roles, permisos y pendientes de integracion](docs/ROLES-PERMISOS-Y-PENDIENTES.md).
+
 El área `/admin` requiere una sesión vigente con rol `ADMINISTRADOR`. El área `/almacen` y todas sus rutas hijas requieren `ALMACEN`. El login redirige cada uno a su panel; sus menús no permiten saltar de rol. Los otros tres roles aún conservan la presentación pública como destino tras el login.
 
 El interceptor adjunta Bearer solo a rutas relativas `/api/v1/`, excluyendo login. Un 401 de la sesión actual la cierra; un 403 no la elimina y un 401 tardío de una sesión anterior no cierra una sesión nueva. El panel vigila el vencimiento, y cerrar sesión elimina el token y vuelve al login.
@@ -107,3 +110,13 @@ Las respuestas de la API se verifican con HttpTestingController o servicios de p
 Para esta ampliación de Almacén se verifica la compilación de producción. La ejecución de pruebas se deja para la etapa final solicitada por el usuario; se actualizan las expectativas existentes de redirección y los fixtures de permisos.
 
 Queda pendiente validar los nuevos flujos de extremo a extremo con el backend/PostgreSQL del usuario. No se modificó el backend ni se crearon usuarios/productos/almacenes reales en esta entrega. Ver `docs/VALIDACION-ADMIN.md` para la comprobación local.
+
+## Actualizacion de cuentas del backend V8
+
+La API agrega cinco cuentas iniciales sin demo, cambio obligatorio de password, Mi cuenta,
+edicion/activacion/desactivacion de usuarios, restablecimiento temporal y auditoria.
+La interfaz descrita arriba todavia no implementa esas pantallas. En particular, la frase antigua
+"solo listar/crear usuarios" ya no describe el backend, sino la capacidad actual del frontend.
+Antes de conectar cuentas nuevas, implementar [el contrato de cuentas](../backend/docs/APF3/cuentas/CONTRATO-FRONTEND.md).
+Un token de primer acceso solo sirve para Mi cuenta y cambio de password; el resto devuelve
+403 CAMBIO_PASSWORD_REQUERIDO hasta completarlo. Los tokens emitidos antes de V8 requieren login nuevo.
