@@ -1,5 +1,15 @@
 # StockGuard · Frontend
 
+Selectores de almacenes corregidos: activos por defecto e inactivos optativos en consultas;
+formularios de operacion solo con activos. [Detalle y evidencia actual](docs/SELECTORES-ALMACENES.md):
+102 pruebas y build correctos, siete comprobaciones reales de navegador.
+
+Estado vigente: cinco areas de rol y cuentas V8 integradas. [Revision local con backend y PostgreSQL](../backend/docs/APF3/revision-integrada/README.md):
+97 pruebas Angular, build y 20 grupos de navegador aprobados. Las limitaciones de las entregas
+anteriores descritas abajo son historicas. Node ya se actualizo a 26.13.1; las 97 pruebas y el build se comprobaron de nuevo.
+
+Primera instalacion del proyecto completo: [GUIA-INICIO.md](../GUIA-INICIO.md).
+
 Angular 22, componentes standalone, Router y SCSS. Las dependencias están fijadas en `package-lock.json`.
 
 ## Arranque

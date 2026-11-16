@@ -1,3 +1,33 @@
+# Revision integrada local verificada - 16 de noviembre de 2026
+
+Actualizacion posterior: [selectores de almacenes](frontend/docs/SELECTORES-ALMACENES.md).
+Se desactivo mediante la API el almacen QA activo de byteelement, por solicitud del usuario;
+no se borro historial. Las consultas ofrecen Incluir inactivos; las operaciones solo activos.
+Validacion de este cambio: 102 pruebas Angular, build y siete comprobaciones reales de navegador.
+Los resultados de solo lectura y 97 pruebas descritos debajo corresponden al corte anterior.
+
+Estado vigente: [revision-integrada/README.md](backend/docs/APF3/revision-integrada/README.md).
+Sobre la base de codigo 4ef548c, se comprobaron 94 pruebas backend en H2 y PostgreSQL,
+97 pruebas Angular, build de produccion y 20 grupos de recorridos reales en Chromium con
+Spring/PostgreSQL. F01-F05 se recorrieron localmente con casos positivos y rechazos.
+Se agregaron dos pruebas de seguridad y un runner E2E reutilizable; no se cambiaron permisos
+ni codigo productivo durante esta revision.
+
+La base original byteelement sigue en V7 y no se modifico: seis cuentas, 22 productos,
+seis almacenes, 32 movimientos y nueve conteos. La migracion V8 se probo sobre una copia,
+conservando hashes, nombres, roles, estados y datos. El siguiente arranque habitual aplicara V8.
+No se necesita local,demo ni recrear cuentas. Usar las credenciales existentes.
+
+Node global actualizado a 26.13.1 / npm 11.20.0: Angular CLI lo acepta y se repitieron correctamente
+las 97 pruebas y el build. La validacion integrada previa uso Node 24.22.1.
+Arranque para quien clone: [GUIA-INICIO.md](GUIA-INICIO.md). Abrir http://localhost:4200 (origen CORS permitido).
+No se valido cloud ni se repitio el benchmark de 10000 productos. Los servidores temporales
+de revision se detienen al finalizar; PostgreSQL habitual del usuario queda encendido.
+
+Los cortes que siguen son historicos y sus pendientes quedan reemplazados por el informe vigente.
+
+---
+
 # Integración Angular implementada — 16 de noviembre de 2026
 
 Se implementaron cuentas V8 y las áreas de Compras, Supervisor y Consulta Comercial sobre

@@ -1,14 +1,23 @@
 # ByteElement-DWI - StockGuard MYPE
 
+Para clonar y arrancar por primera vez, seguir [GUIA-INICIO.md](GUIA-INICIO.md).
+
+Ultima correccion: [selectores de almacenes](frontend/docs/SELECTORES-ALMACENES.md), activos por defecto
+y consulta historica opcional. 102 pruebas Angular, build y siete comprobaciones reales aprobados.
+
+Revision integrada local: [flujo, base existente y resultados](backend/docs/APF3/revision-integrada/README.md).
+94 pruebas backend por motor, 97 Angular y 20 grupos de navegador aprobados.
+Node actualizado a 26.13.1: 97 pruebas Angular y build comprobados de nuevo; la base existente se conserva al migrar a V8.
+
 Actualizacion de cuentas (16/11): [instalacion normal de cinco roles](backend/docs/APF3/cuentas/README.md),
 [contrato detallado para Angular](backend/docs/APF3/cuentas/CONTRATO-FRONTEND.md) y
 [cambios al informe](backend/docs/APF3/cuentas/CAMBIOS-INFORME.md).
-Las cuentas nuevas deben cambiar su password antes de operar; Angular necesita implementar ese flujo.
+Las cuentas nuevas deben cambiar su password antes de operar; Angular ya implementa ese flujo.
 
 Backend Java 21 / Spring Boot / JPA-Hibernate / PostgreSQL para inventario y reposicion.
 APF3 completa compras, recepciones, reglas de reposicion, I05-I10, evidencias de backend y CORS para Angular.
 La carpeta `frontend/` contiene la base Angular con SCSS, la presentación pública, el inicio de sesión y el panel de administrador protegido de StockGuard.
-Los apartados del administrador están conectados a sus contratos de API: cuentas, catálogos, consultas, reportes, indicadores, salud y evidencias. La validación E2E de estos nuevos flujos con la base del usuario sigue pendiente; las áreas de los demás roles se desarrollan después.
+Las cinco areas de rol estan integradas; los recorridos locales verificados y sus limites se documentan en la revision integrada.
 
 - [Estado y traspaso](HANDOVER_ESTADO_PROYECTO.md)
 - [Documentacion APF3](backend/docs/APF3/README.md)
