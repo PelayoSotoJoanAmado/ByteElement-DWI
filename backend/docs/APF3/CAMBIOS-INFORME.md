@@ -1,5 +1,9 @@
 # Cambios necesarios en el informe
 
+Complementar esta lista con [cuentas/CAMBIOS-INFORME.md](cuentas/CAMBIOS-INFORME.md),
+actualizada el 16/11: RF09, primer acceso, cuentas, V8, 49 contratos y cambios de diagramas/modelo.
+Los resultados de volumen anteriores conservan su fecha y alcance.
+
 Esta lista corresponde al backend implementado para APF3. El equipo debe trasladar estos cambios
 al Word/PDF, actualizar capturas con su propia ejecucion y completar la evidencia Angular.
 No se modifico el PDF original ni se atribuyen resultados reales a ByteElement.
@@ -29,13 +33,14 @@ No se modifico el PDF original ni se atribuyen resultados reales a ByteElement.
    de E2E Angular. No marcar aceptado todo el proyecto antes de integrar y desplegar.
 7. Unificar permisos: COMPRAS solicita y emite; SUPERVISOR decide; ALMACEN recibe y mueve.
    Corregir el handover anterior, que permitia solicitar a Almacen y emitir al Supervisor.
-   La matriz I02 contiene 44 contratos y comprueba todos los roles. Separar autorizacion
+   La matriz I02 actual contiene 49 contratos y comprueba todos los roles. Separar autorizacion
    permitida (puede terminar en validacion 400/404) de una operacion de negocio aprobada.
 8. MVC: Angular es la vista. Las plantillas "Hola mundo" de resources/templates son vestigios,
    no evidencia de una interfaz terminada ni de vistas renderizadas por Spring.
-9. Conexion: mantener PostgreSQL/JPA/Hibernate/Flyway; V1-V7. InsForge es alojamiento opcional
+9. Conexion: mantener PostgreSQL/JPA/Hibernate/Flyway; V1-V8. InsForge es alojamiento opcional
    de PostgreSQL mediante JDBC, no reemplazo de Spring Boot ni del ORM.
-10. ER/logico/fisico: 11 entidades de negocio; agregar recepcion_compra y sus FK a orden, usuario
+10. ER/logico/fisico: 12 tablas de negocio mas control_cuentas tecnica (13 entidades JPA);
+    agregar evento_usuario y control_cuentas segun la guia de cuentas. En el corte anterior habia 11 tablas de negocio; agregar recepcion_compra y sus FK a orden, usuario
     y movimiento; cantidad_recibida/cancelacion; monto, urgencia, fechas de revision,
     confirmacion de duplicidad y respuesta idempotente en solicitudes.
     flyway_schema_history es tecnica; no contarla como entidad del negocio.

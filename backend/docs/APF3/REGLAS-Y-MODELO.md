@@ -93,7 +93,11 @@ I09 es retrospectivo: confirmar una duplicidad posteriormente puede cambiar un p
 V6 agrega monto/urgencia/revision/auditoria de duplicidad a solicitud_compra; recepciones y cancelacion
 a orden_compra; unicidad (usuario_id, clave_idempotencia); y recepcion_compra.
 V7 agrega respuesta de creacion idempotente e indice de conteos.
-Son 11 entidades de negocio; flyway_schema_history es una tabla tecnica adicional.
+El corte V7 tenia 11 tablas de negocio. V8 agrega evento_usuario (auditoria de cuentas)
+y control_cuentas (singleton tecnico de instalacion/bloqueo), ademas de requiere_cambio_password,
+version_sesion y version en usuario. Ahora hay 12 tablas de negocio, control_cuentas y
+flyway_schema_history: 14 tablas en total y 13 entidades JPA.
+El contrato de cuentas y las reglas de primer acceso estan en [cuentas/README.md](cuentas/README.md).
 
 ```mermaid
 erDiagram
@@ -107,7 +111,12 @@ erDiagram
     ORDEN_COMPRA ||--o{ RECEPCION_COMPRA : registra
     USUARIO ||--o{ RECEPCION_COMPRA : recibe
     MOVIMIENTO ||--o| RECEPCION_COMPRA : acredita
+    USUARIO ||--o{ EVENTO_USUARIO : cuenta_afectada
+    USUARIO o|--o{ EVENTO_USUARIO : actor
 ```
+
+control_cuentas no tiene FK a usuarios: contiene solo id=1 e instalacion_completa.
+Conserva el estado de instalacion y serializa operaciones criticas de cuentas. No representa un rol.
 
 RN01 saldo no negativo; RN02 transferencia atomica; RN03 limites min/max;
 RN04 similitud e idempotencia; RN05 decision por rol/monto y orden unica;
