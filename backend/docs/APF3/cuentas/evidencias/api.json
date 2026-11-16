@@ -1,0 +1,104 @@
+{
+  "generadoEn": "2026-11-16T19:12:28.385698+00:00",
+  "version": {
+    "commit": "36791b245dfcb3726f8828fb1d7c0f1e934acb9d",
+    "cambiosSinCommit": true,
+    "fuentesSha256": "54c252280e49bcba1ab09f2cb6966e96c768624a8074fbeb9bef76b245a73f34"
+  },
+  "entorno": {
+    "perfil": "prod",
+    "demo": false,
+    "url": "http://127.0.0.1:18082/api/v1",
+    "base": "stockguard_cuentas_http_v2_test_20261116",
+    "motor": "PostgreSQL 18.1",
+    "baseUsuarioModificada": false
+  },
+  "instalacion": {
+    "cuentasIniciales": 5,
+    "productosIniciales": 0,
+    "rolesDistintos": 5
+  },
+  "casos": [
+    {
+      "caso": "primer-acceso-ADMINISTRADOR",
+      "aprobado": true,
+      "login": 200,
+      "me": 200,
+      "moduloAntes": 403,
+      "cambio": 200,
+      "tokenPrevio": 401,
+      "claveAnterior": 401,
+      "moduloDespues": 200
+    },
+    {
+      "caso": "primer-acceso-ALMACEN",
+      "aprobado": true,
+      "login": 200,
+      "me": 200,
+      "moduloAntes": 403,
+      "cambio": 200,
+      "tokenPrevio": 401,
+      "claveAnterior": 401,
+      "moduloDespues": 200
+    },
+    {
+      "caso": "primer-acceso-COMPRAS",
+      "aprobado": true,
+      "login": 200,
+      "me": 200,
+      "moduloAntes": 403,
+      "cambio": 200,
+      "tokenPrevio": 401,
+      "claveAnterior": 401,
+      "moduloDespues": 200
+    },
+    {
+      "caso": "primer-acceso-SUPERVISOR",
+      "aprobado": true,
+      "login": 200,
+      "me": 200,
+      "moduloAntes": 403,
+      "cambio": 200,
+      "tokenPrevio": 401,
+      "claveAnterior": 401,
+      "moduloDespues": 200
+    },
+    {
+      "caso": "primer-acceso-CONSULTA_COMERCIAL",
+      "aprobado": true,
+      "login": 200,
+      "me": 200,
+      "moduloAntes": 403,
+      "cambio": 200,
+      "tokenPrevio": 401,
+      "claveAnterior": 401,
+      "moduloDespues": 200
+    },
+    {
+      "caso": "gestion-cuenta-auditoria",
+      "aprobado": true,
+      "creacion": 201,
+      "edicion": 200,
+      "versionObsoleta": 409,
+      "reset": 200,
+      "bloqueoTrasReset": 403,
+      "loginInactivo": 401,
+      "tokenNoRevive": 401,
+      "eventos": 6,
+      "sinSecretos": true
+    },
+    {
+      "caso": "compras-tras-primer-acceso-roles-separados",
+      "aprobado": true,
+      "administradorNoSolicita": 403,
+      "comprasSolicita": 200,
+      "comprasNoAprueba": 403,
+      "supervisorAprueba": 200,
+      "comprasEmite": 200,
+      "almacenRecibe": 200,
+      "consultaSinCompras": 403
+    }
+  ],
+  "exito": true,
+  "limites": "API real del JAR empaquetado; no se ejecutaron pantallas Angular ni despliegue cloud. Credenciales y tokens excluidos."
+}

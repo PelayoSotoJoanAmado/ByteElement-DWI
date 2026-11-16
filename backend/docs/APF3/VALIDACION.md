@@ -1,5 +1,9 @@
 # Validacion del backend APF3
 
+Corte historico del 13/11. La validacion actual de cuentas, V8 y permisos esta en
+[cuentas/VALIDACION.md](cuentas/VALIDACION.md). Las cifras de 71 pruebas/44 contratos de abajo
+son del corte anterior. La carga de 10000 productos y sus mediciones no se repitieron con esta ampliacion.
+
 Fecha: 13 de noviembre de 2026, America/Bogota.
 Se verificaron los contratos del backend; no se declara terminada la interfaz Angular ni el despliegue.
 Las evidencias JSON conservan timestamps UTC y la huella de las fuentes.

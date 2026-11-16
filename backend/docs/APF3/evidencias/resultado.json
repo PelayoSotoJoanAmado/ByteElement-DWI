@@ -1,15 +1,15 @@
 ﻿{
     "sinDatos":  false,
-    "generadoEn":  "2026-11-13T21:51:59.6219532Z",
+    "generadoEn":  "2026-11-16T19:10:25.8111502Z",
     "version":  {
-                    "commit":  "a25c55e72591d85b28efc3cc807348cfffcd0cac",
+                    "commit":  "36791b245dfcb3726f8828fb1d7c0f1e934acb9d",
                     "cambiosSinCommit":  true,
-                    "fuentesSha256":  "a0e1fadf533a8639daa9b6331f2780e656e61555abfef3ccd944dbbe48166037"
+                    "fuentesSha256":  "54c252280e49bcba1ab09f2cb6966e96c768624a8074fbeb9bef76b245a73f34"
                 },
     "alcance":  "Backend. F01-F05 Angular y despliegue requieren evidencia adicional; no se declara aprobacion final del proyecto.",
-    "motor":  "H2 en modo PostgreSQL",
+    "motor":  "PostgreSQL (migraciones historicas y perfil prod tambien se prueban en H2; ver INSTALACION_TEST_DB_URL para instalacion)",
     "suite":  {
-                  "pruebas":  71,
+                  "pruebas":  92,
                   "noAprobadas":  0,
                   "omitidas":  0,
                   "exito":  true
@@ -82,7 +82,10 @@
                            "aprobado":  true,
                            "pruebas":  [
                                            "RF09_contratosNuevosRechazanSinTokenYRolIndebido",
-                                           "todosLosContratosRestringidosRechazanTokenAusenteInvalidoYRolIndebido"
+                                           "todosLosContratosRestringidosRechazanTokenAusenteInvalidoYRolIndebido",
+                                           "primerAccesoBloqueaTodosLosModulosPeroPermiteCambiarPassword",
+                                           "cambioPasswordInvalidaTodasLasSesionesYLaClaveAnterior",
+                                           "soloAdminConClaveDefinitivaPuedeGestionarCuentas"
                                        ]
                        },
                        {
@@ -555,6 +558,88 @@
                       },
                       {
                           "rolesDenegados":  {
+
+                                             },
+                          "aprobado":  true,
+                          "rolesPermitidos":  {
+                                                  "ALMACEN":  200,
+                                                  "COMPRAS":  200,
+                                                  "SUPERVISOR":  200,
+                                                  "CONSULTA_COMERCIAL":  200,
+                                                  "ADMINISTRADOR":  200
+                                              },
+                          "ruta":  "/api/v1/auth/me",
+                          "tokenInvalido":  401,
+                          "tokenAusente":  401,
+                          "metodo":  "GET"
+                      },
+                      {
+                          "rolesDenegados":  {
+
+                                             },
+                          "aprobado":  true,
+                          "rolesPermitidos":  {
+                                                  "ALMACEN":  400,
+                                                  "COMPRAS":  400,
+                                                  "SUPERVISOR":  400,
+                                                  "CONSULTA_COMERCIAL":  400,
+                                                  "ADMINISTRADOR":  400
+                                              },
+                          "ruta":  "/api/v1/auth/cambiar-password",
+                          "tokenInvalido":  401,
+                          "tokenAusente":  401,
+                          "metodo":  "POST"
+                      },
+                      {
+                          "rolesDenegados":  {
+                                                 "ALMACEN":  403,
+                                                 "COMPRAS":  403,
+                                                 "SUPERVISOR":  403,
+                                                 "CONSULTA_COMERCIAL":  403
+                                             },
+                          "aprobado":  true,
+                          "rolesPermitidos":  {
+                                                  "ADMINISTRADOR":  404
+                                              },
+                          "ruta":  "/api/v1/usuarios/999999999/eventos",
+                          "tokenInvalido":  401,
+                          "tokenAusente":  401,
+                          "metodo":  "GET"
+                      },
+                      {
+                          "rolesDenegados":  {
+                                                 "ALMACEN":  403,
+                                                 "COMPRAS":  403,
+                                                 "SUPERVISOR":  403,
+                                                 "CONSULTA_COMERCIAL":  403
+                                             },
+                          "aprobado":  true,
+                          "rolesPermitidos":  {
+                                                  "ADMINISTRADOR":  400
+                                              },
+                          "ruta":  "/api/v1/usuarios/999999999",
+                          "tokenInvalido":  401,
+                          "tokenAusente":  401,
+                          "metodo":  "PUT"
+                      },
+                      {
+                          "rolesDenegados":  {
+                                                 "ALMACEN":  403,
+                                                 "COMPRAS":  403,
+                                                 "SUPERVISOR":  403,
+                                                 "CONSULTA_COMERCIAL":  403
+                                             },
+                          "aprobado":  true,
+                          "rolesPermitidos":  {
+                                                  "ADMINISTRADOR":  400
+                                              },
+                          "ruta":  "/api/v1/usuarios/999999999/restablecer-password",
+                          "tokenInvalido":  401,
+                          "tokenAusente":  401,
+                          "metodo":  "POST"
+                      },
+                      {
+                          "rolesDenegados":  {
                                                  "ALMACEN":  403,
                                                  "COMPRAS":  403,
                                                  "SUPERVISOR":  403,
@@ -934,6 +1019,69 @@
                                 ]
                 }
             ],
+    "cuentas":  [
+                    {
+                        "id":  "instalacion-atomica",
+                        "aprobado":  true,
+                        "pruebas":  [
+                                        "creaCincoCuentasDistintasSinDatosDemoYSinGuardarPasswordsEnClaro",
+                                        "configuracionIncompletaNoCreaCuentasParciales",
+                                        "nombresYClavesInicialesDuplicadasSonRechazados",
+                                        "errorDeAuditoriaRevierteTodaLaInstalacion"
+                                    ]
+                    },
+                    {
+                        "id":  "instalacion-concurrente",
+                        "aprobado":  true,
+                        "pruebas":  [
+                                        "dosInstanciasConcurrentesSoloInstalanUnaVez",
+                                        "reiniciarNoCambiaPasswordsNiReactivaCuentas",
+                                        "unaBaseYaInstaladaNoRecreaUsuariosBorradosNiExigeOtraVezLasClavesIniciales"
+                                    ]
+                    },
+                    {
+                        "id":  "primer-acceso",
+                        "aprobado":  true,
+                        "pruebas":  [
+                                        "unaCuentaPuedeConsultarSuEstadoYCambiarSuPasswordInicial",
+                                        "primerAccesoBloqueaTodosLosModulosPeroPermiteCambiarPassword"
+                                    ]
+                    },
+                    {
+                        "id":  "password-y-revocacion",
+                        "aprobado":  true,
+                        "pruebas":  [
+                                        "cambioPasswordValidaActualConfirmacionReutilizacionYBytesSinModificarCuenta",
+                                        "cambioPasswordInvalidaTodasLasSesionesYLaClaveAnterior"
+                                    ]
+                    },
+                    {
+                        "id":  "gestion-y-auditoria",
+                        "aprobado":  true,
+                        "pruebas":  [
+                                        "adminCreaCuentaConCambioObligatorioSinDevolverSecretos",
+                                        "adminEditaNombreRolYEstadoRevocandoTokens",
+                                        "resetObligaCambioRevocaSesionYConservaHistorialSinPassword",
+                                        "desactivacionBloqueaLoginYReactivacionNoReviveTokenViejo"
+                                    ]
+                    },
+                    {
+                        "id":  "concurrencia-y-administrador",
+                        "aprobado":  true,
+                        "pruebas":  [
+                                        "cambiosConcurrentesRespetanLaVersionDelFormulario",
+                                        "dosAdministradoresNoPuedenDesactivarseMutuamenteDejandoCeroActivos",
+                                        "adminNoPuedeDesactivarseCambiarSuRolNiRestablecersePorAdministracion"
+                                    ]
+                    },
+                    {
+                        "id":  "migracion",
+                        "aprobado":  true,
+                        "pruebas":  [
+                                        "migrarV7AV8ConservaCredencialesRolesYEstadosDeUsuariosExistentes"
+                                    ]
+                    }
+                ],
     "indicadoresTecnicos":  [
                                 {
                                     "codigo":  "I01",
@@ -945,8 +1093,8 @@
                                 },
                                 {
                                     "codigo":  "I02",
-                                    "numerador":  44,
-                                    "denominador":  44,
+                                    "numerador":  49,
+                                    "denominador":  49,
                                     "valor":  100,
                                     "sinDatos":  false,
                                     "alcance":  "backend"
