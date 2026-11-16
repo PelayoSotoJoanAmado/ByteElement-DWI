@@ -5,8 +5,20 @@ spring.datasource.username=stockguard
 spring.datasource.password=REEMPLAZAR
 # Generar una clave aleatoria de al menos 32 bytes. Nunca compartir ni subir este archivo.
 stockguard.jwt.secret=REEMPLAZAR_CON_UNA_CLAVE_ALEATORIA_DE_32_BYTES_O_MAS
-# Solo se usan al crear el primer administrador en una base sin usuarios.
+# Solo se usan durante la primera instalacion, si la base no tiene usuarios.
 stockguard.bootstrap.username=administrador
 stockguard.bootstrap.password=REEMPLAZAR_CON_UNA_CONTRASENA_DE_12_CARACTERES_O_MAS
 # Solo para el perfil demo. Se crean cinco usuarios demo-<rol>.
 stockguard.demo.password=REEMPLAZAR_CON_OTRA_CONTRASENA_DE_12_CARACTERES_O_MAS
+
+# Completar las cinco claves con valores privados DIFERENTES. Los marcadores se rechazan.
+stockguard.bootstrap.almacen.username=almacen
+stockguard.bootstrap.almacen.password=REEMPLAZAR_CLAVE_PRIVADA_ALMACEN
+stockguard.bootstrap.compras.username=compras
+stockguard.bootstrap.compras.password=REEMPLAZAR_CLAVE_PRIVADA_COMPRAS
+stockguard.bootstrap.supervisor.username=supervisor
+stockguard.bootstrap.supervisor.password=REEMPLAZAR_CLAVE_PRIVADA_SUPERVISOR
+stockguard.bootstrap.consulta.username=consulta-comercial
+stockguard.bootstrap.consulta.password=REEMPLAZAR_CLAVE_PRIVADA_CONSULTA
+# Sin local,demo se crean cuentas, pero no se cargan productos ni movimientos de ejemplo.
+# Cambiar este archivo no restablece los passwords de cuentas ya creadas.

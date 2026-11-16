@@ -32,7 +32,7 @@ class DatosDemoIntegrationTest {
     assertEquals(2, productos.count());
     assertEquals(4, movimientos.count());
     assertEquals(2, conteos.count());
-    assertEquals(6, usuarios.count());
+    assertEquals(10, usuarios.count());
     var desde = Instant.parse("1970-01-01T00:00:00Z");
     var hasta = Instant.now().plusSeconds(1);
     assertEquals(

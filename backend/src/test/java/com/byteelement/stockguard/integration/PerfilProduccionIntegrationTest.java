@@ -17,7 +17,8 @@ import org.springframework.core.env.Environment;
       "stockguard.jwt.secret=production-profile-test-secret-at-least-32-bytes",
       "stockguard.bootstrap.username=perfil-admin",
       "stockguard.bootstrap.password=ProfileTestPassword123!",
-      "debug=false"
+      "debug=false",
+      "stockguard.bootstrap.enabled=false"
     })
 class PerfilProduccionIntegrationTest {
   @Autowired Environment entorno;
