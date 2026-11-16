@@ -11,6 +11,42 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 class UsuarioMigrationTest {
   @Test
+  void migrarV7AV8ConservaCredencialesRolesYEstadosDeUsuariosExistentes() {
+    try (var fuente = new HikariDataSource()) {
+      fuente.setJdbcUrl(
+          "jdbc:h2:mem:cuentas-legacy-"
+              + UUID.randomUUID()
+              + ";MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1");
+      fuente.setUsername("sa");
+      fuente.setPassword("");
+      Flyway.configure()
+          .dataSource(fuente)
+          .locations("classpath:db/migration")
+          .target(MigrationVersion.fromVersion("7"))
+          .load()
+          .migrate();
+      var jdbc = new JdbcTemplate(fuente);
+      jdbc.update(
+          "insert into usuario(username,password_hash,rol,activo) values"
+              + " ('legacy-cuenta','hash-historico-conservado','COMPRAS',false)");
+      Flyway.configure().dataSource(fuente).locations("classpath:db/migration").load().migrate();
+      var fila =
+          jdbc.queryForMap(
+              "select password_hash,rol,activo,requiere_cambio_password,version_sesion,version from"
+                  + " usuario where username='legacy-cuenta'");
+      assertEquals("hash-historico-conservado", fila.get("password_hash"));
+      assertEquals("COMPRAS", fila.get("rol"));
+      assertEquals(false, fila.get("activo"));
+      assertEquals(false, fila.get("requiere_cambio_password"));
+      assertEquals(0L, ((Number) fila.get("version_sesion")).longValue());
+      assertTrue(
+          jdbc.queryForObject(
+              "select instalacion_completa from control_cuentas where id=1", Boolean.class));
+      assertEquals(0L, jdbc.queryForObject("select count(*) from evento_usuario", Long.class));
+    }
+  }
+
+  @Test
   void migrarV3RelacionaAutoresExistentesSinAlterarHistorial() {
     try (var fuente = new HikariDataSource()) {
       fuente.setJdbcUrl(

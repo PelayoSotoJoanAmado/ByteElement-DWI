@@ -22,6 +22,35 @@ public class Usuario {
 
   private boolean activo = true;
 
+  private boolean requiereCambioPassword = true;
+  private long versionSesion;
+  @Version private long version;
+
+  public boolean isRequiereCambioPassword() {
+    return requiereCambioPassword;
+  }
+
+  public long getVersionSesion() {
+    return versionSesion;
+  }
+
+  public long getVersion() {
+    return version;
+  }
+
+  public void cambiarPassword(String hash, boolean obligatorio) {
+    passwordHash = hash;
+    requiereCambioPassword = obligatorio;
+    versionSesion = Math.addExact(versionSesion, 1);
+  }
+
+  public void actualizar(String username, Rol rol, boolean activo) {
+    this.username = username;
+    this.rol = rol;
+    this.activo = activo;
+    versionSesion = Math.addExact(versionSesion, 1);
+  }
+
   protected Usuario() {}
 
   public Usuario(String username, String hash, Rol rol) {
