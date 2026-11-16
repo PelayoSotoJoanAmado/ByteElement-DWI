@@ -1,5 +1,9 @@
 # Inicio para el responsable de Angular
 
+La interfaz ya integra las cinco areas y cuentas V8. Antes de continuar, leer
+[la revision integrada local](revision-integrada/README.md), con entorno, flujo y resultados comprobados.
+Las instrucciones de implementacion de abajo sirven de referencia del alcance.
+
 El backend implementa los contratos de catalogo, inventario, reposicion, compras, conteos e indicadores.
 Puedes comenzar Angular sin configurar InsForge. El cierre integrado requiere ejecutar F01-F05
 desde el navegador y corregir cualquier incidencia que aparezca al conectar ambas aplicaciones.

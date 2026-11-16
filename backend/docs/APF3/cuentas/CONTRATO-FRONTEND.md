@@ -1,5 +1,9 @@
 # Contrato para implementar cuentas y primer acceso en Angular
 
+Estado posterior: el contrato ya se integro en Angular y se probaron recorridos locales reales.
+Ver [revision-integrada/README.md](../revision-integrada/README.md). Este documento conserva
+la especificacion de API/validaciones; las instrucciones de implementacion describen el trabajo realizado.
+
 Backend actualizado el 16 de noviembre de 2026. Leer antes de modificar el login o Usuarios.
 Base /api/v1. JSON. Bearer JWT salvo login. No hay registro publico ni SUPERADMIN.
 Las areas de Compras, Supervisor y Consulta siguen siendo trabajo de integracion separado.

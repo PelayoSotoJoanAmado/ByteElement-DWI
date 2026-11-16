@@ -123,5 +123,5 @@ control_cuentas es una tabla tecnica de instalacion y bloqueo, no un sexto rol.
 Entregar al responsable Angular [CONTRATO-FRONTEND.md](CONTRATO-FRONTEND.md).
 Consultar [CAMBIOS-INFORME.md](CAMBIOS-INFORME.md) para el informe.
 Resultados y reproduccion en [VALIDACION.md](VALIDACION.md).
-La interfaz actual de front necesita estos cambios para que las cuentas nuevas puedan operar.
-No se implementaron los formularios Angular en esta entrega de backend.
+Las pantallas Angular de cuentas ya se integraron. Su validacion local con backend/PostgreSQL
+esta en [revision-integrada/README.md](../revision-integrada/README.md); conservar los limites de esa evidencia.

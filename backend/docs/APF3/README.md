@@ -1,5 +1,8 @@
 # Backend de StockGuard para APF3
 
+Revision local posterior: [revision-integrada/README.md](revision-integrada/README.md) documenta
+94 pruebas por motor, 97 Angular, 20 grupos reales de navegador y migracion de una copia V7 a V8.
+
 Actualizacion 16/11: leer primero [cuentas/README.md](cuentas/README.md) y
 [el contrato Angular de cuentas](cuentas/CONTRATO-FRONTEND.md). Esta ampliacion agrega V8,
 primer acceso, edicion/reset/auditoria y cinco cuentas iniciales sin demo; conserva los roles de negocio.

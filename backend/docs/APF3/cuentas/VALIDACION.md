@@ -1,5 +1,8 @@
 # Validacion de cuentas y primer acceso
 
+Corte historico de backend. La [revision integrada posterior](../revision-integrada/README.md)
+amplia la suite a 94 pruebas por motor y ejecuta 20 grupos reales desde Angular; consultar su evidencia vigente.
+
 Fecha: 16 de noviembre de 2026, America/Bogota. Rama front, base de trabajo 36791b2.
 Las pruebas se ejecutaron antes de dividir la entrega en commits; por eso sus reportes identifican
 esa base, cambios sin commit y el SHA-256 de las fuentes verificadas. Los commits posteriores
