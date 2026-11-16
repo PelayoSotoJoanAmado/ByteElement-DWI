@@ -1,7 +1,6 @@
-> Actualización del 16/11/2026: se implementaron las pantallas y acciones descritas como
-> pendientes en el diagnóstico histórico que sigue. La matriz se conserva sin ampliaciones.
-> Resultados: 97 pruebas Angular y build correctos; contrato de cuentas y F01–F05 todavía
-> pendientes de validación real con backend/PostgreSQL. Ver [informe de integración](INTEGRACION-FRONT-RESULTADOS.md).
+> Estado vigente: las cinco areas estan implementadas y se ejecutaron 20 grupos de recorridos
+> reales con backend/PostgreSQL. La matriz se conserva. Ver [revision integrada](../../backend/docs/APF3/revision-integrada/README.md).
+> El diagnostico que sigue es historico y permite trazar los pendientes resueltos.
 
 # Roles, permisos y pendientes de integracion
 

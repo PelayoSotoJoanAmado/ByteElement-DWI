@@ -1,5 +1,8 @@
 # Validación local del administrador
 
+Existe una [revision integrada ejecutada](../../backend/docs/APF3/revision-integrada/README.md).
+La lista de abajo sirve para repetir comprobaciones manuales sobre una base de pruebas.
+
 Requisitos: backend y PostgreSQL encendidos, frontend actualizado en la rama `front`, cuenta de administrador válida. Las pruebas siguientes crean datos de prueba en la base que hayas configurado; usa tu entorno local de pruebas.
 
 1. Inicia Angular con `npm start`, entra por `/login` y comprueba la redirección a `/admin`.
@@ -7,7 +10,10 @@ Requisitos: backend y PostgreSQL encendidos, frontend actualizado en la rama `fr
 3. En **Almacenes**, crea código `UI-PRUEBA` y nombre `Almacén de prueba de interfaz`. Comprueba que aparece en el listado y el detalle. Edita el nombre y verifica el cambio tras actualizar la página.
 4. En **Productos**, crea SKU `UI-PRUEBA-001`, categoría `Pruebas`, marca `Demo`, modelo `Interfaz`, especificación `Registro de prueba del frontend`, crítico marcado. Comprueba listado/detalle y edición de la especificación. Repetir el SKU debe mostrar el conflicto del servidor.
 5. En **Existencias**, selecciona ese producto y almacén. Sin movimientos previos, la cantidad debe ser 0. La falta de conexión no debe mostrarse como stock 0.
-6. En **Usuarios**, crea una cuenta de prueba con rol `COMPRAS` y una contraseña elegida por ti, de mínimo 12 caracteres y máximo 72 bytes. La confirmación debe coincidir. Verifica el listado, filtro y detalle. No deben aparecer edición, desactivación o recuperación de contraseña para usuarios.
+6. En Usuarios, crea una cuenta de prueba con rol COMPRAS y una clave temporal privada de minimo
+12 caracteres y maximo 72 bytes UTF-8. En Detalle deben aparecer edicion, estado, reset e historial
+para cuentas ajenas. La propia cuenta no se administra desde esa tabla. Al entrar con la cuenta
+nueva, completar el cambio obligatorio antes de acceder a Compras. Consultar el contrato V8.
 7. Vuelve al **Panel general**. Los contadores deben reflejar usuarios, productos y almacenes activos; una consulta fallida debe mostrar «No disponible». Las alertas dependen de las políticas configuradas por el supervisor.
 8. En **Movimientos**, prueba filtros de SKU, almacén y fechas. No debe haber acciones de registro. Un listado vacío es válido si no hay operaciones en el periodo.
 9. En **Compras**, recorre Reposición, Solicitudes y Órdenes. Comprueba filtros, páginas y detalles. Si existe una orden, revisa sus recepciones. No deben aparecer aprobación, emisión ni recepción para el administrador.

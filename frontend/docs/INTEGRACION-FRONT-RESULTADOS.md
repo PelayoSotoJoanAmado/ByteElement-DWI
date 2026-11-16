@@ -1,5 +1,9 @@
 # Integración Angular V8: implementación local y resultados
 
+Corte historico de implementacion, anterior a la revision local con PostgreSQL. Los bloqueos
+y pendientes E2E registrados abajo se contrastan con la [revision integrada posterior](../../backend/docs/APF3/revision-integrada/README.md),
+que ejecuto 20 grupos reales y 94 pruebas backend por motor. Conservar la fecha y alcance de cada evidencia.
+
 Fecha: 16 de noviembre de 2026. Base revisada: rama `front`, commit `e63f52e`.
 El usuario autorizó organizar los cambios en cuatro commits y publicarlos en la rama `front`.
 Este documento actualiza el estado de implementación; no acredita recorridos E2E con PostgreSQL.
